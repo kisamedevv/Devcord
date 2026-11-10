@@ -1,0 +1,159 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Endcord and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-ecb-root {
+    margin-bottom: 1.25em;
+}
+
+.vc-ecb-mine {
+    padding: 0.75em 0.9em;
+    border-radius: 8px;
+    background: var(--background-secondary-alt, #2b2d31);
+}
+
+.vc-ecb-muted {
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-ecb-card {
+    border: 1px solid var(--background-modifier-accent, #3f4147);
+    border-radius: 8px;
+    background: var(--background-secondary, #2b2d31);
+    overflow: hidden;
+}
+
+.vc-ecb-card.vc-ecb-expanded {
+    border-color: var(--brand-experiment, #5865f2);
+}
+
+.vc-ecb-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    width: 100%;
+    padding: 0.6em 0.8em;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.vc-ecb-card-header:hover {
+    background: var(--background-modifier-hover, #35373c);
+}
+
+.vc-ecb-card-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.vc-ecb-preview {
+    border-radius: 50%;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.vc-ecb-editor {
+    padding: 0.8em;
+    border-top: 1px solid var(--background-modifier-accent, #3f4147);
+}
+
+.vc-ecb-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+}
+
+.vc-ecb-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+    gap: 6px;
+}
+
+.vc-ecb-icon-button {
+    display: grid;
+    place-items: center;
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: var(--background-tertiary, #1e1f22);
+    cursor: pointer;
+    transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.vc-ecb-icon-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--background-modifier-accent, #4f545c);
+}
+
+.vc-ecb-icon-button.vc-ecb-selected {
+    border-color: var(--brand-experiment, #5865f2);
+    background: var(--background-modifier-selected, #3c3f45);
+}
+
+.vc-ecb-color-row {
+    flex-wrap: wrap;
+}
+
+.vc-ecb-color-input {
+    width: 40px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--background-modifier-accent, #4f545c);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.vc-ecb-color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.vc-ecb-color-swatch.vc-ecb-selected {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--background-tertiary, #1e1f22);
+}
+
+.vc-ecb-import {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding-top: 0.5em;
+    border-top: 1px solid var(--background-modifier-accent, #3f4147);
+}
+
+.vc-ecb-import-box {
+    width: 100%;
+    min-height: 96px;
+    resize: vertical;
+    padding: 0.6em;
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-accent, #3f4147);
+    background: var(--background-tertiary, #1e1f22);
+    color: var(--text-normal, #dbdee1);
+    font-family: var(--font-code, monospace);
+    font-size: 0.8125rem;
+}
+
+.vc-ecb-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.vc-ecb-inline img {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
