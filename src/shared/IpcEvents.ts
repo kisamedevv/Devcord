@@ -31,6 +31,7 @@ export const enum IpcEvents {
     GET_THEME_DATA = "EndcordGetThemeData",
     GET_THEME_SYSTEM_VALUES = "EndcordGetThemeSystemValues",
     THEME_UPDATE = "EndcordThemeUpdate",
+    GET_STARTUP_CSS = "EndcordGetStartupCss",
 
     OPEN_EXTERNAL = "EndcordOpenExternal",
     OPEN_THEMES_FOLDER = "EndcordOpenThemesFolder",

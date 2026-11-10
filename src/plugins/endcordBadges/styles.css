@@ -157,3 +157,23 @@
     height: 16px;
     border-radius: 50%;
 }
+
+/* Sağ tık rozet seçici */
+.vc-ecb-picker-row {    padding: 0.5em 0.7em;
+    border: 1px solid var(--background-modifier-accent, #3f4147);
+    border-radius: 8px;
+    background: var(--background-secondary, #2b2d31);
+}
+
+.vc-ecb-picker-row.vc-ecb-selected {
+    border-color: var(--brand-experiment, #5865f2);
+    background: var(--background-modifier-selected, #3c3f45);
+}
+
+/* Kullanıcı arama sonuçları */
+.vc-ecb-user-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 0.35em;
+}

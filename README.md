@@ -54,7 +54,10 @@ Endcord settings, are rendered client-side on profiles, and never leave your mac
   kalkan, parıltı, hayalet, roket, kılıç, kahve, müzik, pati, göz, şef) — renk seçiciyle boyanır.
 * Herhangi bir `https://` veya `data:` görsel URL'i özel ikon olarak da kullanılabilir.
 * Per-badge colour picker plus a preset palette.
-* Assign badges by Discord user ID (comma separated). `*` gives the badge to everyone.
+* Assign badges by Discord user ID (comma separated) or by searching the username in the editor.
+  `*` gives the badge to everyone.
+* **Right-click a user → "Endcord Rozeti Ver"** opens a picker: give or take any badge, or create
+  a new one for that user on the spot.
 * Optional display in the member list and next to names in chat.
 * Export/import as JSON so you can back up or share a badge set.
 
@@ -64,6 +67,8 @@ How to use:
 2. Press **Add badge**, name it, pick an icon and colour.
 3. Press **Add me** to put your own ID in (or paste IDs manually).
 4. Open your profile — the badge is there.
+
+Or right-click any user and pick **Endcord Rozeti Ver**.
 
 Badges are client-side only. Other people only see them if they run Endcord with the same badge set.
 
@@ -77,6 +82,16 @@ are configurable. Pure DOM/CSS, no patches.
 Adds an entry to the user context menu showing when an account was created (decoded from the
 snowflake ID), plus how old it is. Click it to copy the ISO timestamp.
 
+### EndcordQuickCopy — ID / mention / creation date
+
+Right-click any user and copy their ID, their `@mention` or their account creation date in one
+click.
+
+### EndcordAppearance — live glass tuning
+
+Sliders for panel opacity and backdrop blur plus a hex field for the accent colour. The theme
+file is never touched; the plugin overrides the theme's variables live.
+
 ### EndcordTitle — window and tab name
 
 Keeps Discord's window title (taskbar, alt-tab, browser tab) as **Endcord** instead of "Discord".
@@ -84,18 +99,26 @@ The unread counter is preserved — `(3) Endcord`. Text and counter are both con
 
 ## Endcord Soft theme
 
-`themes/endcord-soft.theme.css` — a quiet blue-black theme built for Windows 11:
+`themes/endcord-soft.theme.css` — a quiet blue-black glass theme built for Windows 11:
 
-* soft blue-black canvas (`#080b12` → `#0d1422`), no pure black, no pure white text
-* translucent panels with a light backdrop blur, hairline borders instead of heavy outlines
+* translucent panels over the desktop, hairline borders instead of heavy outlines
 * single muted accent (`#6c8cff`) instead of Discord's saturated brand blue
 * low-contrast, eye-friendly text ramp; softer scrollbars and selection colour
+* every surface derives from one alpha (`--ecs-alpha`), so the whole theme can be turned
+  more or less transparent in one place
+
+**The theme is applied before Discord's own CSS loads.** The preload script asks the main
+process for the enabled themes and injects them into `document.head` before the first paint, so
+there is no flash of the default theme while Discord boots.
+
+**Full transparency.** The installer sets `transparent: true` and `windowsMaterial: "acrylic"` in
+the settings file, so the window itself is see-through and Win11's acrylic blur shows behind the
+panels — including the empty space when the window is not maximised. Toggle it any time in
+Endcord Settings → "Enable window transparency" / "Background Material".
 
 It is copied into the themes folder and enabled by `inject.bat` / `scripts/install-theme.mjs`.
-Tweak the `--ecs-*` tokens at the top of the file to shift the tone; nothing else needs editing.
-
-Real window translucency comes from `windowsMaterial: "acrylic"` in the settings file, which the
-installer sets on Windows. Change it any time in Endcord Settings → Windows Material.
+Tweak the `--ecs-*` tokens at the top of the file to shift the tone, or use the
+**EndcordAppearance** plugin to change opacity, blur and accent live.
 
 ## Notes on Kernixcord
 
@@ -115,16 +138,20 @@ src/
   components/     shared React components
   main/           Electron main process (patcher, CSP, updater, settings)
   plugins/        every bundled plugin
-  plugins/endcordBadges/   icons.tsx · store.ts · settings.tsx · index.tsx · styles.css
+  plugins/endcordBadges/   icons.tsx · store.ts · settings.tsx · picker.tsx · index.tsx · styles.css
+  plugins/endcordAppearance/
+  plugins/endcordQuickCopy/
   plugins/endcordTitle/
   plugins/oneko/
   plugins/accountAge/
   webpack/        module finder + patcher
 packages/         @endcord/discord-types, @endcord/types
 scripts/          build pipeline + installer
-  install-desktop.mjs   Discord injector (folder method, no asar rewrite)
+  install-desktop.mjs   Discord injector (asar swap, original kept as _app.asar)
   install-theme.mjs     themes + default plugin enablement
+  generateBadgeIcons.mjs  PNG rozetleri data URI tablosuna çevirir
 themes/           bundled themes (Endcord Soft)
+assets/           bundled badge PNGs (github.com/merlinfuchs/discord-badges)
 inject.bat        Windows one-click install
 ```
 

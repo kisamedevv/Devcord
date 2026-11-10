@@ -51,6 +51,7 @@ window.EndcordNative = {
         ),
         getThemeData: (fileName: string) => DataStore.get(fileName, themeStore),
         getSystemValues: async () => ({}),
+        getStartupCss: () => "",
 
         openFolder: async () => Promise.reject("themes:openFolder is not supported on web"),
     },

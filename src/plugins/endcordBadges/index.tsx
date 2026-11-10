@@ -7,12 +7,16 @@
 import "./styles.css";
 
 import { addProfileBadge, BadgePosition, BadgeRarity, ProfileBadge, removeProfileBadge } from "@api/Badges";
+import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { addMemberListDecorator, MemberListDecoratorFactory, removeMemberListDecorator } from "@api/MemberListDecorators";
 import { addMessageDecoration, MessageDecorationFactory, removeMessageDecoration } from "@api/MessageDecorations";
+import type { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
+import { Menu } from "@webpack/common";
 
 import { buildIconSrc } from "./icons";
+import { openBadgePicker } from "./picker";
 import { settings } from "./settings";
 import { BadgeEntry,badgesForUser } from "./store";
 
@@ -80,12 +84,28 @@ const ChatBadges: MessageDecorationFactory = ({ message }) => {
     return <InlineBadges userId={message.author.id} />;
 };
 
+/** Sağ tık menüsü: "Rozet ver" → modal açılır. */
+const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: { user: User; }) => {
+    if (!user?.id) return;
+
+    children.push(
+        <Menu.MenuItem
+            id="vc-endcord-badges-picker"
+            label="Endcord Rozeti Ver"
+            action={() => openBadgePicker(user.id, user.username)}
+        />
+    );
+};
+
 export default definePlugin({
     name: "EndcordBadges",
     description: "Add your own badges — with a built-in icon library — to any profile. Purely local, no server needed.",
     tags: ["Customisation", "Fun"],
     authors: [Devs.Endcord],
     settings,
+    contextMenus: {
+        "user-context": UserContextPatch
+    },
 
     start() {
         addProfileBadge(CustomBadges);

@@ -17,17 +17,40 @@
 */
 
 import { Settings, SettingsStore } from "@api/Settings";
+import { ThemeStore } from "@endcord/discord-types";
 import { createAndAppendStyle } from "@utils/css";
 import { isNonNullish } from "@utils/guards";
-import { ThemeStore } from "@endcord/discord-types";
 import { PopoutWindowStore } from "@webpack/common";
 
-import { userStyleRootNode, endcordRootNode } from "./Styles";
+import { endcordRootNode,userStyleRootNode } from "./Styles";
 
 let style: HTMLStyleElement;
 let themesStyle: HTMLStyleElement;
 
 const themeChangeListeners = new Set<() => void>();
+
+/**
+ * Preload, Discord'un ilk boyasından önce temayı head'e basar (flaş olmasın diye).
+ * Renderer sonra kendi @import yolunu kullanıyor; bootstrap etiketi güncel
+ * tutuluyor ki tema değişince eski kurallar geride kalmasın.
+ */
+const STARTUP_STYLE_ID = "endcord-startup-theme";
+
+async function syncStartupStyle() {
+    if (IS_WEB) return;
+
+    const el = document.getElementById(STARTUP_STYLE_ID) as HTMLStyleElement | null;
+    if (!el) return;
+
+    const parts: string[] = [];
+
+    for (const theme of Settings.enabledThemes) {
+        const data = await EndcordNative.themes.getThemeData(theme).catch(() => null);
+        if (data) parts.push(data);
+    }
+
+    el.textContent = parts.join("\n");
+}
 
 async function toggle(isEnabled: boolean) {
     if (!style) {
@@ -90,6 +113,7 @@ async function initThemes() {
     }
 
     themesStyle.textContent = links.map(link => `@import url("${link.trim()}");`).join("\n");
+    syncStartupStyle();
     updatePopoutWindows();
     themeChangeListeners.forEach(listener => listener());
 }

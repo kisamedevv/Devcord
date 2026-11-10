@@ -29,6 +29,7 @@ import { release } from "os";
 import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
+import { RendererSettings } from "./settings";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
 import { ALLOWED_PROTOCOLS, QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
@@ -91,6 +92,34 @@ ipcMain.handle(IpcEvents.SET_QUICK_CSS, (_, css) =>
 
 ipcMain.handle(IpcEvents.GET_THEMES_LIST, () => listThemes());
 ipcMain.handle(IpcEvents.GET_THEME_DATA, (_, fileName) => getThemeData(fileName));
+
+/**
+ * Birleştirilmiş tema + quickcss. Preload, Discord'un ilk boyasından önce
+ * bunu senkron olarak isteyip sayfaya enjekte eder; böylece tema açılıştan
+ * itibaren devrede olur, beyaz/siyah flaş olmaz.
+ */
+ipcMain.on(IpcEvents.GET_STARTUP_CSS, e => {
+    try {
+        const { enabledThemes = [] } = RendererSettings.store;
+        const parts: string[] = [];
+
+        for (const fileName of enabledThemes) {
+            const safePath = ensureSafePath(THEMES_DIR, fileName);
+            if (!safePath) continue;
+
+            const css = readFileSync(safePath, "utf-8");
+            if (css) parts.push(css);
+        }
+
+        const quickCss = readFileSync(QUICK_CSS_PATH, "utf-8");
+        if (quickCss) parts.push(quickCss);
+
+        e.returnValue = parts.join("\n");
+    } catch (err) {
+        console.error("[Endcord] Failed to build startup CSS", err);
+        e.returnValue = "";
+    }
+});
 ipcMain.handle(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
     let accentColor = systemPreferences.getAccentColor?.() ?? "";
 

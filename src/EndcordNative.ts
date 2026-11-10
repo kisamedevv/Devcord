@@ -41,6 +41,8 @@ export default {
         getThemesList: () => invoke<Array<UserThemeHeader>>(IpcEvents.GET_THEMES_LIST),
         getThemeData: (fileName: string) => invoke<string | undefined>(IpcEvents.GET_THEME_DATA, fileName),
         getSystemValues: () => invoke<Record<string, string>>(IpcEvents.GET_THEME_SYSTEM_VALUES),
+        /** Tema + quickcss'in birleşik hali; açılışta ilk boyadan önce basılır. */
+        getStartupCss: () => sendSync<string>(IpcEvents.GET_STARTUP_CSS),
 
         openFolder: () => invoke<void>(IpcEvents.OPEN_THEMES_FOLDER),
     },

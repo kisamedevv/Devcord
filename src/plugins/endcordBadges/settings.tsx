@@ -14,7 +14,7 @@ import { classNameFactory } from "@utils/css";
 import { copyWithToast } from "@utils/discord";
 import { Margins } from "@utils/margins";
 import { OptionType } from "@utils/types";
-import { showToast, TextInput, UserStore, useState } from "@webpack/common";
+import { showToast, TextInput, useMemo, UserStore, useState } from "@webpack/common";
 
 import { BADGE_COLORS, BADGE_ICONS, BADGE_IMAGE_ICONS, buildIconSrc, isImageIcon, isImageSource } from "./icons";
 import { BadgeEntry, badgesForUser, cloneBadges, createBadge, createStarterBadges, normalizeBadges, parseUserIds } from "./store";
@@ -70,7 +70,15 @@ function BadgeEditor({ badge, onChange, onDelete }: {
 }) {
     // Keep the raw text around so commas & spaces survive typing
     const [userInput, setUserInput] = useState(badge.userIds.join(", "));
+    const [userQuery, setUserQuery] = useState("");
     const me = UserStore.getCurrentUser();
+
+    const userResults = useMemo(() => {
+        const query = userQuery.trim().toLowerCase();
+        if (!query) return [];
+
+        return UserStore.filter(user => user.username.toLowerCase().includes(query)).slice(0, 8);
+    }, [userQuery]);
 
     function updateUserIds(value: string) {
         setUserInput(value);
@@ -195,6 +203,36 @@ function BadgeEditor({ badge, onChange, onDelete }: {
                         </Button>
                     )}
                 </Flex>
+            </div>
+
+            <div className={cl("field")}>
+                <Span weight="medium" size="md">Kullanıcı ara (ad veya etiket)</Span>
+                <TextInput
+                    placeholder="kullanici_adi veya ad#1234"
+                    value={userQuery}
+                    onChange={value => setUserQuery(value)}
+                />
+                {userQuery.trim().length > 0 && (
+                    <div className={cl("user-results")}>
+                        {userResults.length === 0
+                            ? <Span size="sm" className={cl("muted")}>Eşleşen kullanıcı yok.</Span>
+                            : userResults.map(user => (
+                                <Button
+                                    key={user.id}
+                                    size="small"
+                                    variant="secondary"
+                                    onClick={() => {
+                                        if (!badge.userIds.includes(user.id)) {
+                                            onChange({ userIds: [...badge.userIds, user.id] });
+                                        }
+                                        setUserQuery("");
+                                    }}
+                                >
+                                    {user.username}
+                                </Button>
+                            ))}
+                    </div>
+                )}
             </div>
 
             <Flex gap={8} className={Margins.top8}>

@@ -92,8 +92,16 @@ function findInstalls() {
 
         const latest = versions.reduce((prev, curr) => (isNewer(curr, prev) ? curr : prev));
         const resources = join(base, latest, "resources");
+        const appAsar = join(resources, "app.asar");
+        const backup = join(resources, "_app.asar");
 
-        if (!existsSync(join(resources, "app.asar"))) continue;
+        // Yarım kalmış kurulum: asar silinmiş ama yedek duruyor → geri al
+        if (!existsSync(appAsar) && existsSync(backup)) {
+            cpSync(backup, appAsar);
+            console.log(`[Endcord] ${channel}: app.asar yedekten geri alındı`);
+        }
+
+        if (!existsSync(appAsar)) continue;
 
         found.push({ channel, version: latest, resources });
     }
@@ -124,32 +132,37 @@ function stageInjection() {
     return STAGING;
 }
 
-/** Discord çalışıyorsa app.asar kilitli olur; pencereyi kapatıp bekliyoruz. */
+/** Discord çalışıyorsa app.asar kilitli olur; tüm süreçleri kapatıp bekliyoruz. */
 function closeDiscord() {
     if (process.platform !== "win32") return;
 
-    let running = false;
+    let pids = [];
     try {
-        const output = execFileSync("tasklist", ["/FI", "IMAGENAME eq Discord.exe", "/NH"], { encoding: "utf-8" });
-        running = output.includes("Discord.exe");
+        const output = execFileSync("tasklist", ["/FI", "IMAGENAME eq Discord.exe", "/NH", "/FO", "CSV"], { encoding: "utf-8" });
+        pids = output
+            .split("\n")
+            .map(line => line.split(",")[1]?.replace(/"/g, "").trim())
+            .filter(pid => pid && /^\d+$/.test(pid));
     } catch {
         return;
     }
 
-    if (!running) return;
+    if (pids.length === 0) return;
 
-    log("Discord çalışıyor, kapatılıyor...");
-    try {
-        execFileSync("taskkill", ["/IM", "Discord.exe", "/F"], { stdio: "ignore" });
-    } catch {
-        // zaten kapanmış olabilir
+    log(`Discord çalışıyor (${pids.length} süreç), kapatılıyor...`);
+    for (const pid of pids) {
+        try {
+            execFileSync("taskkill", ["/PID", pid, "/F"], { stdio: "ignore" });
+        } catch {
+            // süreç zaten kapanmış olabilir
+        }
     }
 
     // dosya kilidi bırakılana kadar bekle
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
         let stillRunning = false;
         try {
-            const output = execFileSync("tasklist", ["/FI", "IMAGENAME eq Discord.exe", "/NH"], { encoding: "utf-8" });
+            const output = execFileSync("tasklist", ["/FI", "IMAGENAME eq Discord.exe", "/NH", "/FO", "CSV"], { encoding: "utf-8" });
             stillRunning = output.includes("Discord.exe");
         } catch {
             stillRunning = false;
@@ -160,6 +173,24 @@ function closeDiscord() {
         execFileSync(process.execPath, ["-e", "setTimeout(() => {}, 500)"]);
     }
 }
+
+/**
+ * Kilitli dosyayı değiştirmek için birkaç kez dener.
+ * Hedef önce silinmez: kopya üzerine yazılır, böylece bir hata olursa
+ * Discord'un asar'ı yerinde kalır (yarım kurulum bırakmaz).
+ */
+function replaceFile(source, target) {
+    for (let attempt = 0; attempt < 10; attempt++) {
+        try {
+            cpSync(source, target, { force: true });
+            return;
+        } catch (err) {
+            if (attempt === 9) throw err;
+            execFileSync(process.execPath, ["-e", "setTimeout(() => {}, 500)"]);
+        }
+    }
+}
+
 
 async function install(installInfo) {
     const { channel, version, resources } = installInfo;
@@ -187,8 +218,7 @@ async function install(installInfo) {
         log("eski klasör yöntemi temizlendi");
     }
 
-    rmSync(target, { force: true });
-    cpSync(staged, target);
+    replaceFile(staged, target);
     rmSync(staged, { force: true });
     rmSync(STAGING, { recursive: true, force: true });
 

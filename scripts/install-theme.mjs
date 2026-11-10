@@ -90,8 +90,13 @@ for (const plugin of PLUGINS_ON_BY_DEFAULT) {
 }
 
 // ---- Windows 11 cam efekti ----
-// Discord penceresinin arkasına sistem bulanıklığı koyar; tema panelleri yarı saydam.
-if (process.platform === "win32" && (settings.windowsMaterial === undefined || settings.windowsMaterial === "none")) {
+// transparent: Discord'un kendi penceresi saydam olur, temadaki yarı saydam
+// panellerin arkasından masaüstü/akrilik görünür.
+// windowsMaterial: Win11 akrilik bulanıklığı.
+// Discord ayarları açılışta varsayılanları yazdığı için "tanımsızsa" kontrolü
+// işe yaramıyor; olması istenen değerler doğrudan yazılıyor.
+if (process.platform === "win32") {
+    settings.transparent = true;
     settings.windowsMaterial = "acrylic";
 }
 
