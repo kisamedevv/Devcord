@@ -67,7 +67,9 @@ if (themeFiles.length === 0) log("tema dosyası bulunamadı, atlandı");
 let settings = {};
 if (existsSync(SETTINGS_FILE)) {
     try {
-        settings = JSON.parse(readFileSync(SETTINGS_FILE, "utf-8"));
+        // Windows PowerShell'in yazdığı BOM JSON.parse'ı bozuyor
+        const raw = readFileSync(SETTINGS_FILE, "utf-8").replace(/^\uFEFF/, "");
+        settings = JSON.parse(raw);
     } catch (err) {
         throw new Error(`settings.json okunamadı: ${err.message}`);
     }
@@ -98,6 +100,22 @@ for (const plugin of PLUGINS_ON_BY_DEFAULT) {
 if (process.platform === "win32") {
     settings.transparent = true;
     settings.windowsMaterial = "acrylic";
+}
+
+// ---- Eklenti varsayilanlari ----
+// Ayarlar dosyasinda eski degerler kalabiliyor (orn. onceki kurulumda
+// blurRadius 0 yazilmistti). Istenen degerleri burada geri yaziyoruz.
+settings.plugins ??= {};
+
+if (settings.plugins.EndcordGlass) {
+    settings.plugins.EndcordGlass.blurRadius = 18;
+    settings.plugins.EndcordGlass.transitions = true;
+    settings.plugins.EndcordGlass.transitionDuration = 220;
+}
+
+if (settings.plugins.EndcordEyeCare) {
+    // Bulaniklik EndcordGlass'a ait; EyeCare onu kapatmasin
+    settings.plugins.EndcordEyeCare.dropBlur = false;
 }
 
 writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 4) + "\n");

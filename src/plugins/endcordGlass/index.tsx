@@ -87,6 +87,9 @@ ${BLUR_TARGETS} {
     }
 
     if (transitions && duration > 0) {
+        // EndcordEyeCare tum animasyonlari susturuyor; bu yumusak gecis
+        // ayakta kalsin diye sureyi daha yuksek ozgullukle ve !important ile
+        // geri veriyoruz (important kurallarinda ozgulluk belirleyici).
         parts.push(`
 @keyframes endcord-soft-fade {
     from {
@@ -101,6 +104,10 @@ ${BLUR_TARGETS} {
 
 ${FADE_TARGETS} {
     animation: endcord-soft-fade ${duration}ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+html:root ${FADE_TARGETS} {
+    animation-duration: ${duration}ms !important;
 }`);
     }
 
@@ -109,7 +116,7 @@ ${FADE_TARGETS} {
 
 export default definePlugin({
     name: "EndcordGlass",
-    description: "Ekranlar arasında yumuşak geçiş; istersen cam bulanıklığı da açılır (varsayılan kapalı).",
+    description: "Ekranlar arasında yumuşak geçiş ve cam bulanıklığı — kaydırıcılardan ayarlanır.",
     tags: ["Appearance", "Customisation"],
     authors: [Devs.Endcord],
     settings,

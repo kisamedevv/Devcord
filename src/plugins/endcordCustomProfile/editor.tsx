@@ -12,7 +12,7 @@ import { Span } from "@components/Span";
 import { BADGE_IMAGE_ICONS, buildIconSrc } from "@plugins/endcordBadges/icons";
 import { classNameFactory } from "@utils/css";
 import { Margins } from "@utils/margins";
-import { showToast, TextInput, useState } from "@webpack/common";
+import { showToast, TextInput, UserStore, useState } from "@webpack/common";
 
 import { FakeProfile, shareProfile } from "./profile";
 import { settings } from "./settings";
@@ -24,10 +24,20 @@ const cl = classNameFactory("vc-ecp-");
  * Hem ayarlar sekmesinde hem sağ üstteki logodan açılan panelde kullanılır.
  */
 export function FakeProfileEditor() {
-    const [name, setName] = useState(settings.store.fakeName ?? "");
+    const [username, setUsername] = useState(settings.store.fakeUsername ?? "");
+    const [displayName, setDisplayName] = useState(settings.store.fakeDisplayName ?? "");
     const [date, setDate] = useState(settings.store.fakeCreatedAt ?? "");
     const [badges, setBadges] = useState<string[]>(settings.store.fakeBadges ?? []);
+    const [target, setTarget] = useState(settings.store.targetUserId ?? "");
     const [busy, setBusy] = useState(false);
+
+    const me = UserStore.getCurrentUser();
+    const targetId = target.trim() || me?.id || "";
+
+    // Arkadaşlar: kullanıcı ID'si girmek zorunda kalmayalım
+    const friends = Object.values(UserStore.getUsers())
+        .filter(user => user.id !== me?.id && !user.bot)
+        .slice(0, 12);
 
     function toggleBadge(id: string) {
         const next = badges.includes(id) ? badges.filter(entry => entry !== id) : [...badges, id];
@@ -35,9 +45,14 @@ export function FakeProfileEditor() {
         settings.store.fakeBadges = next;
     }
 
-    function commitName(value: string) {
-        setName(value);
-        settings.store.fakeName = value;
+    function commitUsername(value: string) {
+        setUsername(value);
+        settings.store.fakeUsername = value;
+    }
+
+    function commitDisplayName(value: string) {
+        setDisplayName(value);
+        settings.store.fakeDisplayName = value;
     }
 
     function commitDate(value: string) {
@@ -45,11 +60,17 @@ export function FakeProfileEditor() {
         settings.store.fakeCreatedAt = value;
     }
 
+    function commitTarget(value: string) {
+        setTarget(value);
+        settings.store.targetUserId = value;
+    }
+
     async function share() {
         setBusy(true);
         try {
             const profile: FakeProfile = {
-                name: name.trim(),
+                username: username.trim(),
+                name: displayName.trim(),
                 badges,
                 createdAt: date.trim() || null
             };
@@ -58,32 +79,90 @@ export function FakeProfileEditor() {
             settings.store.shareProfile = true;
             showToast({ text: "Fake profil paylaşıldı — sadece Endcord kullananlar görecek", variant: "success" });
         } catch (err) {
-            showToast({ text: `Paylaşma başarısız: ${String(err)}`, variant: "critical" });
+            const message = err instanceof Error ? err.message : String(err);
+            showToast({ text: `Paylaşma başarısız: ${message}`, variant: "critical" });
         } finally {
             setBusy(false);
         }
     }
+
+    function reset() {
+        setUsername("");
+        setDisplayName("");
+        setDate("");
+        setBadges([]);
+
+        settings.store.fakeUsername = "";
+        settings.store.fakeDisplayName = "";
+        settings.store.fakeCreatedAt = "";
+        settings.store.fakeBadges = [];
+        settings.store.shareProfile = false;
+
+        showToast({ text: "Fake profili sıfırlandı — gerçek kimliğin geri geldi", variant: "success" });
+    }
+
+    const targetUser = targetId ? UserStore.getUser(targetId) : null;
 
     return (
         <Flex flexDirection="column" gap={14} className={cl("root")}>
             <div>
                 <Heading size="md" className={Margins.bottom8}>Fake Profil</Heading>
                 <Paragraph>
-                    Sahte isim, sahte rozetler ve sahte hesap oluşturma tarihi. Veri profil
-                    açıklamana görünmez karakterlerle gömülür — normal Discord istemcisi açıklamayı
-                    boş görür, yalnızca Endcord kullananlar çözüp fake profili görür.
+                    Seçtiğin kullanıcıya sahte isim, sahte rozetler ve sahte oluşturma tarihi
+                    uygulanır. Değişiklikler sadece <b>bu istemcide</b> görünür — gerçek Discord
+                    verisine dokunulmaz. Paylaş butonu, veriyi profil açıklamana görünmez kodla
+                    yazar; onu da yalnızca Endcord kullananlar çözebilir.
                 </Paragraph>
             </div>
 
             <div className={cl("field")}>
-                <Span weight="medium" size="md">Sahte isim</Span>
+                <Span weight="medium" size="md">Kime uygulansın</Span>
                 <TextInput
-                    placeholder="Endcord Legend"
-                    value={name}
-                    onChange={commitName}
+                    placeholder="Kullanıcı ID (boş = kendin)"
+                    value={target}
+                    onChange={commitTarget}
                 />
                 <Paragraph size="sm" className={cl("muted")}>
-                    Kendi profilinde görünen isim bu olur. Boş bırakırsan gerçek ismin kalır.
+                    Hedef: {targetUser ? `${targetUser.username} (${targetUser.id})` : targetId || "kendi hesabın"}
+                </Paragraph>
+                {friends.length > 0 && (
+                    <Flex gap={6} className={Margins.top8} style={{ flexWrap: "wrap" }}>
+                        {friends.map(user => (
+                            <Button
+                                key={user.id}
+                                size="small"
+                                variant={targetId === user.id ? "primary" : "secondary"}
+                                onClick={() => commitTarget(user.id)}
+                            >
+                                {user.username}
+                            </Button>
+                        ))}
+                    </Flex>
+                )}
+            </div>
+
+            <div className={cl("field")}>
+                <Span weight="medium" size="md">Sahte kullanıcı adı</Span>
+                <TextInput
+                    placeholder="ihaneteder_fake"
+                    value={username}
+                    onChange={commitUsername}
+                />
+                <Paragraph size="sm" className={cl("muted")}>
+                    Profil açılırındaki "@..." satırı ve üye listesindeki etiket buna çevrilir.
+                    Görünen ismin değişmez.
+                </Paragraph>
+            </div>
+
+            <div className={cl("field")}>
+                <Span weight="medium" size="md">Sahte görünen isim</Span>
+                <TextInput
+                    placeholder="haram geceler"
+                    value={displayName}
+                    onChange={commitDisplayName}
+                />
+                <Paragraph size="sm" className={cl("muted")}>
+                    Boş bırakırsan gerçek görünen ismin kalır — sadece kullanıcı adı fake olur.
                 </Paragraph>
             </div>
 
@@ -95,7 +174,8 @@ export function FakeProfileEditor() {
                     onChange={commitDate}
                 />
                 <Paragraph size="sm" className={cl("muted")}>
-                    Sağ tık menüsündeki hesap yaşı bilgisi de bu tarihi kullanır.
+                    Profil açılırındaki "Şu Tarihten Beri Üye" satırı ve sağ tık menüsündeki
+                    hesap yaşı bu tarihi kullanır.
                 </Paragraph>
             </div>
 
@@ -133,7 +213,8 @@ export function FakeProfileEditor() {
                         height={32}
                     />
                     <Flex flexDirection="column" gap={2}>
-                        <Span weight="semibold" size="md">{name.trim() || "Gerçek ismin"}</Span>
+                        <Span weight="semibold" size="md">{displayName.trim() || targetUser?.globalName || "Gerçek isim"}</Span>
+                        <Span size="sm" className={cl("muted")}>@{username.trim() || targetUser?.username || "gercek_kullanici"}</Span>
                         <Flex gap={4}>
                             {badges.map(id => (
                                 <img key={id} src={buildIconSrc(id, "#a970ff")} alt="" width={18} height={18} />
@@ -151,6 +232,9 @@ export function FakeProfileEditor() {
             <Flex gap={8}>
                 <Button onClick={share} disabled={busy}>
                     {busy ? "Paylaşılıyor…" : "Fake profili paylaş"}
+                </Button>
+                <Button variant="dangerSecondary" onClick={reset}>
+                    Sıfırla
                 </Button>
             </Flex>
         </Flex>

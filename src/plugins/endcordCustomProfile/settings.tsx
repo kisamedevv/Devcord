@@ -10,9 +10,19 @@ import { OptionType } from "@utils/types";
 import { FakeProfileEditor } from "./editor";
 
 export const settings = definePluginSettings({
-    fakeName: {
+    targetUserId: {
         type: OptionType.STRING,
-        description: "Sahte görünen isim (boş bırakılırsa gerçek isim kalır)",
+        description: "Fake profil kime uygulansın — kullanıcı ID (boş bırakılırsa kendi hesabın)",
+        default: ""
+    },
+    fakeUsername: {
+        type: OptionType.STRING,
+        description: "Sahte kullanıcı adı (@xxx) — görünen isim ayrı tutulur",
+        default: ""
+    },
+    fakeDisplayName: {
+        type: OptionType.STRING,
+        description: "Sahte görünen isim (display name) — boş bırakılırsa gerçek isim kalır",
         default: ""
     },
     fakeBadges: {

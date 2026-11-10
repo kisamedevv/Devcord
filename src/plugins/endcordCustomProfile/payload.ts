@@ -53,7 +53,9 @@ const BASE = BigInt(SYMBOLS.length);
 
 /** Profil verisini başlık imzasıyla birlikte bayta çevirir. */
 export interface FakeProfile {
-    /** Sahte görünen isim */
+    /** Sahte @kullanıcı adı — profil açılırındaki "@..." satırı */
+    username: string;
+    /** Sahte görünen isim (display name) */
     name: string;
     /** Rozet kimlikleri (endcordBadges ikon id'leri) */
     badges: string[];
@@ -62,6 +64,9 @@ export interface FakeProfile {
 }
 
 const MAGIC = "ec1";
+
+/** Alan ayiraci (kontrol karakteri) — kullanici adinda olamaz. */
+const SEP = "\u0001";
 
 function toBytes(text: string): number[] {
     return Array.from(new TextEncoder().encode(text));
@@ -109,13 +114,17 @@ export function decodeBytes(text: string): number[] | null {
 }
 
 export function encodeProfile(profile: FakeProfile): string {
-    const payload = JSON.stringify({
-        n: profile.name,
-        b: profile.badges,
-        d: profile.createdAt
-    });
+    // Kompakt biçim: v2|kullanıcı adı|rozetler|tarih|görünen isim
+    // JSON'dan çok daha kısa — bio ve custom status alanlarına sığsın diye.
+    const parts = [
+        "v2",
+        profile.username,
+        (profile.badges ?? []).join(","),
+        profile.createdAt ?? "",
+        profile.name ?? ""
+    ];
 
-    return encodeBytes(toBytes(`${MAGIC}:${payload}`));
+    return encodeBytes(toBytes(parts.join(SEP)));
 }
 
 /** Bio içindeki görünmez veriyi çözer; Endcord verisi yoksa null. */
@@ -132,18 +141,33 @@ export function decodeProfile(text: string | undefined | null): FakeProfile | nu
         return null;
     }
 
-    if (!decoded.startsWith(`${MAGIC}:`)) return null;
+    // Eski (JSON) biçim
+    if (decoded.startsWith(`${MAGIC}:`)) {
+        try {
+            const parsed = JSON.parse(decoded.slice(MAGIC.length + 1));
+            if (!parsed || typeof parsed !== "object") return null;
 
-    try {
-        const parsed = JSON.parse(decoded.slice(MAGIC.length + 1));
-        if (!parsed || typeof parsed.n !== "string") return null;
-
-        return {
-            name: parsed.n,
-            badges: Array.isArray(parsed.b) ? parsed.b.filter((id: unknown): id is string => typeof id === "string") : [],
-            createdAt: typeof parsed.d === "string" ? parsed.d : null
-        };
-    } catch {
-        return null;
+            return {
+                username: typeof parsed.u === "string" ? parsed.u : "",
+                name: typeof parsed.n === "string" ? parsed.n : "",
+                badges: Array.isArray(parsed.b) ? parsed.b.filter((id: unknown): id is string => typeof id === "string") : [],
+                createdAt: typeof parsed.d === "string" ? parsed.d : null
+            };
+        } catch {
+            return null;
+        }
     }
+
+    // Kompakt biçim
+    const parts = decoded.split(SEP);
+    if (parts[0] !== "v2") return null;
+
+    const [, username, badges, createdAt, name] = parts;
+
+    return {
+        username: username ?? "",
+        name: name ?? "",
+        badges: badges ? badges.split(",").filter(Boolean) : [],
+        createdAt: createdAt || null
+    };
 }
