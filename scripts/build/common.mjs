@@ -242,14 +242,21 @@ export const gitRemotePlugin = {
         build.onLoad({ filter, namespace: "git-remote" }, async () => {
             let remote = process.env.ENDCORD_REMOTE;
             if (!remote) {
-                const res = await promisify(exec)("git remote get-url origin", { encoding: "utf-8" });
-                remote = res.stdout.trim()
-                    .replace("https://github.com/", "")
-                    .replace("git@github.com:", "")
-                    .replace(/.git$/, "");
+                // A checkout without an origin remote (local fork, CI export, fresh git init)
+                // would otherwise abort the whole build. The updater only needs a repo slug,
+                // so fall back to the project's own GitHub path instead of failing.
+                try {
+                    const res = await promisify(exec)("git remote get-url origin", { encoding: "utf-8" });
+                    remote = res.stdout.trim()
+                        .replace("https://github.com/", "")
+                        .replace("git@github.com:", "")
+                        .replace(/.git$/, "");
+                } catch {
+                    remote = "Endcord/Endcord";
+                }
             }
 
-            return { contents: `export default "${remote}"` };
+            return { contents: `export default ${JSON.stringify(remote)}` };
         });
     }
 };
