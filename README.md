@@ -87,6 +87,15 @@ snowflake ID), plus how old it is. Click it to copy the ISO timestamp.
 Right-click any user and copy their ID, their `@mention` or their account creation date in one
 click.
 
+### EndcordGlass — blur and soft screen transitions
+
+Blur over the desktop behind Discord's surfaces, and a soft fade on every screen change:
+
+* backdrop blur on the chat area, member list, server list and page surfaces, with
+  saturation/brightness control over what shows through
+* every view (channel switch, guild pages, modals, popouts) fades in softly instead of popping
+* duration, blur radius, saturation and brightness are all sliders
+
 ### EndcordAppearance — live glass tuning
 
 Sliders for panel opacity and backdrop blur plus a hex field for the accent colour. The theme
@@ -130,6 +139,24 @@ repository as untrusted, so every plugin here was written from scratch against E
 plugin APIs. That is why there is no remote plugin loader in this build — loading arbitrary code
 from an untrusted repository is exactly the attack surface worth avoiding.
 
+**Every plugin Kernixcord ships is already in Endcord.** Kernixcord is a Vencord fork: its plugin
+list is Vencord's list, and Endcord bundles all of it. The only Kernixcord-exclusive piece is
+`kernixcordRemoteLoader`, which fetches a manifest from GitHub and injects the URLs it returns as
+`<script>` tags — i.e. it executes whatever the network hands it, at runtime, in the renderer. That
+specific mechanism is not going into this build.
+
+The convenience it offered is available here in a shape you can inspect: drop a plugin folder in
+and it gets compiled into the build, from disk, with nothing fetched at runtime.
+
+```bash
+node scripts/add-plugin.mjs <eklenti-klasörü> [--rebuild]
+node scripts/add-plugin.mjs --list
+node scripts/add-plugin.mjs --remove <ad>
+```
+
+Plugins land in `src/userplugins/` (a first-class folder the build already globs), so you can read
+every line that is about to run before you build.
+
 ## Structure
 
 ```
@@ -140,15 +167,18 @@ src/
   plugins/        every bundled plugin
   plugins/endcordBadges/   icons.tsx · store.ts · settings.tsx · picker.tsx · index.tsx · styles.css
   plugins/endcordAppearance/
+  plugins/endcordGlass/
   plugins/endcordQuickCopy/
   plugins/endcordTitle/
   plugins/oneko/
   plugins/accountAge/
+  userplugins/      drop-in plugins compiled into the build (see scripts/add-plugin.mjs)
   webpack/        module finder + patcher
 packages/         @endcord/discord-types, @endcord/types
 scripts/          build pipeline + installer
   install-desktop.mjs   Discord injector (asar swap, original kept as _app.asar)
   install-theme.mjs     themes + default plugin enablement
+  add-plugin.mjs        install a plugin folder into src/userplugins
   generateBadgeIcons.mjs  PNG rozetleri data URI tablosuna çevirir
 themes/           bundled themes (Endcord Soft)
 assets/           bundled badge PNGs (github.com/merlinfuchs/discord-badges)

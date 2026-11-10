@@ -20,7 +20,7 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(SCRIPT_DIR, "..");
 const THEME_SOURCE = join(ROOT, "themes");
 
-const PLUGINS_ON_BY_DEFAULT = ["EndcordBadges", "EndcordTitle"];
+const PLUGINS_ON_BY_DEFAULT = ["EndcordBadges", "EndcordTitle", "EndcordAppearance", "EndcordGlass"];
 
 function log(message) {
     console.log(`[Endcord] ${message}`);
