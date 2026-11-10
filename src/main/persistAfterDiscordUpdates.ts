@@ -35,6 +35,11 @@ function isNewer($new: string, old: string) {
 function patchLatest() {
     if (process.env.DISABLE_UPDATER_AUTO_PATCHING) return;
 
+    // Folder-based installs (resources/app) leave Discord's own app.asar untouched.
+    // Copying an old asar over the freshly updated one would downgrade the client,
+    // so there is nothing to replay — only asar-replacement installs need this.
+    if (require.main && !require.main.path.endsWith("app.asar")) return;
+
     try {
         const currentAppPath = dirname(process.execPath);
         const currentVersion = basename(currentAppPath);

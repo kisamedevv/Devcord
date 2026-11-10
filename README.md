@@ -10,12 +10,30 @@ User plugins  : <data dir>/userplugins
 Build output  : dist/
 ```
 
+## Install (Windows, one click)
+
+Double-click `inject.bat`. It checks dependencies, builds, injects into every installed Discord
+channel it finds, copies the bundled theme into `%appdata%/Endcord/themes` and enables it.
+
+```
+inject.bat            full: deps + build + inject + theme
+inject.bat quick      inject + theme only (no rebuild)
+inject.bat uninstall  remove the injection
+```
+
+Then restart Discord. The window title reads **Endcord**, the theme is **Endcord Soft**.
+
+Injection is a folder (`resources/app`) — Electron loads it before `app.asar`, so Discord's own
+`app.asar` is never modified and a Discord update cannot corrupt the install. Either way, re-run
+`inject.bat` after a Discord update to point the loader at the new `app-x.y.z` folder.
+
 ## Install (from source)
 
 ```bash
 corepack pnpm install
-corepack pnpm build          # build + inject into your Discord install
-corepack pnpm build --standalone   # build only, no injection
+corepack pnpm build --standalone   # build only
+node scripts/install-desktop.mjs --install    # inject (add --all for PTB/Canary too)
+node scripts/install-theme.mjs                # theme + default plugins
 ```
 
 After injecting, start Discord. Settings → Endcord Settings to configure plugins.
@@ -57,6 +75,26 @@ are configurable. Pure DOM/CSS, no patches.
 Adds an entry to the user context menu showing when an account was created (decoded from the
 snowflake ID), plus how old it is. Click it to copy the ISO timestamp.
 
+### EndcordTitle — window and tab name
+
+Keeps Discord's window title (taskbar, alt-tab, browser tab) as **Endcord** instead of "Discord".
+The unread counter is preserved — `(3) Endcord`. Text and counter are both configurable.
+
+## Endcord Soft theme
+
+`themes/endcord-soft.theme.css` — a quiet blue-black theme built for Windows 11:
+
+* soft blue-black canvas (`#080b12` → `#0d1422`), no pure black, no pure white text
+* translucent panels with a light backdrop blur, hairline borders instead of heavy outlines
+* single muted accent (`#6c8cff`) instead of Discord's saturated brand blue
+* low-contrast, eye-friendly text ramp; softer scrollbars and selection colour
+
+It is copied into the themes folder and enabled by `inject.bat` / `scripts/install-theme.mjs`.
+Tweak the `--ecs-*` tokens at the top of the file to shift the tone; nothing else needs editing.
+
+Real window translucency comes from `windowsMaterial: "acrylic"` in the settings file, which the
+installer sets on Windows. Change it any time in Endcord Settings → Windows Material.
+
 ## Notes on Kernixcord
 
 A handful of plugin *ideas* were taken from
@@ -76,11 +114,16 @@ src/
   main/           Electron main process (patcher, CSP, updater, settings)
   plugins/        every bundled plugin
   plugins/endcordBadges/   icons.tsx · store.ts · settings.tsx · index.tsx · styles.css
+  plugins/endcordTitle/
   plugins/oneko/
   plugins/accountAge/
   webpack/        module finder + patcher
 packages/         @endcord/discord-types, @endcord/types
 scripts/          build pipeline + installer
+  install-desktop.mjs   Discord injector (folder method, no asar rewrite)
+  install-theme.mjs     themes + default plugin enablement
+themes/           bundled themes (Endcord Soft)
+inject.bat        Windows one-click install
 ```
 
 ## Adding your own plugin

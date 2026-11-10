@@ -1,0 +1,186 @@
+/**
+ * @name Endcord Soft
+ * @author Endcord
+ * @description Sade, yumuşak mavi-siyah, Windows 11 uyumlu şeffafımsı tema. Göz yormayan düşük kontrast, ince çizgiler, yumuşak mavi vurgu.
+ * @version 1.0.0
+ * @license GPL-3.0-or-later
+ * @source https://github.com/Endcord/Endcord
+ */
+
+/*
+ * Tek dosya, tek amaç: sakin bir arayüz.
+ * Renkler tek bloktan yönetilir; aşağıdaki token'ları değiştirip
+ * tonu kendine göre kaydırabilirsin.
+ */
+
+:root,
+.theme-dark,
+.theme-darker,
+.theme-midnight {
+    /* ---- Endcord Soft token'ları ---- */
+    --ecs-canvas: #080b12;
+    --ecs-canvas-mid: #0b1220;
+    --ecs-canvas-soft: #0d1422;
+
+    --ecs-surface: rgba(13, 18, 29, 0.78);
+    --ecs-surface-raised: rgba(18, 25, 39, 0.82);
+    --ecs-surface-sunken: rgba(9, 13, 21, 0.86);
+    --ecs-surface-overlay: rgba(16, 22, 35, 0.92);
+
+    --ecs-line: rgba(255, 255, 255, 0.06);
+    --ecs-line-strong: rgba(255, 255, 255, 0.1);
+
+    --ecs-text: #ccd4e3;
+    --ecs-text-muted: #8b96a9;
+    --ecs-text-bright: #e7ecf6;
+
+    --ecs-accent: #6c8cff;
+    --ecs-accent-soft: rgba(108, 140, 255, 0.16);
+    --ecs-accent-strong: #7f9bff;
+
+    --ecs-radius: 10px;
+    --ecs-blur: 16px;
+
+    /* ---- Discord arka planları ---- */
+    --background-primary: var(--ecs-surface);
+    --background-primary-alt: var(--ecs-surface-sunken);
+    --background-secondary: var(--ecs-surface-sunken);
+    --background-secondary-alt: var(--ecs-surface-sunken);
+    --background-tertiary: var(--ecs-canvas);
+    --background-accent: var(--ecs-accent);
+    --background-floating: var(--ecs-surface-overlay);
+    --background-nested-floating: var(--ecs-surface-raised);
+    --background-attachment: var(--ecs-canvas);
+
+    /* Yeni tasarım token'ları (2024+ istemciler) */
+    --bg-base-primary: var(--ecs-surface);
+    --bg-base-secondary: var(--ecs-surface-sunken);
+    --bg-base-tertiary: var(--ecs-canvas);
+    --bg-base-lowest: var(--ecs-canvas);
+    --bg-surface-overlay: var(--ecs-surface-overlay);
+    --bg-surface-raised: var(--ecs-surface-raised);
+    --bg-overlay-1: var(--ecs-surface);
+    --bg-overlay-2: var(--ecs-surface-raised);
+    --bg-overlay-3: var(--ecs-surface-overlay);
+    --bg-overlay-chat: var(--ecs-surface);
+
+    /* ---- Modifier / hâl katmanları ---- */
+    --background-modifier-hover: rgba(255, 255, 255, 0.035);
+    --background-modifier-active: rgba(255, 255, 255, 0.055);
+    --background-modifier-selected: rgba(255, 255, 255, 0.075);
+    --background-modifier-accent: var(--ecs-line);
+    --background-modifier-border: var(--ecs-line);
+    --background-modifier-border-hover: var(--ecs-line-strong);
+    --background-modifier-border-focus: var(--ecs-accent-soft);
+    --background-modifier-error: #b4596a;
+    --background-modifier-error-hover: #c26a79;
+
+    --background-mentioned: var(--ecs-accent-soft);
+    --background-mentioned-hover: rgba(108, 140, 255, 0.22);
+    --background-message-hover: rgba(255, 255, 255, 0.022);
+    --background-message-highlight: var(--ecs-accent-soft);
+    --background-message-highlight-hover: rgba(108, 140, 255, 0.22);
+    --background-message-focused: rgba(255, 255, 255, 0.03);
+
+    --bg-mod-subtle: rgba(255, 255, 255, 0.03);
+    --bg-mod-strong: rgba(255, 255, 255, 0.06);
+    --bg-mod-faint: rgba(255, 255, 255, 0.02);
+
+    --channeltextarea-background: var(--ecs-surface-raised);
+    --input-background: rgba(8, 12, 20, 0.66);
+    --activity-card-background: var(--ecs-surface-raised);
+    --modal-background: var(--ecs-surface-overlay);
+    --modal-footer-background: var(--ecs-surface-sunken);
+
+    /* ---- Metin ---- */
+    --text-normal: var(--ecs-text);
+    --text-muted: var(--ecs-text-muted);
+    --text-link: var(--ecs-accent-strong);
+    --text-link-low-saturation: var(--ecs-accent);
+    --text-positive: #7fc6a1;
+    --text-warning: #d8b471;
+    --text-danger: #d98590;
+    --text-brand: var(--ecs-accent);
+    --header-primary: var(--ecs-text-bright);
+    --header-secondary: var(--ecs-text-muted);
+    --channels-default: var(--ecs-text-muted);
+    --channel-icon: var(--ecs-text-muted);
+    --text-default: var(--ecs-text);
+    --text-secondary: var(--ecs-text-muted);
+
+    /* ---- Etkileşim ---- */
+    --interactive-normal: #aab4c6;
+    --interactive-hover: #d3dbea;
+    --interactive-active: var(--ecs-text-bright);
+    --interactive-muted: #59637a;
+    --interactive-selected: var(--ecs-text-bright);
+
+    /* ---- Vurgu (marka) ---- */
+    --brand-experiment: var(--ecs-accent);
+    --brand-experiment-560: var(--ecs-accent);
+    --brand-experiment-600: #5a78e6;
+    --brand-500: var(--ecs-accent);
+    --brand-560: #5a78e6;
+    --brand-600: #5271d8;
+    --control-brand-foreground: var(--ecs-accent);
+
+    /* ---- Kenarlık & kaydırma ---- */
+    --border-subtle: var(--ecs-line);
+    --border-strong: var(--ecs-line-strong);
+    --scrollbar-thin-thumb: rgba(255, 255, 255, 0.09);
+    --scrollbar-thin-track: transparent;
+    --scrollbar-auto-thumb: rgba(255, 255, 255, 0.09);
+    --scrollbar-auto-track: rgba(0, 0, 0, 0.12);
+    --scrollbar-auto-scrollbar-color-thumb: rgba(255, 255, 255, 0.09);
+
+    /* ---- Gölgeler: ağır değil, yumuşak ---- */
+    --elevation-low: 0 1px 0 rgba(0, 0, 0, 0.25);
+    --elevation-medium: 0 6px 18px rgba(0, 0, 0, 0.28);
+    --elevation-high: 0 12px 34px rgba(0, 0, 0, 0.34);
+}
+
+/* Mavi-siyah zemin: paneller yarı saydam olduğu için altta hep bu durur */
+body {
+    background:
+        radial-gradient(1200px 720px at 12% -10%, rgba(76, 108, 214, 0.16), transparent 60%),
+        radial-gradient(900px 620px at 92% 108%, rgba(52, 78, 148, 0.14), transparent 62%),
+        linear-gradient(165deg, var(--ecs-canvas) 0%, var(--ecs-canvas-mid) 48%, var(--ecs-canvas-soft) 100%) !important;
+    background-attachment: fixed !important;
+}
+
+#app-mount {
+    background: transparent !important;
+}
+
+/* Cam hissi: yüzeyler bulanık, kenarlar ince */
+[class*="sidebar__"],
+[class*="chatContent"],
+[class*="membersWrap"],
+[class*="peopleColumn"],
+[class*="container__"],
+[class*="pageWrapper"],
+[class*="contentRegion"] {
+    backdrop-filter: blur(var(--ecs-blur)) saturate(115%);
+}
+
+/* Minimalist dokunuşlar */
+::selection {
+    background: rgba(108, 140, 255, 0.32);
+    color: #f2f6ff;
+}
+
+*:focus-visible {
+    outline: 1px solid var(--ecs-accent);
+    outline-offset: 2px;
+}
+
+/* Discord'un parlak mavi "boost" morlarını yumuşak tona çek */
+[class*="premiumIcon"],
+[class*="nitroIcon"] {
+    filter: saturate(0.72) brightness(0.95);
+}
+
+/* Gereksiz parlaklıkları kıs: avatarlar ve küçük ikonlar göz yormasın */
+[class*="avatar_"] {
+    filter: brightness(0.95) saturate(0.95);
+}
