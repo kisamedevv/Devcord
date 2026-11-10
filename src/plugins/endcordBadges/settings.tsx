@@ -16,7 +16,7 @@ import { Margins } from "@utils/margins";
 import { OptionType } from "@utils/types";
 import { showToast, TextInput, UserStore, useState } from "@webpack/common";
 
-import { BADGE_COLORS, BADGE_ICONS, buildIconSrc, isImageSource } from "./icons";
+import { BADGE_COLORS, BADGE_ICONS, BADGE_IMAGE_ICONS, buildIconSrc, isImageIcon, isImageSource } from "./icons";
 import { BadgeEntry, badgesForUser, cloneBadges, createBadge, createStarterBadges, normalizeBadges, parseUserIds } from "./store";
 
 const cl = classNameFactory("vc-ecb-");
@@ -106,15 +106,15 @@ function BadgeEditor({ badge, onChange, onDelete }: {
             </div>
 
             <div className={cl("field")}>
-                <Span weight="medium" size="md">Icon</Span>
+                <Span weight="medium" size="md">Discord rozetleri</Span>
                 <div className={cl("icon-grid")}>
-                    {BADGE_ICONS.map(icon => (
+                    {BADGE_IMAGE_ICONS.map(icon => (
                         <button
                             key={icon.id}
                             type="button"
                             title={icon.label}
                             aria-label={icon.label}
-                            className={cl("icon-button", { selected: !customIcon && badge.icon === icon.id })}
+                            className={cl("icon-button", { selected: badge.icon === icon.id })}
                             onClick={() => onChange({ icon: icon.id })}
                         >
                             <img src={buildIconSrc(icon.id, badge.color)} alt="" width={26} height={26} />
@@ -124,34 +124,54 @@ function BadgeEditor({ badge, onChange, onDelete }: {
             </div>
 
             <div className={cl("field")}>
-                <Span weight="medium" size="md">Colour</Span>
-                <Flex gap={6} alignItems="center" className={cl("color-row")}>
-                    <input
-                        type="color"
-                        className={cl("color-input")}
-                        value={/^#[0-9a-f]{6}$/i.test(badge.color) ? badge.color : "#a970ff"}
-                        onChange={e => onChange({ color: e.currentTarget.value })}
-                    />
-                    {BADGE_COLORS.map(color => (
+                <Span weight="medium" size="md">Sade ikonlar</Span>
+                <div className={cl("icon-grid")}>
+                    {BADGE_ICONS.filter(icon => !icon.src).map(icon => (
                         <button
-                            key={color}
+                            key={icon.id}
                             type="button"
-                            title={color}
-                            aria-label={color}
-                            className={cl("color-swatch", { selected: badge.color.toLowerCase() === color })}
-                            style={{ background: color }}
-                            onClick={() => onChange({ color })}
-                        />
+                            title={icon.label}
+                            aria-label={icon.label}
+                            className={cl("icon-button", { selected: badge.icon === icon.id })}
+                            onClick={() => onChange({ icon: icon.id })}
+                        >
+                            <img src={buildIconSrc(icon.id, badge.color)} alt="" width={26} height={26} />
+                        </button>
                     ))}
-                </Flex>
+                </div>
             </div>
+
+            {!isImageIcon(badge.icon) && (
+                <div className={cl("field")}>
+                    <Span weight="medium" size="md">Colour</Span>
+                    <Flex gap={6} alignItems="center" className={cl("color-row")}>
+                        <input
+                            type="color"
+                            className={cl("color-input")}
+                            value={/^#[0-9a-f]{6}$/i.test(badge.color) ? badge.color : "#a970ff"}
+                            onChange={e => onChange({ color: e.currentTarget.value })}
+                        />
+                        {BADGE_COLORS.map(color => (
+                            <button
+                                key={color}
+                                type="button"
+                                title={color}
+                                aria-label={color}
+                                className={cl("color-swatch", { selected: badge.color.toLowerCase() === color })}
+                                style={{ background: color }}
+                                onClick={() => onChange({ color })}
+                            />
+                        ))}
+                    </Flex>
+                </div>
+            )}
 
             <div className={cl("field")}>
                 <Span weight="medium" size="md">Custom icon URL</Span>
                 <TextInput
                     placeholder="https://example.com/badge.png — leave empty to use the icon above"
                     value={customIcon ? badge.icon : ""}
-                    onChange={value => onChange({ icon: value.trim() || BADGE_ICONS[1].id })}
+                    onChange={value => onChange({ icon: value.trim() || "crown" })}
                 />
             </div>
 

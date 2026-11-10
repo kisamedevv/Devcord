@@ -47,10 +47,12 @@ Everything upstream Vencord ships, plus three plugins written for this fork:
 Give any user a badge with an icon and colour of your choice. Fully local: badges live in your
 Endcord settings, are rendered client-side on profiles, and never leave your machine.
 
-* 20 built-in icons (crown, star, heart, gem, flame, bolt, leaf, moon, skull, cat, shield,
-  sparkle, ghost, rocket, sword, coffee, music, paw, eye, chef) drawn as inline SVG — no network,
-  no CDN, no CSP holes.
-* Any `https://` or `data:` image URL works as a custom icon too.
+* 22 Discord rozeti (Active Developer, Early Supporter, Nitro, HypeSquad, Bug Hunter, Boosting
+  1/2/3/6/9/12/15/18/24 months, Staff, Certified Moderator, Partnered Server Owner,
+  Early Verified Developer) — PNG olarak gömülür, çalışma anında ağ isteği yok.
+* 20 sade SVG ikon (taç, yıldız, kalp, elmas, alev, şimşek, yaprak, ay, kafatası, kedi,
+  kalkan, parıltı, hayalet, roket, kılıç, kahve, müzik, pati, göz, şef) — renk seçiciyle boyanır.
+* Herhangi bir `https://` veya `data:` görsel URL'i özel ikon olarak da kullanılabilir.
 * Per-badge colour picker plus a preset palette.
 * Assign badges by Discord user ID (comma separated). `*` gives the badge to everyone.
 * Optional display in the member list and next to names in chat.

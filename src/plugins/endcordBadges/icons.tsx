@@ -4,16 +4,29 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { DISCORD_BADGE_IMAGES } from "./badges.generated";
+
 export interface BadgeIconDef {
     id: string;
     label: string;
     /** Inner markup of a 24x24 viewBox. Rendered with the badge colour as fill. */
-    glyph: string;
+    glyph?: string;
+    /** Hazır PNG rozetler için gömülü data URI. Varsa glyph kullanılmaz. */
+    src?: string;
     /** Colour used when the icon is picked for the first time. */
     color: string;
 }
 
+/** Discord'un kendi rozet görselleri (PNG) — renkli, olduğu gibi basılır. */
+export const BADGE_IMAGE_ICONS: BadgeIconDef[] = DISCORD_BADGE_IMAGES.map(image => ({
+    id: image.id,
+    label: image.label,
+    src: image.src,
+    color: "#a970ff"
+}));
+
 export const BADGE_ICONS: BadgeIconDef[] = [
+    ...BADGE_IMAGE_ICONS,
     {
         id: "crown",
         label: "Crown",
@@ -158,18 +171,27 @@ export function isImageSource(icon: string) {
     return /^(?:https?:\/\/|data:image\/)/i.test(icon.trim());
 }
 
+/** Hazır PNG rozetler ve dış URL'ler renk değiştirmez, olduğu gibi basılır. */
+export function isImageIcon(icon: string) {
+    if (isImageSource(icon)) return true;
+
+    return ICON_BY_ID.get(icon)?.src !== undefined;
+}
+
 export function getIconDef(icon: string) {
     return ICON_BY_ID.get(icon);
 }
 
 /**
  * Turns an icon id (or a custom image URL / data URI) into something an <img> can render.
- * Built-in icons are inlined as SVG data URIs so badges work without any network access.
+ * Built-in icons are inlined, so badges work without any network access.
  */
 export function buildIconSrc(icon: string, color: string) {
     if (isImageSource(icon)) return icon.trim();
 
-    const def = getIconDef(icon) ?? BADGE_ICONS[1];
+    const def = getIconDef(icon) ?? BADGE_ICONS[BADGE_IMAGE_ICONS.length];
+    if (def.src) return def.src;
+
     const accent = HEX_COLOR.test(color) ? color : def.color;
 
     const svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"72\" height=\"72\">"

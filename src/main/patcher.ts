@@ -25,6 +25,27 @@ import { IS_VANILLA } from "./utils/constants";
 
 console.log("[Endcord] Starting up...");
 
+/** Pencere ve sekme başlığı; kullanıcı renderer ayarlarından değiştirebilir. */
+function getAppTitle() {
+    const pluginSettings = (RendererSettings.store as any)?.plugins?.EndcordTitle;
+    const custom = pluginSettings?.title;
+
+    return typeof custom === "string" && custom.trim() ? custom.trim() : "Endcord";
+}
+
+/**
+ * Discord başlığı sürekli "Sayfa - Discord" olarak yeniden yazıyor; sekme adının
+ * Endcord kalması için sayfa başlığı olayı iptal edilir ve native başlık kilitlenir.
+ */
+function enforceEndcordTitle(window: electron.BrowserWindow) {
+    const nativeSetTitle = window.setTitle.bind(window);
+
+    window.setTitle = (() => nativeSetTitle(getAppTitle())) as typeof window.setTitle;
+    window.on("page-title-updated", event => event.preventDefault());
+
+    nativeSetTitle(getAppTitle());
+}
+
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
 
@@ -71,6 +92,7 @@ if (!IS_VANILLA) {
         constructor(options: BrowserWindowConstructorOptions) {
             if (!options?.webPreferences?.preload || !options.title) {
                 super(options);
+                enforceEndcordTitle(this);
                 return;
             }
 
@@ -105,6 +127,10 @@ if (!IS_VANILLA) {
             process.env.DISCORD_PRELOAD = original;
 
             super(options);
+
+            // Discord kendi başlığını "Sayfa - Discord" olarak yeniden yazıyor.
+            // Pencere/sekme adının Endcord kalması için başlık kilitleniyor.
+            enforceEndcordTitle(this);
 
             if (disableMinSize) {
                 // Disable the Electron call entirely so that Discord can't dynamically change the size

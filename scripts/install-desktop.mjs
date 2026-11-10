@@ -8,16 +8,18 @@
 /**
  * Discord masaüstü istemcisine Endcord'u yerleştirir (veya kaldırır).
  *
- * Yöntem: Electron `resources/` altında önce `app` klasörüne bakar, sonra
- * `app.asar`'a. Bu yüzden `resources/app/index.js` yazmak yeterli — orijinal
- * `app.asar` dosyasına dokunulmaz, Discord güncellemesi onu bozamaz, kaldırmak
- * için tek klasör silinir.
+ * Yöntem (upstream Vencord ile aynı): Discord'un `resources/app.asar` dosyası
+ * Endcord'un kendi asar'ı ile değiştirilir, orijinal asar `_app.asar` olarak
+ * saklanır. Electron asar'ı çalıştırdığı için orijinal kod da çalışmaya
+ * devam eder; kaldırmak `_app.asar` dosyasını geri almaktır.
  *
  * Kullanım:
- *   node scripts/install-desktop.mjs --install [--all]
+ *   node scripts/install-desktop.mjs --install [--all] [--channel=stable]
  *   node scripts/install-desktop.mjs --uninstall [--all]
  */
 
+import { createPackage } from "@electron/asar";
+import { execFileSync } from "child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -25,6 +27,7 @@ import { fileURLToPath } from "url";
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(SCRIPT_DIR, "..");
 const DIST = join(ROOT, "dist");
+const STAGING = join(DIST, ".inject-staging");
 
 const CHANNELS = {
     stable: "Discord",
@@ -33,16 +36,16 @@ const CHANNELS = {
     development: "DiscordDevelopment"
 };
 
-const BOOTSTRAP_INDEX = `// Endcord injector. Orijinal Discord app.asar bu dosyanın bir üst dizininde durur.
+const BOOTSTRAP_INDEX = `// Endcord injector. Orijinal Discord kodu resources/_app.asar icinde durur.
 require("./patcher.js");
 `;
 
-const BOOTSTRAP_PACKAGE = JSON.stringify({
-    name: "endcord-desktop",
-    productName: "Endcord",
+const BOOTSTRAP_PACKAGE = {
+    name: "discord",
+    productName: "Discord",
     version: "1.0.0",
     main: "index.js"
-}, null, 4) + "\n";
+};
 
 function log(message) {
     console.log(`[Endcord] ${message}`);
@@ -92,50 +95,125 @@ function findInstalls() {
 
         if (!existsSync(join(resources, "app.asar"))) continue;
 
-        found.push({ channel, version: latest, resources, target: join(resources, "app") });
+        found.push({ channel, version: latest, resources });
     }
 
     return found;
 }
 
-function copyDist(target) {
-    mkdirSync(target, { recursive: true });
-
-    for (const entry of readdirSync(DIST)) {
-        // Installer ikili dosyaları uygulama klasörüne girmesin
-        if (entry === "Installer") continue;
-
-        const source = join(DIST, entry);
-        if (statSync(source).isDirectory()) continue;
-
-        cpSync(source, join(target, entry));
-    }
-
-    writeFileSync(join(target, "package.json"), BOOTSTRAP_PACKAGE);
-    writeFileSync(join(target, "index.js"), BOOTSTRAP_INDEX);
-}
-
-function install(installInfo) {
-    const { channel, version, target } = installInfo;
-
+function stageInjection() {
     if (!existsSync(join(DIST, "patcher.js"))) {
         fail("dist/patcher.js yok — önce `corepack pnpm build` çalıştır.");
     }
 
-    copyDist(target);
+    rmSync(STAGING, { recursive: true, force: true });
+    mkdirSync(STAGING, { recursive: true });
+
+    for (const entry of readdirSync(DIST)) {
+        if (entry === "Installer" || entry.startsWith(".inject-staging")) continue;
+
+        const source = join(DIST, entry);
+        if (statSync(source).isDirectory()) continue;
+
+        cpSync(source, join(STAGING, entry));
+    }
+
+    writeFileSync(join(STAGING, "index.js"), BOOTSTRAP_INDEX);
+    writeFileSync(join(STAGING, "package.json"), JSON.stringify(BOOTSTRAP_PACKAGE, null, 4) + "\n");
+
+    return STAGING;
+}
+
+/** Discord çalışıyorsa app.asar kilitli olur; pencereyi kapatıp bekliyoruz. */
+function closeDiscord() {
+    if (process.platform !== "win32") return;
+
+    let running = false;
+    try {
+        const output = execFileSync("tasklist", ["/FI", "IMAGENAME eq Discord.exe", "/NH"], { encoding: "utf-8" });
+        running = output.includes("Discord.exe");
+    } catch {
+        return;
+    }
+
+    if (!running) return;
+
+    log("Discord çalışıyor, kapatılıyor...");
+    try {
+        execFileSync("taskkill", ["/IM", "Discord.exe", "/F"], { stdio: "ignore" });
+    } catch {
+        // zaten kapanmış olabilir
+    }
+
+    // dosya kilidi bırakılana kadar bekle
+    for (let i = 0; i < 20; i++) {
+        let stillRunning = false;
+        try {
+            const output = execFileSync("tasklist", ["/FI", "IMAGENAME eq Discord.exe", "/NH"], { encoding: "utf-8" });
+            stillRunning = output.includes("Discord.exe");
+        } catch {
+            stillRunning = false;
+        }
+
+        if (!stillRunning) break;
+
+        execFileSync(process.execPath, ["-e", "setTimeout(() => {}, 500)"]);
+    }
+}
+
+async function install(installInfo) {
+    const { channel, version, resources } = installInfo;
+
+    closeDiscord();
+
+    const staging = stageInjection();
+    const target = join(resources, "app.asar");
+    const backup = join(resources, "_app.asar");
+    const staged = join(resources, "app.asar.endcord-tmp");
+
+    rmSync(staged, { force: true });
+    await createPackage(staging, staged);
+
+    // Orijinal Discord asar'ı ilk seferde yedekle
+    if (!existsSync(backup)) {
+        cpSync(target, backup);
+        log(`orijinal asar yedeklendi → ${backup}`);
+    }
+
+    // Klasör (resources/app) yöntemiyle kalmış eski kurulum varsa temizle
+    const legacyFolder = join(resources, "app");
+    if (existsSync(legacyFolder)) {
+        rmSync(legacyFolder, { recursive: true, force: true });
+        log("eski klasör yöntemi temizlendi");
+    }
+
+    rmSync(target, { force: true });
+    cpSync(staged, target);
+    rmSync(staged, { force: true });
+    rmSync(STAGING, { recursive: true, force: true });
+
     log(`${channel} ${version} → ${target}`);
 }
 
 function uninstall(installInfo) {
-    const { channel, version, target } = installInfo;
+    const { channel, version, resources } = installInfo;
 
-    if (!existsSync(target)) {
-        log(`${channel} ${version}: zaten temiz`);
-        return;
+    const target = join(resources, "app.asar");
+    const backup = join(resources, "_app.asar");
+    const legacyFolder = join(resources, "app");
+
+    if (existsSync(legacyFolder)) {
+        rmSync(legacyFolder, { recursive: true, force: true });
+        log(`${channel} ${version}: eski klasör yöntemi temizlendi`);
     }
 
-    rmSync(target, { recursive: true, force: true });
-    log(`${channel} ${version}: kaldırıldı`);
+    if (existsSync(backup)) {
+        cpSync(backup, target);
+        rmSync(backup, { force: true });
+        log(`${channel} ${version}: orijinal app.asar geri alındı`);
+    } else {
+        log(`${channel} ${version}: yedek bulunamadı, dokunulmadı`);
+    }
 }
 
 const argv = process.argv.slice(2);
@@ -159,7 +237,7 @@ if (selected.length === 0) {
 }
 
 for (const info of selected) {
-    if (mode === "--install") install(info);
+    if (mode === "--install") await install(info);
     else uninstall(info);
 }
 

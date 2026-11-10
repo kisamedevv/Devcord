@@ -24,6 +24,7 @@
         "dev": "pnpm watch",
         "watchWeb": "pnpm buildWeb --watch",
         "generatePluginJson": "tsx scripts/generatePluginList.ts",
+        "generateBadgeIcons": "node scripts/generateBadgeIcons.mjs",
         "generateTypes": "tspc --emitDeclarationOnly --declaration --outDir packages/endcord-types --allowJs false",
         "inject": "node scripts/runInstaller.mjs -- --install",
         "uninject": "node scripts/runInstaller.mjs -- --uninstall",
@@ -44,13 +45,14 @@
         "gifenc": "catalog:"
     },
     "devDependencies": {
+        "@electron/asar": "^4.3.1",
+        "@endcord/discord-types": "workspace:",
         "@stylistic/eslint-plugin": "catalog:",
         "@types/chrome": "catalog:",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/yazl": "catalog:",
-        "@endcord/discord-types": "workspace:",
         "diff": "catalog:",
         "esbuild": "catalog:",
         "eslint-plugin-path-alias": "catalog:",
