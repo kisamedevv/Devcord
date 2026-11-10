@@ -13,10 +13,13 @@ import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { UserStore } from "@webpack/common";
 
+import { mountTopRightButton } from "./button";
 import { applyLocalName, decodeSharedProfiles, getSharedProfile, getSharedProfiles, shareProfile } from "./profile";
 import { settings } from "./settings";
 
 const BADGE_GROUP_ID = "endcord-fake-profile";
+
+let unmountButton: (() => void) | undefined;
 
 /** Local (kendi) fake profil. */
 function localProfile() {
@@ -85,6 +88,9 @@ export default definePlugin({
             setCreatedAtOverride(userId, profile.createdAt);
         }
 
+        // Sağ üstteki Endcord logosu -> fake profil paneli
+        unmountButton = mountTopRightButton();
+
         if (settings.store.shareProfile) {
             shareProfile(localProfile()).catch(err => console.error("[Endcord] Failed to share fake profile", err));
         }
@@ -92,6 +98,8 @@ export default definePlugin({
 
     stop() {
         removeProfileBadge(FakeProfileBadges);
+        unmountButton?.();
+        unmountButton = undefined;
         setCreatedAtOverride(UserStore.getCurrentUser()?.id ?? "", null);
     }
 });

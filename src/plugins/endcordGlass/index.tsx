@@ -13,7 +13,7 @@ export const settings = definePluginSettings({
         type: OptionType.SLIDER,
         description: "Cam bulanıklığı (px) — 0 yaparak tamamen kapatabilirsin",
         markers: [0, 6, 12, 18, 26, 36],
-        default: 0,
+        default: 18,
         stickToMarkers: false
     },
     saturation: {

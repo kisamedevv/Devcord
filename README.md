@@ -108,6 +108,8 @@ Discord dialled down for long sessions:
 
 Fake display name, fake badges and a fake account creation date.
 
+* the **Endcord logo in the top right** opens the panel — name, date, badges and sharing, all in
+  one readable place
 * every badge from `github.com/merlinfuchs/discord-badges` is selectable
 * the fake creation date also shows in the AccountAge context menu entry
 * **sharing**: the profile is written into your bio as invisible characters (27 invisible code

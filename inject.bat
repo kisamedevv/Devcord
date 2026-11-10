@@ -53,7 +53,7 @@ echo   TAMAM. Discord'u kapat, yeniden ac.
 echo   Baslik: Endcord · Tema: Endcord Soft
 echo  ============================================
 echo(
-start "" "%LOCALAPPDATA%\Discord\Discord.exe"
+start "" "%LOCALAPPDATA%\Discord\Discord.exe" >nul 2>&1
 pause
 exit /b 0
 
