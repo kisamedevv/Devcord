@@ -59,6 +59,8 @@ function catImage(color: string) {
 let cat: HTMLImageElement | null = null;
 let frame = 0;
 let lastFrameTime = 0;
+let lastTransform = "";
+let lastSize = -1;
 
 const cursor = { x: 0, y: 0, seen: false };
 const position = { x: 0, y: 0 };
@@ -79,11 +81,19 @@ function render(frames = 1) {
 
     const size = settings.store.size ?? 48;
 
+    if (lastSize !== size) {
+        cat.style.width = `${size}px`;
+        cat.style.height = `${size * 0.8}px`;
+        lastSize = size;
+    }
+
+    let transform: string;
+
     if (!cursor.seen) {
         // Sit near the bottom centre of the window until the mouse moves
         position.x = window.innerWidth / 2;
         position.y = window.innerHeight - size;
-        cat.style.transform = `translate3d(${position.x - size / 2}px, ${position.y - size / 2}px, 0)`;
+        transform = `translate3d(${position.x - size / 2}px, ${position.y - size / 2}px, 0)`;
     } else {
         const dx = cursor.x - position.x;
         const dy = cursor.y - position.y;
@@ -95,12 +105,17 @@ function render(frames = 1) {
             position.x += (dx / distance) * step;
             position.y += (dy / distance) * step;
 
-            cat.style.transform = `translate3d(${position.x - size / 2}px, ${position.y - size / 2}px, 0) scaleX(${dx < 0 ? -1 : 1})`;
+            transform = `translate3d(${position.x - size / 2}px, ${position.y - size / 2}px, 0) scaleX(${dx < 0 ? -1 : 1})`;
+        } else {
+            transform = "";
         }
     }
 
-    cat.style.width = `${size}px`;
-    cat.style.height = `${size * 0.8}px`;
+    // Sadece gerçekten değiştiğinde yaz — her karede DOM yazmak pahalı
+    if (transform && transform !== lastTransform) {
+        cat.style.transform = transform;
+        lastTransform = transform;
+    }
 }
 
 function loop(time: number) {
@@ -110,6 +125,19 @@ function loop(time: number) {
 
     render(delta / 16.67);
     frame = requestAnimationFrame(loop);
+}
+
+/** Pencere görünmüyorken döngüyü durdur — boşta CPU/GPU yiyen kedi yok. */
+function setRunning(running: boolean) {
+    if (running) {
+        if (!frame) {
+            lastFrameTime = performance.now();
+            frame = requestAnimationFrame(loop);
+        }
+    } else if (frame) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+    }
 }
 
 export default definePlugin({
@@ -128,15 +156,33 @@ export default definePlugin({
         document.body.appendChild(cat);
 
         window.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("visibilitychange", onVisibilityChange);
+        window.addEventListener("blur", onWindowBlur);
+        window.addEventListener("focus", onWindowBlur);
+
         lastFrameTime = performance.now();
         frame = requestAnimationFrame(loop);
     },
 
     stop() {
         cancelAnimationFrame(frame);
+        frame = 0;
         window.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+        window.removeEventListener("blur", onWindowBlur);
+        window.removeEventListener("focus", onWindowBlur);
         cat?.remove();
         cat = null;
         cursor.seen = false;
+        lastTransform = "";
+        lastSize = -1;
     }
 });
+
+function onVisibilityChange() {
+    setRunning(!document.hidden);
+}
+
+function onWindowBlur() {
+    setRunning(document.visibilityState === "visible" && document.hasFocus());
+}

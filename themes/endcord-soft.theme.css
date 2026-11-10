@@ -36,12 +36,12 @@
     --ecs-alpha-strong: calc(var(--ecs-alpha) + 0.16);
     --ecs-alpha-soft: calc(var(--ecs-alpha) - 0.12);
 
-    --ecs-line: rgba(255, 255, 255, 0.07);
-    --ecs-line-strong: rgba(255, 255, 255, 0.12);
+    --ecs-line: rgba(255, 255, 255, 0.05);
+    --ecs-line-strong: rgba(255, 255, 255, 0.09);
 
-    --ecs-text: #ccd4e3;
-    --ecs-text-muted: #8b96a9;
-    --ecs-text-bright: #e7ecf6;
+    --ecs-text: #c3cad8;
+    --ecs-text-muted: #808b9e;
+    --ecs-text-bright: #dde3ee;
 
     --ecs-accent: #6c8cff;
     --ecs-accent-soft: color-mix(in srgb, var(--ecs-accent) 18%, transparent);
@@ -141,10 +141,10 @@
     --scrollbar-auto-track: rgba(0, 0, 0, 0.14);
     --scrollbar-auto-scrollbar-color-thumb: rgba(255, 255, 255, 0.1);
 
-    /* ---- Gölgeler: ağır değil, yumuşak ---- */
-    --elevation-low: 0 1px 0 rgba(0, 0, 0, 0.2);
-    --elevation-medium: 0 6px 18px rgba(0, 0, 0, 0.24);
-    --elevation-high: 0 12px 34px rgba(0, 0, 0, 0.3);
+    /* ---- Gölgeler: yok. Gölge boyama maliyeti getirir, göz yorar ---- */
+    --elevation-low: none;
+    --elevation-medium: none;
+    --elevation-high: none;
 }
 
 /* ---- Şeffaflık: Discord'un kendi zeminleri de saydam ---- */
@@ -162,7 +162,9 @@ body {
     background-attachment: fixed !important;
 }
 
-/* ---- Cam hissi: yüzeyler bulanık, kenarlar ince ---- */
+/* ---- Cam hissi: yüzeyler bulanık, kenarlar ince ----
+   Bulanıklık EndcordGlass eklentisinin işidir; tema kendisi uygulamaz —
+   iki yerde birden blur maliyeti ödemeyelim. */
 [class*="sidebar__"],
 [class*="chatContent"],
 [class*="membersWrap"],
@@ -172,7 +174,8 @@ body {
 [class*="contentRegion"],
 [class*="modal__"],
 [class*="popout__"] {
-    backdrop-filter: blur(var(--ecs-blur)) saturate(115%);
+    border: 1px solid var(--ecs-line);
+    border-radius: 10px;
 }
 
 /* Discord'un sohbet arka plan görseli cam temada gürültü yaratıyor */

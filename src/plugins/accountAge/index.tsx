@@ -11,6 +11,8 @@ import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { Menu, showToast } from "@webpack/common";
 
+import { getCreatedAtOverride } from "./overrides";
+
 // Discord snowflakes encode the creation time in their high bits
 const DISCORD_EPOCH = 1420070400000n;
 
@@ -60,7 +62,9 @@ interface UserContextProps {
 const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: UserContextProps) => {
     if (!user?.id) return;
 
-    const created = getCreationDate(user.id);
+    // Fake profil (EndcordCustomProfile) tarihi ezmisse o geçerli
+    const override = getCreatedAtOverride(user.id);
+    const created = override ? new Date(override) : getCreationDate(user.id);
     if (!created) return;
 
     children.push(

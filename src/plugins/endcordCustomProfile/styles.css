@@ -1,0 +1,47 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Endcord and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-ecp-root {
+    margin-bottom: 1.25em;
+}
+
+.vc-ecp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+}
+
+.vc-ecp-muted {
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-ecp-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 6px;
+    margin-top: 0.35em;
+}
+
+.vc-ecp-badge-button {
+    display: grid;
+    place-items: center;
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: var(--background-tertiary, #1e1f22);
+    cursor: pointer;
+    transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.vc-ecp-badge-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--background-modifier-accent, #4f545c);
+}
+
+.vc-ecp-badge-button.vc-ecp-selected {
+    border-color: var(--brand-experiment, #5865f2);
+    background: var(--background-modifier-selected, #3c3f45);
+}

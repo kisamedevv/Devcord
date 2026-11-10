@@ -87,14 +87,33 @@ snowflake ID), plus how old it is. Click it to copy the ISO timestamp.
 Right-click any user and copy their ID, their `@mention` or their account creation date in one
 click.
 
-### EndcordGlass — blur and soft screen transitions
+### EndcordGlass — soft screen transitions
 
-Blur over the desktop behind Discord's surfaces, and a soft fade on every screen change:
+Every view (channel switch, guild pages, modals, popouts) fades in softly instead of popping —
+duration is a slider. The optional backdrop blur is **off by default**; raise the blur slider if
+you want the frosted look back.
 
-* backdrop blur on the chat area, member list, server list and page surfaces, with
-  saturation/brightness control over what shows through
-* every view (channel switch, guild pages, modals, popouts) fades in softly instead of popping
-* duration, blur radius, saturation and brightness are all sliders
+### EndcordEyeCare — less strain, less icon
+
+Discord dialled down for long sessions:
+
+* animations and transitions cut to a minimum (the standard reduced-motion recipe) — the single
+  biggest CPU/GPU win
+* icons, emoji and avatars scaled down, so the interface reads quieter
+* softer text ramp, dimmed separators, no drop shadows
+* performance mode drops backdrop filters, shadows and server background images
+* optional `content-visibility` for very long channels
+
+### EndcordCustomProfile — fake profile, Endcord-only
+
+Fake display name, fake badges and a fake account creation date.
+
+* every badge from `github.com/merlinfuchs/discord-badges` is selectable
+* the fake creation date also shows in the AccountAge context menu entry
+* **sharing**: the profile is written into your bio as invisible characters (27 invisible code
+  points, ~4.75 bits each). A normal Discord client sees an empty bio; an Endcord client decodes
+  it and renders your fake name, badges and date. So the fake identity is only ever seen by people
+  running Endcord
 
 ### EndcordAppearance — live glass tuning
 
@@ -167,11 +186,13 @@ src/
   plugins/        every bundled plugin
   plugins/endcordBadges/   icons.tsx · store.ts · settings.tsx · picker.tsx · index.tsx · styles.css
   plugins/endcordAppearance/
+  plugins/endcordCustomProfile/   payload.ts · profile.ts · settings.tsx · index.tsx
+  plugins/endcordEyeCare/
   plugins/endcordGlass/
   plugins/endcordQuickCopy/
   plugins/endcordTitle/
   plugins/oneko/
-  plugins/accountAge/
+  plugins/accountAge/    index.tsx · overrides.ts
   userplugins/      drop-in plugins compiled into the build (see scripts/add-plugin.mjs)
   webpack/        module finder + patcher
 packages/         @endcord/discord-types, @endcord/types

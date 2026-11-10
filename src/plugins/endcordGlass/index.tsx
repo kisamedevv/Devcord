@@ -11,9 +11,9 @@ import definePlugin, { OptionType } from "@utils/types";
 export const settings = definePluginSettings({
     blurRadius: {
         type: OptionType.SLIDER,
-        description: "Cam bulanıklığı (px) — mesaj alanı, üye listesi ve sayfalar",
+        description: "Cam bulanıklığı (px) — 0 yaparak tamamen kapatabilirsin",
         markers: [0, 6, 12, 18, 26, 36],
-        default: 18,
+        default: 0,
         stickToMarkers: false
     },
     saturation: {
@@ -56,7 +56,6 @@ const BLUR_TARGETS = [
     "[class*=\"membersWrap\"]",
     "[class*=\"peopleColumn\"]",
     "[class*=\"pageWrapper\"]",
-    "[class*=\"contentRegion\"]",
     "[class*=\"sidebar\"]",
     "[class*=\"navList\"]"
 ].join(",\n");
@@ -110,7 +109,7 @@ ${FADE_TARGETS} {
 
 export default definePlugin({
     name: "EndcordGlass",
-    description: "Mesaj alanı, üye listesi ve sayfalara cam bulanıklığı; her ekran arasında yumuşak geçiş.",
+    description: "Ekranlar arasında yumuşak geçiş; istersen cam bulanıklığı da açılır (varsayılan kapalı).",
     tags: ["Appearance", "Customisation"],
     authors: [Devs.Endcord],
     settings,
