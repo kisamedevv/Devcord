@@ -48,6 +48,7 @@
 
 /* Sağ üstteki Endcord logosu */
 .vc-ecp-logo-button {
+    position: relative;
     display: grid;
     place-items: center;
     width: 34px;
@@ -55,22 +56,150 @@
     padding: 0;
     margin-right: 4px;
     border: 0;
-    border-radius: 9px;
+    border-radius: 10px;
     background: transparent;
     cursor: pointer;
     opacity: 0.85;
-    transition: opacity 120ms ease, transform 120ms ease;
+    transition: opacity 140ms ease, transform 140ms ease, background-color 140ms ease;
 }
 
-.vc-ecp-logo-button:hover {
+.vc-ecp-logo-button::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 9px;
+    background: radial-gradient(circle at 30% 20%, rgb(88 101 242 / 45%), transparent 70%);
+    opacity: 0;
+    transition: opacity 160ms ease;
+    pointer-events: none;
+}
+
+.vc-ecp-logo-button:hover,
+.vc-ecp-logo-button:focus-visible {
     opacity: 1;
     transform: translateY(-1px);
+    background: var(--background-modifier-hover, rgb(255 255 255 / 6%));
+}
+
+.vc-ecp-logo-button:hover::before,
+.vc-ecp-logo-button:focus-visible::before {
+    opacity: 1;
+}
+
+.vc-ecp-logo-button:active {
+    transform: scale(0.94);
+}
+
+.vc-ecp-logo-button:focus-visible {
+    outline: 2px solid var(--brand-experiment, #5865f2);
+    outline-offset: 1px;
 }
 
 .vc-ecp-logo-button img {
     width: 22px;
     height: 22px;
-    border-radius: 7px;
+    border-radius: 50%;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%));
+    transition: filter 160ms ease;
+}
+
+.vc-ecp-logo-active img {
+    animation: vc-ecp-breathe 3.2s ease-in-out infinite;
+}
+
+.vc-ecp-logo-button:hover img {
+    filter: drop-shadow(0 0 6px rgb(88 101 242 / 65%));
+}
+
+/* Fake profil aktifken: yeşil nokta + hafif nefes */
+.vc-ecp-logo-dot {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid var(--background-primary, #313338);
+    background: var(--status-online, #23a55a);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 160ms ease, transform 160ms ease;
+    pointer-events: none;
+}
+
+.vc-ecp-logo-active .vc-ecp-logo-dot {
+    opacity: 1;
+    transform: scale(1);
+}
+
+@keyframes vc-ecp-breathe {
+    0%,
+    100% {
+        filter: drop-shadow(0 0 2px rgb(88 101 242 / 35%));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 8px rgb(169 112 255 / 55%));
+    }
+}
+
+/* Sağ tık hızlı menüsü */
+.vc-ecp-menu {
+    position: fixed;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    padding: 6px;
+    border-radius: 8px;
+    background: var(--background-floating, #111214);
+    border: 1px solid var(--background-modifier-accent, #2b2d31);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+    animation: vc-ecp-menu-in 120ms ease-out;
+}
+
+.vc-ecp-menu-item {
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-normal, #dbdee1);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.vc-ecp-menu-item:hover,
+.vc-ecp-menu-item:focus-visible {
+    background: var(--brand-experiment, #5865f2);
+    color: #fff;
+    outline: none;
+}
+
+@keyframes vc-ecp-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-ecp-logo-active img {
+        animation: none;
+    }
+
+    .vc-ecp-menu {
+        animation: none;
+    }
+
+    .vc-ecp-logo-button {
+        transition: none;
+    }
 }
 
 /* Arama kutusu bulunamadığında sabit konumlu düşer */
