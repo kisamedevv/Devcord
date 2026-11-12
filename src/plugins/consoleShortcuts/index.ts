@@ -1,26 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { loadLazyChunks } from "@debug/loadLazyChunks";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel, getCurrentGuild } from "@utils/discord";
 import { runtimeHashMessageKey } from "@utils/intlHash";
-import { SYM_LAZY_CACHED, SYM_LAZY_GET } from "@utils/lazy";
+import { SYM_LAZY_GET } from "@utils/lazy";
 import { sleep } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { canonicalizeMatch, canonicalizeReplace, canonicalizeReplacement } from "@utils/patches";
@@ -113,7 +101,7 @@ function makeShortcuts() {
         wpexs: (code: string) => extract(findModuleId(code)!),
         loadLazyChunks: IS_DEV ? loadLazyChunks : () => { throw new Error("loadLazyChunks is dev only."); },
         find,
-        findAll: findAll,
+        findAll,
         findByProps,
         findAllByProps: (...props: string[]) => findAll(filters.byProps(...props)),
         findByCode: newFindWrapper(filters.byCode),
@@ -202,7 +190,7 @@ function loadAndCacheShortcut(key: string, val: any, forceLoad: boolean) {
 
     function unwrapProxy(value: any) {
         if (value[SYM_LAZY_GET]) {
-            forceLoad ? currentVal[SYM_LAZY_GET]() : currentVal[SYM_LAZY_CACHED];
+            if (forceLoad) currentVal[SYM_LAZY_GET]();
         } else if (value.$$endcordGetWrappedComponent) {
             return forceLoad ? value.$$endcordGetWrappedComponent() : value;
         }
@@ -241,7 +229,7 @@ const webpackModulesProbablyLoaded = Webpack.onceReady.then(() => sleep(1000));
 export default definePlugin({
     name: "ConsoleShortcuts",
     description: "Adds shorter Aliases for many things on the window. Run `shortcutList` for a list.",
-    authors: [Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Developers", "Console", "Shortcuts", "Utility"],
     startAt: StartAt.Init,
 

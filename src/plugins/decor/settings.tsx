@@ -6,11 +6,11 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { TextButton } from "@components/Button";
-import { Paragraph } from "@components/Paragraph";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { OptionType } from "@utils/types";
-import { SettingsRouter } from "@webpack/common";
+import { Forms, SettingsRouter } from "@webpack/common";
 
 import DecorPlugin from ".";
 import DecorSection from "./ui/components/DecorSection";
@@ -19,21 +19,20 @@ export const settings = definePluginSettings({
     changeDecoration: {
         type: OptionType.COMPONENT,
         component({ closePluginSettings }) {
-            if (!DecorPlugin.started) return <Paragraph>
-                Enable Decor and restart your client to change your avatar decoration.
-            </Paragraph>;
+            if (!DecorPlugin.started) return <Forms.FormText>
+                {t("Enable Decor and restart your client to change your avatar decoration.")}</Forms.FormText>;
 
             return <div>
                 <DecorSection hideTitle hideDivider noMargin />
-                <Paragraph className={classes(Margins.top8, Margins.bottom8)}>
-                    You can also access Decor decorations from the <TextButton
+                <Forms.FormText className={classes(Margins.top8, Margins.bottom8)}>
+                    {t("You can also access Decor decorations from the")}{" "}<TextButton
                         variant="link"
                         onClick={async () => {
                             closePluginSettings();
                             SettingsRouter.openUserSettings("profile_panel");
                         }}
-                    >Profiles</TextButton> page.
-                </Paragraph>
+                    >{t("Profiles")}</TextButton> page.
+                </Forms.FormText>
             </div>;
         }
     },

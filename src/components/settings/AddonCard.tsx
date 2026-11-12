@@ -1,29 +1,18 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import "./AddonCard.css";
+import "./AddonCard.css?screen";
 
-import { Paragraph } from "@components/Paragraph";
+import { enableScreenStyles } from "@api/Styles";
 import { AddonBadge } from "@components/settings/PluginBadge";
 import { Switch } from "@components/Switch";
-import { Text } from "@components/Text";
+import { BAN_RISK_LEAD } from "@utils/banRisk";
 import { classNameFactory } from "@utils/css";
-import { useRef } from "@webpack/common";
+import { useI18n } from "@utils/i18n";
+import { Text, useRef } from "@webpack/common";
 import type { MouseEventHandler, ReactNode } from "react";
 
 const cl = classNameFactory("vc-addon-");
@@ -35,6 +24,10 @@ interface Props {
     setEnabled: (enabled: boolean) => void;
     disabled?: boolean;
     isNew?: boolean;
+    isPopular?: boolean;
+    /** Why Discord could suspend an account for using it */
+    banRisk?: string;
+    needsFix?: boolean;
     onMouseEnter?: MouseEventHandler<HTMLDivElement>;
     onMouseLeave?: MouseEventHandler<HTMLDivElement>;
 
@@ -43,7 +36,10 @@ interface Props {
     author?: ReactNode;
 }
 
-export function AddonCard({ disabled, isNew, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+export function AddonCard({ disabled, isNew, isPopular, banRisk, needsFix, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+    // Also shown outside the settings, in the new plugins dialog
+    enableScreenStyles();
+    const { t } = useI18n();
     const titleRef = useRef<HTMLDivElement>(null);
     const titleContainerRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +51,7 @@ export function AddonCard({ disabled, isNew, name, infoButton, footer, author, e
         >
             <div className={cl("header")}>
                 <div className={cl("name-author")}>
-                    <Text weight="bold" className={cl("name")}>
+                    <Text variant="text-md/bold" className={cl("name")}>
                         <div ref={titleContainerRef} className={cl("title-container")}>
                             <div
                                 ref={titleRef}
@@ -71,13 +67,16 @@ export function AddonCard({ disabled, isNew, name, infoButton, footer, author, e
                                 {name}
                             </div>
                         </div>
-                        {isNew && <AddonBadge text="NEW" color="#ED4245" />}
+                        {needsFix && <AddonBadge text={t("NEEDS FIX")} tone="fix" title={t("Discord changed code this plugin relies on, so part of it may not work until Endcord updates it")} />}
+                        {banRisk && <AddonBadge text={t("BAN RISK")} tone="risk" title={`${t(BAN_RISK_LEAD)} ${t(banRisk)}`} />}
+                        {isPopular && !needsFix && !banRisk && <AddonBadge text={t("POPULAR")} tone="popular" />}
+                        {isNew && <AddonBadge text={t("NEW")} />}
                     </Text>
 
                     {!!author && (
-                        <Paragraph size="md" className={cl("author")}>
+                        <Text variant="text-md/normal" className={cl("author")}>
                             {author}
-                        </Paragraph>
+                        </Text>
                     )}
                 </div>
 
@@ -90,9 +89,9 @@ export function AddonCard({ disabled, isNew, name, infoButton, footer, author, e
                 />
             </div>
 
-            <Paragraph className={cl("note")}>{description}</Paragraph>
+            <Text className={cl("note")} variant="text-sm/normal">{description}</Text>
 
             {footer}
-        </div >
+        </div>
     );
 }

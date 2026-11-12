@@ -1,32 +1,19 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import "./styles.css";
+import "./styles.css?screen";
 
 import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
 import { Link } from "@components/Link";
-import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
+import { useI18n } from "@utils/i18n";
 import { getStylusWebStoreUrl } from "@utils/web";
-import { React, TabBar, useState } from "@webpack/common";
+import { Forms, React, TabBar, useState } from "@webpack/common";
 
 import { CspErrorCard } from "./CspErrorCard";
 import { LocalThemesTab } from "./LocalThemesTab";
@@ -38,6 +25,7 @@ const enum ThemeTab {
 }
 
 function ThemesTab() {
+    const { t } = useI18n();
     const [currentTab, setCurrentTab] = useState(ThemeTab.LOCAL);
 
     return (
@@ -53,43 +41,40 @@ function ThemesTab() {
                     className="vc-settings-tab-bar-item"
                     id={ThemeTab.LOCAL}
                 >
-                    Local Themes
+                    {t("Local Themes")}
                 </TabBar.Item>
                 <TabBar.Item
                     className="vc-settings-tab-bar-item"
                     id={ThemeTab.ONLINE}
                 >
-                    Online Themes
+                    {t("Online Themes")}
                 </TabBar.Item>
             </TabBar>
 
             <Flex flexDirection="column" gap="1em">
                 <CspErrorCard />
 
-                <Card variant="warning">
-                    <Heading className={Margins.bottom8}>Theme Performance</Heading>
-                    <Paragraph>
-                        Themes and custom CSS have the potential to cause major lag! If you experience performance issues, try
-                        disabling your themes and CSS to see if they're the cause. The most common cause of lag is the <code>:has()</code> operator.
-                    </Paragraph>
-                </Card>
-
                 {currentTab === ThemeTab.LOCAL && <LocalThemesTab />}
                 {currentTab === ThemeTab.ONLINE && <OnlineThemesTab />}
+
+                <Paragraph className="ec-themes-note">
+                    {t("If Discord feels slow, try turning your themes and custom CSS off. The :has() selector is the most common cause.")}
+                </Paragraph>
             </Flex>
         </SettingsTab>
     );
 }
 
 function UserscriptThemesTab() {
+    const { t } = useI18n();
     return (
         <SettingsTab>
             <Card variant="danger">
-                <Heading className={Margins.bottom8}>Themes are not supported on the Userscript!</Heading>
+                <Forms.FormTitle tag="h5">{t("Themes are not supported in the userscript.")}</Forms.FormTitle>
 
-                <Paragraph>
-                    You can instead install themes with the <Link href={getStylusWebStoreUrl()}>Stylus extension</Link>!
-                </Paragraph>
+                <Forms.FormText>
+                    {t("You can instead install themes with the")} <Link href={getStylusWebStoreUrl()}>{t("Stylus extension")}</Link>!
+                </Forms.FormText>
             </Card>
         </SettingsTab>
     );

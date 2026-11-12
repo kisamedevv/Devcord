@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
@@ -24,14 +12,13 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { findComponentByCodeLazy, findCssClassesLazy, findStoreLazy } from "@webpack";
-import { Constants, React, RestAPI, SettingsRouter, Tooltip, useState } from "@webpack/common";
+import { findComponentByCodeLazy, findCssClassesLazy, findStore } from "@webpack";
+import { Constants, React, RestAPI, SettingsRouter, Tooltip } from "@webpack/common";
 
 import { NewButton, RenameButton } from "./components/RenameButton";
 import { Session, SessionInfo } from "./types";
 import { cl, fetchNamesFromDataStore, getDefaultName, GetOsColor, GetPlatformIcon, savedSessionsCache, saveSessionsToDataStore } from "./utils";
 
-const AuthSessionsStore = findStoreLazy("AuthSessionsStore");
 const TimestampClasses = findCssClassesLazy("timestamp", "blockquoteContainer");
 const BlobMask = findComponentByCodeLazy("!1,lowerBadgeSize:");
 
@@ -46,7 +33,6 @@ const settings = definePluginSettings({
         description: "How often to check for new sessions in the background (if enabled), in minutes",
         type: OptionType.NUMBER,
         default: 20,
-        min: 1,
         restartNeeded: true
     }
 });
@@ -54,25 +40,25 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "BetterSessions",
     description: "Enhances the sessions (devices) menu. Allows you to view exact timestamps, give each session a custom name, and receive notifications about new sessions.",
-    authors: [Devs.amia],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Notifications", "Customisation", "Utility"],
-    settings: settings,
+    settings,
 
     patches: [
         {
             find: "#{intl::AUTH_SESSIONS_OS_UNKNOWN}",
             replacement: [
                 {
-                    match: /(#{intl::AUTH_SESSIONS_ACTIVE_RECENTLY}.{0,230}role:"listitem",children:\[.{0,15},\{icon:)\i/,
-                    replace: "$1()=>$self.renderIcon(arguments[0])"
+                    match: /(#{intl::AUTH_SESSIONS_ACTIVE_RECENTLY}.{0,230}role:"listitem",children:\[.{0,15},\{icon:)(\i)/,
+                    replace: "$1arguments[0]?.session?()=>$self.renderIcon(arguments[0]):$2"
                 },
                 {
-                    match: /("horizontal",gap:"xs",children:)\[.{0,250}"text-subtle",children:\i\}\)\]\}\),/,
-                    replace: "$1$self.renderName(arguments[0])}),"
+                    match: /("horizontal",gap:"xs",children:)(\[.{0,250}"text-subtle",children:\i\}\)\])\}\),/,
+                    replace: "$1arguments[0]?.session?$self.renderName(arguments[0]):$2}),"
                 },
                 {
-                    match: /("text-muted",children:)\i(?=\}\)\]\}\),.{0,120}\.client_info\?\.location)/,
-                    replace: "$1$self.renderDescription(arguments[0])"
+                    match: /("text-muted",children:)(\i)(?=\}\)\]\}\),.{0,120}\.client_info\?\.location)/,
+                    replace: "$1arguments[0]?.session?$self.renderDescription(arguments[0]):$2"
                 },
                 {
                     match: /:\i\(\i\.approx_last_used_time\).{0,40}\(0,\i\.jsxs?\)\(\i,\{/,
@@ -85,12 +71,12 @@ export default definePlugin({
     renderName: ErrorBoundary.wrap(({ session }: SessionInfo) => {
         const savedSession = savedSessionsCache.get(session.id_hash);
 
-        const state = useState(savedSession?.name ? `${savedSession.name}*` : getDefaultName(session.client_info));
+        const state = React.useState(savedSession?.name ? `${savedSession.name}*` : getDefaultName(session.client_info));
         const [title] = state;
         // Show a "NEW" badge if the session is seen for the first time
         return (
             <>
-                <Paragraph size="md" weight="semibold" style={{ color: "var(--text-strong, var(--text-default))" }}>{title}</Paragraph>
+                <Paragraph size="md" weight="semibold" color="text-strong">{title}</Paragraph>
                 <div className={cl("footer-buttons")}>
                     {(savedSession == null || savedSession.isNew) && (
                         <NewButton />
@@ -106,7 +92,7 @@ export default definePlugin({
 
         return (
             <div className={cl("description")}>
-                <Paragraph size="sm" weight="normal" style={{ color: "var(--text-muted, var(--text-default))" }}>{label}</Paragraph>
+                <Paragraph size="sm" weight="normal" color="text-muted">{label}</Paragraph>
                 {timeLabel && (
                     <>
                         {" \xb7 "}
@@ -154,12 +140,18 @@ export default definePlugin({
     async checkNewSessions() {
         const data = await RestAPI.get({
             url: Constants.Endpoints.AUTH_SESSIONS
-        });
+        }).catch(() => null);
+        const sessions = data?.body?.user_sessions;
+        if (!Array.isArray(sessions)) return;
 
-        for (const session of data.body.user_sessions) {
+        // The first check knows no sessions yet: the ones there are now are the baseline, not news
+        const firstCheck = savedSessionsCache.size === 0;
+
+        for (const session of sessions) {
             if (savedSessionsCache.has(session.id_hash)) continue;
 
-            savedSessionsCache.set(session.id_hash, { name: "", isNew: true });
+            savedSessionsCache.set(session.id_hash, { name: "", isNew: !firstCheck });
+            if (firstCheck) continue;
             showNotification({
                 title: "BetterSessions",
                 body: `New session:\n${session.client_info.os} · ${session.client_info.platform} · ${session.client_info.location}`,
@@ -173,6 +165,10 @@ export default definePlugin({
 
     flux: {
         USER_SETTINGS_ACCOUNT_RESET_AND_CLOSE_FORM() {
+            // Discord keeps this store in the code of its settings, which loads only when they're opened, so it's looked
+            // up now that they're closing rather than when Endcord starts
+            const AuthSessionsStore = findStore("AuthSessionsStore");
+            if (!AuthSessionsStore) return;
             const lastFetchedHashes: string[] = AuthSessionsStore.getSessions().map((session: SessionInfo["session"]) => session.id_hash);
 
             // Add new sessions to cache

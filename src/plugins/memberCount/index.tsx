@@ -1,29 +1,17 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { FluxStore } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
-import { FluxStore } from "@endcord/discord-types";
 import { findStoreLazy } from "@webpack";
 
 import { MemberCount } from "./MemberCount";
@@ -63,7 +51,7 @@ export default definePlugin({
     name: "MemberCount",
     description: "Shows the number of online members, total members, and users in voice channels on the server — in the member list and tooltip.",
     tags: ["Servers", "Utility"],
-    authors: [Devs.Ven, Devs.Commandtechno, Devs.Apexo],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
@@ -84,13 +72,6 @@ export default definePlugin({
                 replace: "$&,$self.renderTooltip(arguments[0].guild)"
             },
             predicate: () => settings.store.toolTip
-        },
-        {
-            find: '"GuildSubscriptionsStore"',
-            replacement: {
-                match: /(\i\.\i\.getSection\(\i\))===(\i\.\i)\.MEMBERS/,
-                replace: (m, section, ChannelSectionTypes) => `(${m}||${section}===${ChannelSectionTypes}.NONE)`
-            }
         }
     ],
     render: ErrorBoundary.wrap(() => <MemberCount />, { noop: true }),

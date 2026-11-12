@@ -1,47 +1,32 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 // This plugin is a port from Alyxia's Vendetta plugin
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
-import { Paragraph } from "@components/Paragraph";
-import { Text } from "@components/Text";
+import { User, UserProfile } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { copyWithToast, fetchUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
+import { safeRecordMerge } from "@utils/safeRecordMerge";
 import definePlugin, { OptionType } from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { findComponentByCodeLazy } from "@webpack";
-import { ColorPicker, React, UserProfileStore, UserStore, useState } from "@webpack/common";
+import { Button, ColorPicker, Forms, React, Text, UserProfileStore, UserStore, useState } from "@webpack/common";
 
-interface CachedDecodedThemeColors {
-    decodedBio: string;
-    themeColors: number[] | null;
+interface Colors {
+    primary: number;
+    accent: number;
 }
-
-const decodedThemeColorsCache = new Map<string, CachedDecodedThemeColors>();
 
 function encode(primary: number, accent: number): string {
     const message = `[#${primary.toString(16).padStart(6, "0")},#${accent.toString(16).padStart(6, "0")}]`;
@@ -52,25 +37,29 @@ function encode(primary: number, accent: number): string {
         .map(x => String.fromCodePoint(x! + 0xe0000))
         .join("");
 
-    return (padding || "") + " " + encoded;
+    return `${padding || ""} ${encoded}`;
 }
 
-const DecodeRegex = /\[#([a-fA-F0-9]{1,6}),#([a-fA-F0-9]{1,6})\]/;
+// Courtesy of Cynthia.
 function decode(bio: string): Array<number> | null {
     if (bio == null) return null;
 
-    let ascii = "";
-    for (const ch of bio) {
-        const cp = ch.codePointAt(0)!;
-        if (cp >= 0xe0000 && cp <= 0xe007f) {
-            ascii += String.fromCodePoint(cp - 0xe0000);
-        }
+    const colorString = bio.match(
+        /\u{e005b}\u{e0023}([\u{e0061}-\u{e0066}\u{e0041}-\u{e0046}\u{e0030}-\u{e0039}]{1,6})\u{e002c}\u{e0023}([\u{e0061}-\u{e0066}\u{e0041}-\u{e0046}\u{e0030}-\u{e0039}]{1,6})\u{e005d}/u,
+    );
+    if (colorString != null) {
+        const parsed = [...colorString[0]]
+            .map(x => String.fromCodePoint(x.codePointAt(0)! - 0xe0000))
+            .join("");
+        const colors = parsed
+            .substring(1, parsed.length - 1)
+            .split(",")
+            .map(x => parseInt(x.replace("#", "0x"), 16));
+
+        return colors;
     }
+        return null;
 
-    const match = ascii.match(DecodeRegex);
-    if (!match) return null;
-
-    return [parseInt(match[1], 16), parseInt(match[2], 16)];
 }
 
 const settings = definePluginSettings({
@@ -116,32 +105,30 @@ function SettingsAboutComponent() {
 
     return (
         <section>
-            <Heading className={Margins.bottom8}>Usage</Heading>
-            <Paragraph>
-                After enabling this plugin, you will see custom colors in
-                the profiles of other people using compatible plugins.{" "}
-            </Paragraph>
-            <Text size="sm" className={Margins.top8}>
-                <strong>To set your own profile theme colors:</strong>
+            <Forms.FormTitle tag="h3">{t("Usage")}</Forms.FormTitle>
+            <Forms.FormText>
+                {t("After enabling this plugin, you will see custom colors in the profiles of other people using compatible plugins.")}{" "}
+            </Forms.FormText>
+            <Forms.FormText className={Margins.top8}>
+                <strong>{t("To set your own profile theme colors:")}</strong>
                 <ul>
-                    <li>&mdash; use the color pickers below to choose your colors</li>
-                    <li>&mdash; click the "Copy 3y3" button</li>
-                    <li>&mdash; paste the invisible text anywhere in your bio</li>
+                    <li>{"— "}{t("use the color pickers below to choose your colors")}</li>
+                    <li>{"— "}{t("click the \"Copy 3y3\" button")}</li>
+                    <li>{"— "}{t("paste the invisible text anywhere in your bio")}</li>
                 </ul>
                 <Divider
                     className={classes(Margins.top8, Margins.bottom8)}
                 />
-                <Heading className={Margins.bottom8}>Color pickers</Heading>
+                <Forms.FormTitle tag="h3">{t("Color pickers")}</Forms.FormTitle>
                 <Flex gap="1em">
                     <ColorPicker
                         color={color1}
                         label={
-                            <Paragraph
-                                size="xs"
+                            <Text
+                                variant={"text-xs/normal"}
                                 style={{ marginTop: "4px" }}
                             >
-                                Primary
-                            </Paragraph>
+                                {t("Primary")}</Text>
                         }
                         onChange={(color: number) => {
                             setColor1(color);
@@ -150,12 +137,11 @@ function SettingsAboutComponent() {
                     <ColorPicker
                         color={color2}
                         label={
-                            <Paragraph
-                                size="xs"
+                            <Text
+                                variant={"text-xs/normal"}
                                 style={{ marginTop: "4px" }}
                             >
-                                Accent
-                            </Paragraph>
+                                {t("Accent")}</Text>
                         }
                         onChange={(color: number) => {
                             setColor2(color);
@@ -166,16 +152,16 @@ function SettingsAboutComponent() {
                             const colorString = encode(color1, color2);
                             copyWithToast(colorString);
                         }}
-                        variant="secondary"
+                        color={Button.Colors.PRIMARY}
+                        size={Button.Sizes.XLARGE}
                         style={{ marginBottom: "auto" }}
                     >
-                        Copy 3y3
-                    </Button>
+                        {t("Copy 3y3")}</Button>
                 </Flex>
                 <Divider
                     className={classes(Margins.top8, Margins.bottom8)}
                 />
-                <Heading className={Margins.bottom8}>Preview</Heading>
+                <Forms.FormTitle tag="h3">{t("Preview")}</Forms.FormTitle>
                 <div className="vc-fpt-preview">
                     <ProfileModal
                         user={UserStore.getCurrentUser()}
@@ -188,7 +174,7 @@ function SettingsAboutComponent() {
                         isTryItOut={true}
                     />
                 </div>
-            </Text>
+            </Forms.FormText>
         </section>);
 }
 
@@ -196,45 +182,50 @@ export default definePlugin({
     name: "FakeProfileThemes",
     description: "Allows profile theming by hiding the colors in your bio thanks to invisible 3y3 encoding",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Alyxia, Devs.Remty],
-    settings,
-    settingsAboutComponent: SettingsAboutComponentWrapper,
-
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
-            find: "}getPreviewThemeColors(",
-            replacement: [
-                {
-                    match: /(}getPreviewThemeColors\(.+?)this\.themeColors/,
-                    replace: "$1$self.colorDecodeHook(this)"
-                },
-                {
-                    match: /canEditThemes\(\){/,
-                    replace: "$&return true;"
-                }
-            ],
+            find: "UserProfileStore",
+            replacement: {
+                match: /(?<=getUserProfile\(\i\){return )(.+?)(?=})/,
+                replace: "$self.colorDecodeHook($1)"
+            },
+        },
+        {
+            find: "#{intl::USER_SETTINGS_RESET_PROFILE_THEME}),onClick:",
+            replacement: {
+                match: /#{intl::USER_SETTINGS_RESET_PROFILE_THEME}\).+?}\)(?=\])(?<=color:(\i),.{0,500}?color:(\i),.{0,500}?)/,
+                replace: "$&,$self.addCopy3y3Button({primary:$1,accent:$2})"
+            }
         }
     ],
 
-    colorDecodeHook(profile: any) {
-        if (settings.store.nitroFirst && profile?.themeColors != null) {
-            return profile?.themeColors;
-        }
+    settingsAboutComponent: SettingsAboutComponentWrapper,
 
-        if (profile?.bio != null) {
-            const cached = decodedThemeColorsCache.get(profile.userId);
-            if (cached != null && cached.decodedBio === profile.bio) {
-                return cached.themeColors ?? profile?.themeColors;
-            }
-
-            const decodedThemeColors = decode(profile.bio);
-            decodedThemeColorsCache.set(profile.userId, { decodedBio: profile.bio, themeColors: decodedThemeColors });
-
-            if (decodedThemeColors != null) {
-                return decodedThemeColors;
+    settings,
+    colorDecodeHook(user: UserProfile) {
+        if (user?.bio) {
+            // don't replace colors if already set with nitro
+            if (settings.store.nitroFirst && user.themeColors) return user;
+            const colors = decode(user.bio);
+            if (colors) {
+                return safeRecordMerge(user, {
+                    premiumType: 2,
+                    themeColors: colors
+                }, `fpt:${colors[0]}:${colors[1]}`);
             }
         }
-
-        return profile?.themeColors;
-    }
+        return user;
+    },
+    addCopy3y3Button: ErrorBoundary.wrap(function ({ primary, accent }: Colors) {
+        return <Button
+            onClick={() => {
+                const colorString = encode(primary, accent);
+                copyWithToast(colorString);
+            }}
+            color={Button.Colors.PRIMARY}
+            size={Button.Sizes.XLARGE}
+            className={Margins.left16}
+        >{t("Copy 3y3")}</Button >;
+    }, { noop: true }),
 });

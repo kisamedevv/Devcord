@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Style } from "@api/Styles";
 
@@ -44,11 +32,13 @@ declare global {
     export var IS_VESKTOP: boolean;
     export var VERSION: string;
     export var BUILD_TIMESTAMP: number;
-    export var DESKTOP_MONACO_EDITOR_URL: string;
 
     export var EndcordNative: typeof import("./EndcordNative").default;
     export var Endcord: typeof import("./Endcord");
     export var EndcordStyles: Map<string, Style>;
+    export var EndcordPluginStyles: Record<string, string[]> | undefined;
+    /** CSS of Endcord's own screens, or where it is in the desktop build (see enableScreenStyles in @api/Styles) */
+    export var EndcordScreenStyles: Array<string | { k: string; }> | undefined;
     export var appSettings: {
         set(setting: string, v: any): void;
     };
@@ -63,30 +53,6 @@ declare global {
     export var VesktopNative: any;
 
     interface Window extends Record<PropertyKey, any> { }
-
-    interface MediaTrackConstraintSet {
-        restrictOwnAudio?: boolean;
-        suppressLocalAudioPlayback?: boolean;
-    }
-
-
-    type CaptureController = {
-        decreaseZoomLevel(): Promise<undefined>;
-        forwardWheel(): Promise<undefined>;
-        getSupportedZoomLevels(): number[];
-        increaseZoomLevel(): Promise<undefined>;
-        resetZoomLevel(): Promise<undefined>;
-        setFocusBehavior(): undefined;
-    };
-
-    interface DisplayMediaStreamOptions {
-        surfaceSwitching?: "include" | "exclude";
-        selfBrowserSurface?: "include" | "exclude";
-        systemAudio?: "include" | "exclude";
-        monitorTypeSurfaces?: "include" | "exclude";
-        controller?: CaptureController;
-        preferCurrentTab?: boolean;
-    }
 }
 
 export { };

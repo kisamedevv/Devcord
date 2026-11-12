@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
@@ -23,7 +11,7 @@ export default definePlugin({
     name: "AlwaysAnimate",
     description: "Animates anything that can be animated",
     tags: ["Appearance", "Fun"],
-    authors: [Devs.FieryFlames],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {
@@ -66,7 +54,7 @@ export default definePlugin({
         },
         {
             // Gradient roles in member list
-            find: ".roleStyle);",
+            find: '="left",className:',
             replacement: {
                 match: /,animateGradient:/,
                 replace: ",animateGradient:!0,_oldAnimateGradient:"
@@ -76,7 +64,8 @@ export default definePlugin({
             // Nameplates
             find: ".MINI_PREVIEW,[",
             replacement: {
-                match: /animate:\i,loop:(?=!0===)/,
+                // Not where the props are taken apart (let{animate:a,loop:u}=e): changing that breaks the code
+                match: /animate:\i,loop:(?!\i\}=)/,
                 replace: "animate:true,loop:true,_loop:"
             }
         }

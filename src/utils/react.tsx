@@ -1,22 +1,10 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { FluxDispatcher, useEffect, useMemo, useReducer, useRef, useState } from "@webpack/common";
+import { React, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 import type { ActionDispatch, ReactNode } from "react";
 
 import { checkIntersecting } from "./misc";
@@ -42,7 +30,7 @@ export const useIntersection = (intersectOnly = false): [
     refCallback: React.RefCallback<Element>,
     isIntersecting: boolean,
 ] => {
-    const observerRef = useRef<IntersectionObserver | null>(null);
+    const observerRef = React.useRef<IntersectionObserver | null>(null);
     const [isIntersecting, setIntersecting] = useState(false);
 
     const refCallback = (element: Element | null) => {
@@ -113,10 +101,9 @@ export function useAwaiter<T>(factory: () => Promise<T>, providedOpts?: AwaiterO
             })
             .catch(error => {
                 if (!isAlive) return;
-                setState({ value: opts.fallbackValue, error, pending: false });
+                setState({ value: null, error, pending: false });
                 opts.onError?.(error);
             });
-
 
         return () => void (isAlive = false);
     }, opts.deps);
@@ -141,12 +128,10 @@ interface TimerOpts {
 
 export function useTimer({ interval = 1000, deps = [] }: TimerOpts) {
     const [time, setTime] = useState(0);
-    // use performance.now() over date.now() as the former is monotonic and not
-    // affetted by changes in the system clock (eg: timezone)
-    const start = useMemo(() => Math.round(performance.now()), deps);
+    const start = useMemo(() => Date.now(), deps);
 
     useEffect(() => {
-        const intervalId = setInterval(() => setTime(Math.round(performance.now()) - start), interval);
+        const intervalId = setInterval(() => setTime(Date.now() - start), interval);
 
         return () => {
             setTime(0);
@@ -164,14 +149,21 @@ export function useCleanupEffect(
     useEffect(() => effect, deps);
 }
 
-export function useFluxSubscription(event: string, cb: (...args: any[]) => void) {
-    const cbRef = useRef(cb);
-    cbRef.current = cb;
+interface FixedTimerOpts {
+    interval?: number;
+    initialTime?: number;
+}
+
+export function useFixedTimer({ interval = 1000, initialTime = Date.now() }: FixedTimerOpts) {
+    const [time, setTime] = useState(Date.now() - initialTime);
 
     useEffect(() => {
-        const handler = (...args: any[]) => cbRef.current(...args);
+        const intervalId = setInterval(() => setTime(Date.now() - initialTime), interval);
 
-        FluxDispatcher.subscribe(event, handler);
-        return () => FluxDispatcher.unsubscribe(event, handler);
-    }, [event]);
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [initialTime]);
+
+    return time;
 }

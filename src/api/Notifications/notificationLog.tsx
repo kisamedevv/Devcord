@@ -1,30 +1,18 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import * as DataStore from "@api/DataStore";
 import { Settings } from "@api/Settings";
-import { Paragraph } from "@components/Paragraph";
 import { openNotificationSettingsModal } from "@components/settings/tabs/endcord/NotificationSettings";
-import { classNameFactory } from "@utils/css";
-import { confirmAction } from "@utils/discord";
-import { useAwaiter } from "@utils/react";
 import { RenderModalProps } from "@endcord/discord-types";
-import { ListScrollerThin, Modal, openModal, React, Timestamp, useEffect, useReducer, useState } from "@webpack/common";
+import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
+import { useAwaiter } from "@utils/react";
+import { ConfirmModal, Forms, ListScrollerThin, Modal, openModal, React, Timestamp, useEffect, useReducer, useState } from "@webpack/common";
+import { nanoid } from "nanoid";
 import type { DispatchWithoutAction } from "react";
 
 import NotificationComponent from "./NotificationComponent";
@@ -38,7 +26,7 @@ interface PersistentNotificationData extends Pick<NotificationData, "title" | "b
 const KEY = "notification-log";
 
 const getLog = async () => {
-    const log = await DataStore.get(KEY) as PersistentNotificationData[] | undefined;
+    const log = await DataStore.get(KEY);
     return log ?? [];
 };
 
@@ -63,7 +51,7 @@ export async function persistNotification(notification: NotificationData) {
         log.unshift({
             ...pureNotification,
             timestamp: Date.now(),
-            id: crypto.randomUUID()
+            id: nanoid()
         });
 
         if (log.length > limit && limit !== 200)
@@ -75,21 +63,14 @@ export async function persistNotification(notification: NotificationData) {
     signals.forEach(x => x());
 }
 
-export async function deleteNotification(id: string) {
-    let found = false;
+export async function deleteNotification(timestamp: number) {
+    const log = await getLog();
+    const index = log.findIndex(x => x.timestamp === timestamp);
+    if (index === -1) return;
 
-    await DataStore.update(KEY, (old: PersistentNotificationData[] | undefined) => {
-        const log = old ?? [];
-        const index = log.findIndex(x => x.id === id);
-        if (index === -1) return log;
-
-        log.splice(index, 1);
-        found = true;
-        return log;
-    });
-
-    if (found)
-        signals.forEach(x => x());
+    log.splice(index, 1);
+    await DataStore.set(KEY, log);
+    signals.forEach(x => x());
 }
 
 export function useLogs() {
@@ -121,7 +102,7 @@ function NotificationEntry({ data }: { data: PersistentNotificationData; }) {
                     if (removing) return;
                     setRemoving(true);
 
-                    setTimeout(() => deleteNotification(data.id), 200);
+                    setTimeout(() => deleteNotification(data.timestamp), 200);
                 }}
                 richBody={
                     <div className={cl("body-wrapper")}>
@@ -135,13 +116,14 @@ function NotificationEntry({ data }: { data: PersistentNotificationData; }) {
 }
 
 export function NotificationLog({ log, pending }: { log: PersistentNotificationData[], pending: boolean; }) {
+    const { t } = useI18n();
     if (!log.length && !pending)
         return (
             <div>
                 <div className={cl("empty")} />
-                <Paragraph style={{ textAlign: "center" }}>
-                    No notifications yet
-                </Paragraph>
+                <Forms.FormText style={{ textAlign: "center" }}>
+                    {t("No notifications yet")}
+                </Forms.FormText>
             </div>
         );
 
@@ -158,33 +140,37 @@ export function NotificationLog({ log, pending }: { log: PersistentNotificationD
 }
 
 function LogModal(props: RenderModalProps) {
+    const { t } = useI18n();
     const [log, pending] = useLogs();
 
     return (
         <Modal
             {...props}
             size="xl"
-            title="Notification Log"
+            title={t("Notification Log")}
             actions={[
                 {
-                    text: "Notification Settings",
+                    text: t("Notification Settings"),
                     variant: "primary",
                     onClick: openNotificationSettingsModal
                 },
                 {
-                    text: "Clear Notification Log",
+                    text: t("Clear Notification Log"),
                     variant: "critical-primary",
                     disabled: !log.length,
                     onClick() {
-                        confirmAction({
-                            title: "Are you sure?",
-                            subtitle: `This will permanently remove ${log.length} notification${log.length === 1 ? "" : "s"}. This action cannot be undone.`,
-                            confirmText: "Do it!",
-                            async onConfirm() {
-                                await DataStore.set(KEY, []);
-                                signals.forEach(x => x());
-                            },
-                        });
+                        openModal(props =>
+                            <ConfirmModal
+                                {...props}
+                                title={t("Are you sure?")}
+                                subtitle={t("This will permanently remove {count} notification(s). This action cannot be undone.", { count: log.length })}
+                                confirmText={t("Do it!")}
+                                onConfirm={async () => {
+                                    await DataStore.set(KEY, []);
+                                    signals.forEach(x => x());
+                                }}
+                            />
+                        );
                     }
                 }
             ]}

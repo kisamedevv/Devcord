@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Endcord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -7,20 +7,27 @@
 import * as DataStore from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
 import { Settings } from "@api/Settings";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
-import { promptToRestart } from "@utils/promptToRestart";
-import { OAuth2AuthorizeModal, openModal, UserStore } from "@webpack/common";
+import { relaunch } from "@utils/native";
+import { ConfirmModal,OAuth2AuthorizeModal, openModal, UserStore } from "@webpack/common";
 
+import { isSecureCloudUrl } from "./cloudUrl";
 export const logger = new Logger("SettingsSync:CloudSetup", "#39b7e0");
 
 export const getCloudUrl = () => new URL(Settings.cloud.url);
 const getCloudUrlOrigin = () => getCloudUrl().origin;
 
 export async function checkCloudUrlCsp() {
+    if (!isSecureCloudUrl(Settings.cloud.url)) {
+        logger.error("The cloud URL has to use HTTPS");
+        return false;
+    }
+
     if (IS_WEB) return true;
 
     const { host } = getCloudUrl();
-    if (host === "api.endcord.dev") return true;
+    if (host === "endcord.com") return true;
 
     if (await EndcordNative.csp.isDomainAllowed(Settings.cloud.url, ["connect-src"])) {
         return true;
@@ -28,10 +35,17 @@ export async function checkCloudUrlCsp() {
 
     const res = await EndcordNative.csp.requestAddOverride(Settings.cloud.url, ["connect-src"], "Cloud Sync");
     if (res === "ok") {
-        promptToRestart("relaunch", {
-            title: "Cloud Integration enabled",
-            subtitle: `${host} has been added to the whitelist. Please restart the app for the changes to take effect.`
-        });
+        openModal(props => (
+            <ConfirmModal
+                {...props}
+                title={t("Cloud Integration enabled")}
+                subtitle={`${host} has been added to the whitelist. Please restart the app for the changes to take effect.`}
+                confirmText={t("Restart now")}
+                cancelText={t("Later!")}
+                variant="primary"
+                onConfirm={relaunch}
+            />
+        ));
     }
     return false;
 }
@@ -93,8 +107,8 @@ export async function authorizeCloud() {
         var { clientId, redirectUri } = await oauthConfiguration.json();
     } catch {
         showNotification({
-            title: "Cloud Integration",
-            body: "Setup failed (couldn't retrieve OAuth configuration)."
+            title: t("Cloud Integration"),
+            body: t("Setup failed (couldn't retrieve OAuth configuration).")
         });
         Settings.cloud.authenticated = false;
         return;
@@ -123,21 +137,21 @@ export async function authorizeCloud() {
                     logger.info("Authorized with secret");
                     await setAuthorization(secret);
                     showNotification({
-                        title: "Cloud Integration",
-                        body: "Cloud integrations enabled!"
+                        title: t("Cloud Integration"),
+                        body: t("Cloud integrations enabled!")
                     });
                     Settings.cloud.authenticated = true;
                 } else {
                     showNotification({
-                        title: "Cloud Integration",
-                        body: "Setup failed (no secret returned?)."
+                        title: t("Cloud Integration"),
+                        body: t("Setup failed (no secret returned?).")
                     });
                     Settings.cloud.authenticated = false;
                 }
             } catch (e: any) {
                 logger.error("Failed to authorize", e);
                 showNotification({
-                    title: "Cloud Integration",
+                    title: t("Cloud Integration"),
                     body: `Setup failed (${e.toString()}).`
                 });
                 Settings.cloud.authenticated = false;
@@ -152,3 +166,4 @@ export async function getCloudAuth() {
 
     return window.btoa(`${secret}:${getUserId()}`);
 }
+

@@ -1,25 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
-import { Devs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { Channel, Message } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { ContextMenuApi, FluxDispatcher, Menu, MessageActions } from "@webpack/common";
 
 enum GreetMode {
@@ -78,13 +67,13 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
             aria-label="Greet Sticker Picker"
         >
             <Menu.MenuGroup
-                label="Greet Mode"
+                label={t("Greet Mode")}
             >
                 {Object.values(GreetMode).map(mode => (
                     <Menu.MenuRadioItem
                         key={mode}
                         group="greet-mode"
-                        id={"greet-mode-" + mode}
+                        id={`greet-mode-${mode}`}
                         label={mode}
                         checked={mode === greetMode}
                         action={() => s.greetMode = mode}
@@ -95,12 +84,12 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
             <Menu.MenuSeparator />
 
             <Menu.MenuGroup
-                label="Greet Stickers"
+                label={t("Greet Stickers")}
             >
                 {WELCOME_STICKERS.map(sticker => (
                     <Menu.MenuItem
                         key={sticker.id}
-                        id={"greet-" + sticker.id}
+                        id={`greet-${sticker.id}`}
                         label={sticker.description.split(" ")[0]}
                         action={() => greet(channel, message, [sticker.id])}
                     />
@@ -112,7 +101,7 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                     <Menu.MenuSeparator />
 
                     <Menu.MenuItem
-                        label="Unholy Multi-Greet"
+                        label={t("Unholy Multi-Greet")}
                         id="unholy-multi-greet"
                     >
                         {WELCOME_STICKERS.map(sticker => {
@@ -121,7 +110,7 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                             return (
                                 <Menu.MenuCheckboxItem
                                     key={sticker.id}
-                                    id={"multi-greet-" + sticker.id}
+                                    id={`multi-greet-${sticker.id}`}
                                     label={sticker.description.split(" ")[0]}
                                     checked={checked}
                                     disabled={!checked && multiGreetChoices.length >= 3}
@@ -137,8 +126,8 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                         <Menu.MenuSeparator />
                         <Menu.MenuItem
                             id="multi-greet-submit"
-                            label="Send Greets"
-                            action={() => greet(channel, message, multiGreetChoices!)}
+                            label={t("Send Greets")}
+                            action={() => greet(channel, message, multiGreetChoices)}
                             disabled={multiGreetChoices.length === 0}
                         />
 
@@ -153,7 +142,7 @@ export default definePlugin({
     name: "GreetStickerPicker",
     description: "Allows you to use any greet sticker instead of only the random one by right-clicking the 'Wave to say hi!' button",
     tags: ["Emotes", "Customisation"],
-    authors: [Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 

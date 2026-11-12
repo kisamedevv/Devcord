@@ -11,12 +11,11 @@ export default definePlugin({
     name: "ImageLink",
     description: "Never hide image links in messages, even if it's the only content",
     tags: ["Media", "Appearance"],
-    authors: [Devs.Kyuuhachi, Devs.Sqaaakoi],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {
-            // small util file
-            find: "linkCount:0,onlyLinks:!1",
+            find: "linkCount:0,onlyLinks:",
             replacement: {
                 // SimpleEmbedTypes.has(embed.type) && isEmbedInline(embed)
                 match: /\i\.has\(\i\.type\)&&\(0,\i\.\i\)\(\i\)/,

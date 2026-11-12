@@ -1,31 +1,20 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isSettingDisabled } from "@api/PluginManager";
+import { t } from "@utils/i18n";
 import { PluginSettingSelectDef } from "@utils/types";
 import { React, Select, useState } from "@webpack/common";
 
-import { resolveError, SettingProps, SettingsSection, useSettingState } from "./Common";
+import { resolveError, SettingProps, SettingsSection } from "./Common";
 
 export function SelectSetting({ setting, pluginSettings, definedSettings, onChange, id }: SettingProps<PluginSettingSelectDef>) {
     const def = pluginSettings[id] ?? setting.options?.find(o => o.default)?.value;
 
-    const [state, setState] = useSettingState<any>(def ?? null);
+    const [state, setState] = useState<any>(def ?? null);
     const [error, setError] = useState<string | null>(null);
 
     function handleChange(newValue: any) {
@@ -42,8 +31,8 @@ export function SelectSetting({ setting, pluginSettings, definedSettings, onChan
     return (
         <SettingsSection name={setting.displayName} id={id} description={setting.description} error={error}>
             <Select
-                placeholder={setting.placeholder ?? "Select an option"}
-                options={setting.options}
+                placeholder={t(setting.placeholder ?? "Select an option")}
+                options={setting.options.map(o => ({ ...o, label: t(o.label) }))}
                 maxVisibleItems={5}
                 closeOnSelect={true}
                 select={handleChange}

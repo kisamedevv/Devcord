@@ -1,27 +1,15 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
-import { Heading } from "@components/Heading";
-import { Margins } from "@utils/margins";
 import { RenderModalProps } from "@endcord/discord-types";
-import { Modal, openModal, SearchableSelect, useMemo } from "@webpack/common";
+import { t } from "@utils/i18n";
+import { Margins } from "@utils/margins";
+import { Forms, Modal,openModal, SearchableSelect, useMemo } from "@webpack/common";
 
 import { settings } from "./settings";
 import { getLanguages } from "./utils";
@@ -43,14 +31,14 @@ function LanguageSelect({ settingsKey, includeAuto }: { settingsKey: typeof Lang
 
     return (
         <section className={Margins.bottom16}>
-            <Heading className={Margins.bottom8}>
+            <Forms.FormTitle tag="h3">
                 {settings.def[settingsKey].description}
-            </Heading>
+            </Forms.FormTitle>
 
             <SearchableSelect
                 options={options}
                 value={options.find(o => o.value === currentValue)?.value}
-                placeholder="Select a language"
+                placeholder={t("Select a language")}
                 maxVisibleItems={5}
                 closeOnSelect={true}
                 onChange={v => settings.store[settingsKey] = v}
@@ -64,7 +52,7 @@ function AutoTranslateToggle() {
 
     return (
         <FormSwitch
-            title="Auto Translate"
+            title={t("Auto Translate")}
             description={settings.def.autoTranslate.description}
             value={value}
             onChange={v => settings.store.autoTranslate = v}
@@ -78,7 +66,7 @@ function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) {
     return (
         <Modal
             {...rootProps}
-            title="Translate"
+            title={t("Translate")}
         >
             {LanguageSettingKeys.map(s => (
                 <LanguageSelect

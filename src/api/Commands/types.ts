@@ -9,5 +9,4 @@ export { ApplicationCommandInputType, ApplicationCommandOptionType, ApplicationC
 
 export interface EndcordCommand extends Command {
     isEndcordCommand?: boolean;
-    rootCommand?: EndcordCommand;
 }

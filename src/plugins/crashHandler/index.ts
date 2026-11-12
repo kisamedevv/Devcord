@@ -1,25 +1,15 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { DataStore } from "@api/index";
 import { showNotification } from "@api/Notifications";
+import { noteCrash, noteRecovered } from "@api/SafeMode";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { maybePromptToUpdate } from "@utils/updater";
@@ -60,7 +50,7 @@ let shouldAttemptRecover = true;
 export default definePlugin({
     name: "CrashHandler",
     description: "Utility plugin for handling and possibly recovering from crashes without a restart",
-    authors: [Devs.Nuckyz],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Utility", "Developers"],
     enabledByDefault: true,
     settings,
@@ -77,6 +67,7 @@ export default definePlugin({
 
     handleCrash(_this: any, errorState: any) {
         DataStore.del("KeepCurrentChannel_previousData");
+        noteCrash(errorState?.error);
 
         if (IS_DEV) {
             try {
@@ -99,8 +90,8 @@ export default definePlugin({
                     try {
                         showNotification({
                             color: "#eed202",
-                            title: "Discord has crashed!",
-                            body: "Awn :( Discord has crashed two times rapidly, not attempting to recover.",
+                            title: t("Whoops, Discord tripped!"),
+                            body: t("Discord tripped twice in a row, so Endcord is letting it rest this time. Press Ctrl+R if anything looks stuck."),
                             noPersist: true
                         });
                     } catch { }
@@ -116,7 +107,7 @@ export default definePlugin({
             try {
                 if (!hasCrashedOnce) {
                     hasCrashedOnce = true;
-                    maybePromptToUpdate("Uh oh, Discord has just crashed... but good news, there is a Endcord update available that might fix this issue! Would you like to update now?", true);
+                    maybePromptToUpdate(t("Discord just tripped, but good news: a fresh Endcord update might fix it! Want to update now?"), true);
                 }
             } catch { }
 
@@ -134,8 +125,8 @@ export default definePlugin({
         try {
             showNotification({
                 color: "#eed202",
-                title: "Discord has crashed!",
-                body: "Attempting to recover...",
+                title: t("Whoops, Discord tripped!"),
+                body: t("Hang on, Endcord is helping it back up..."),
                 noPersist: true
             });
         } catch { }
@@ -204,6 +195,7 @@ export default definePlugin({
 
         try {
             _this.setState({ error: null, info: null });
+            noteRecovered();
         } catch (err) {
             CrashHandlerLogger.debug("Failed to update crash handler component.", err);
         }

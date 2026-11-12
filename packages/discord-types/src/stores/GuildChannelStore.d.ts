@@ -1,5 +1,5 @@
-import { ChannelType } from "../../enums";
 import { Channel, FluxStore, ThreadJoined } from "..";
+import { ChannelType } from "../../enums";
 
 export interface ChannelWithComparator {
     channel: Channel;

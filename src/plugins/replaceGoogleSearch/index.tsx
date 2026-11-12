@@ -6,8 +6,9 @@
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { SearchIcon } from "@components/Icons";
+import { Flex } from "@components/Flex";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { Menu } from "@webpack/common";
 
@@ -21,8 +22,7 @@ const DefaultEngines = {
     GitHub: "https://github.com/search?q=",
     Reddit: "https://www.reddit.com/search?q=",
     Wikipedia: "https://wikipedia.org/w/index.php?search=",
-    Startpage: "https://www.startpage.com/sp/search?query=",
-    Kagi: "https://kagi.com/search?q="
+    Startpage: "https://www.startpage.com/sp/search?query="
 } as const;
 
 const enum ReplacementEngineValue {
@@ -37,6 +37,7 @@ const settings = definePluginSettings({
         placeholder: "Google"
     },
     customEngineURL: {
+        sensitive: true,
         displayName: "Custom Engine URL",
         description: "The URL of your Engine",
         type: OptionType.STRING,
@@ -86,19 +87,30 @@ function makeSearchItem(src: string) {
 
     return (
         <Menu.MenuItem
-            label="Search Text"
+            label={t("Search Text")}
             key="search-text"
             id="vc-search-text"
-            leadingAccessory={{ type: "icon", icon: SearchIcon }}
         >
             {Object.keys(Engines).map(engine => {
-                const key = "vc-search-content-" + engine;
+                const key = `vc-search-content-${engine}`;
                 return (
                     <Menu.MenuItem
                         key={key}
                         id={key}
-                        label={engine}
-                        leadingAccessory={{ type: "image", src: `https://icons.duckduckgo.com/ip3/${new URL(Engines[engine]).hostname}.ico` }}
+                        label={
+                            <Flex gap="0.5em" alignItems="center">
+                                <img
+                                    style={{
+                                        borderRadius: "50%"
+                                    }}
+                                    aria-hidden="true"
+                                    height={16}
+                                    width={16}
+                                    src={`https://icons.duckduckgo.com/ip3/${new URL(Engines[engine]).hostname}.ico`}
+                                />
+                                {engine}
+                            </Flex>
+                        }
                         action={() => search(src, Engines[engine])}
                     />
                 );
@@ -122,7 +134,7 @@ export default definePlugin({
     name: "ReplaceGoogleSearch",
     description: "Replaces the Google search with different Engine(s)",
     tags: ["Utility", "Customisation"],
-    authors: [Devs.Moxxie, Devs.Ethan],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 

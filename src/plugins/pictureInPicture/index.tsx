@@ -9,6 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { Tooltip } from "@webpack/common";
 
@@ -25,7 +26,7 @@ export default definePlugin({
     name: "PictureInPicture",
     description: "Adds picture in picture to videos (next to the Download button)",
     tags: ["Media", "Utility"],
-    authors: [Devs.Lumap],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {
@@ -39,7 +40,7 @@ export default definePlugin({
 
     PictureInPictureButton: ErrorBoundary.wrap(() => {
         return (
-            <Tooltip text="Toggle Picture in Picture">
+            <Tooltip text={t("Toggle Picture in Picture")}>
                 {tooltipProps => (
                     <div
                         {...tooltipProps}
@@ -57,44 +58,16 @@ export default definePlugin({
 
                             videoClone.loop = settings.store.loop;
                             videoClone.style.display = "none";
+                            videoClone.onleavepictureinpicture = () => videoClone.remove();
 
-                            let cleaned = false;
-                            function cleanup() {
-                                if (cleaned) return;
-                                cleaned = true;
-
-                                const { currentTime } = videoClone;
-
-                                videoClone.onloadedmetadata = null;
-                                videoClone.onleavepictureinpicture = null;
-
-                                videoClone.pause();
-                                videoClone.removeAttribute("src");
-                                videoClone.load();
-                                videoClone.remove();
-
-                                // resume original if still in the document
-                                if (video.isConnected) {
-                                    video.currentTime = currentTime;
-                                    video.play().catch(() => 0);
-                                }
+                            function launchPiP() {
+                                videoClone.currentTime = video.currentTime;
+                                videoClone.requestPictureInPicture();
+                                video.pause();
+                                videoClone.play();
                             }
 
-                            videoClone.onleavepictureinpicture = cleanup;
-
-                            async function launchPiP() {
-                                try {
-                                    videoClone.currentTime = video.currentTime;
-                                    video.pause();
-                                    await videoClone.play();
-                                    await videoClone.requestPictureInPicture();
-                                } catch (err) {
-                                    console.error("Failed to enter Picture-in-Picture", err);
-                                    cleanup();
-                                }
-                            }
-
-                            if (videoClone.readyState >= 1)
+                            if (videoClone.readyState === 4 /* HAVE_ENOUGH_DATA */)
                                 launchPiP();
                             else
                                 videoClone.onloadedmetadata = launchPiP;

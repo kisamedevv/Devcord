@@ -1,24 +1,12 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import { handleIpc } from "@main/utils/ipc";
 import { IpcEvents } from "@shared/IpcEvents";
 import { execFile as cpExecFile } from "child_process";
-import { ipcMain } from "electron";
 import { join } from "path";
 import { promisify } from "util";
 
@@ -36,7 +24,7 @@ function git(...args: string[]) {
     const opts = { cwd: ENDCORD_SRC_DIR };
 
     if (isFlatpak) return execFile("flatpak-spawn", ["--host", "git", ...args], opts);
-    else return execFile("git", args, opts);
+    return execFile("git", args, opts);
 }
 
 async function getRepo() {
@@ -84,7 +72,7 @@ async function build() {
     return !res.stderr.includes("Build failed");
 }
 
-ipcMain.handle(IpcEvents.GET_REPO, serializeErrors(getRepo));
-ipcMain.handle(IpcEvents.GET_UPDATES, serializeErrors(calculateGitChanges));
-ipcMain.handle(IpcEvents.UPDATE, serializeErrors(pull));
-ipcMain.handle(IpcEvents.BUILD, serializeErrors(build));
+handleIpc(IpcEvents.GET_REPO, serializeErrors(getRepo));
+handleIpc(IpcEvents.GET_UPDATES, serializeErrors(calculateGitChanges));
+handleIpc(IpcEvents.UPDATE, serializeErrors(pull));
+handleIpc(IpcEvents.BUILD, serializeErrors(build));

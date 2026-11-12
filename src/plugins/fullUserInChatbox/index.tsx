@@ -24,14 +24,15 @@ export default definePlugin({
     name: "FullUserInChatbox",
     description: "Makes the user mention in the chatbox have more functionalities, like left/right clicking",
     tags: ["Shortcuts", "Utility"],
-    authors: [Devs.sadan],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {
             // Same find as RoleColorEverywhere chatbox mentions
             find: '"text":"locked"',
             replacement: {
-                match: /(hidePersonalInformation\).+?)(if\(null!=\i\){.{0,600}?)(?=}function \i\(\i\){let{id:)/,
+                // Ends at the function's closing brace, however its last return is written
+                match: /(hidePersonalInformation\).+?)(if\(null!=\i\){.+?)(?=}function )/,
                 replace: "$1return $self.UserMentionComponent({...arguments[0],originalComponent:()=>{$2}});"
             }
         }

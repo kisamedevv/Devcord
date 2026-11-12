@@ -1,5 +1,5 @@
-import { DraftType } from "../../enums";
 import { CloudUpload, FluxStore } from "..";
+import { DraftType } from "../../enums";
 
 export class UploadAttachmentStore extends FluxStore {
     getFirstUpload(channelId: string, draftType: DraftType): CloudUpload | null;

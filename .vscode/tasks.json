@@ -5,26 +5,15 @@
     "tasks": [
         {
             "label": "Build",
-            "detail": "Build endcord in development mode",
             "type": "shell",
-            "command": "pnpm build --dev",
+            "command": "pnpm build",
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
         },
         {
-            "label": "Reporter",
-            "detail": "Build with the reporter that will test all patches and finds, then report errors to console",
-            "type": "shell",
-            "command": "pnpm build --dev --reporter",
-            "group": {
-                "kind": "build"
-            }
-        },
-        {
             "label": "Watch",
-            "detail": "Build and watch for changes",
             "type": "shell",
             "command": "pnpm watch",
             "problemMatcher": [],

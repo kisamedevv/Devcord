@@ -1,22 +1,11 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { DeleteIcon } from "@components/Icons";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
 import { Tooltip } from "@webpack/common";
@@ -25,7 +14,7 @@ const iconClasses = findCssClassesLazy("button", "wrapper", "disabled", "separat
 
 export function DeleteButton({ onClick }: { onClick(): void; }) {
     return (
-        <Tooltip text="Delete Review">
+        <Tooltip text={t("Delete Review")}>
             {props => (
                 <div
                     {...props}
@@ -42,7 +31,7 @@ export function DeleteButton({ onClick }: { onClick(): void; }) {
 
 export function ReportButton({ onClick }: { onClick(): void; }) {
     return (
-        <Tooltip text="Report Review">
+        <Tooltip text={t("Report Review")}>
             {props => (
                 <div
                     {...props}

@@ -4,36 +4,39 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./UIElements.css";
+import "./UIElements.css?screen";
 
 import { ChatBarButtonMap } from "@api/ChatButtons";
 import { MessagePopoverButtonMap } from "@api/MessagePopover";
 import { SettingsPluginUiElements, useSettings } from "@api/Settings";
+import { BaseText } from "@components/BaseText";
 import { Card } from "@components/Card";
-import { Heading } from "@components/Heading";
+import { EndcordModal } from "@components/EndcordModal";
 import { PlaceholderIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { Switch } from "@components/Switch";
+import { RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
-import { RenderModalProps } from "@endcord/discord-types";
-import { Clickable, Modal, openModal } from "@webpack/common";
+import { Clickable, openModal } from "@webpack/common";
 
 
 const cl = classNameFactory("vc-plugin-ui-elements-");
 
 export function UIElementsButton() {
+    const { t } = useI18n();
     return (
         <Clickable onClick={() => openModal(modalProps => <UIElementsModal {...modalProps} />)}>
             <Card className={cl("button")} defaultPadding>
                 <div className={cl("button-description")}>
                     <Paragraph size="md" weight="semibold">
-                        Manage plugin UI elements
+                        {t("Manage plugin UI elements")}
                     </Paragraph>
                     <Paragraph size="xs">
-                        Allows you to hide buttons you don't like
+                        {t("Allows you to hide buttons you don't like")}
                     </Paragraph>
                 </div>
                 <svg
@@ -54,6 +57,7 @@ function Section(props: {
     settings: SettingsPluginUiElements;
     buttonMap: Map<string, { icon: IconComponent; }>;
 }) {
+    const { t } = useI18n();
     const { buttonMap, description, title, settings } = props;
 
     const switches = Array.from(buttonMap, ([name, { icon }]) => {
@@ -75,13 +79,13 @@ function Section(props: {
 
     return (
         <section>
-            <Heading tag="h3" className={Margins.bottom8}>{title}</Heading>
-            <Paragraph size="sm" className={classes(Margins.top8, Margins.bottom20, cl("description"))}>{description}</Paragraph>
+            <BaseText tag="h3" size="lg" weight="semibold">{title}</BaseText>
+            <Paragraph size="sm" className={classes(Margins.top8, Margins.bottom20)}>{description}</Paragraph>
 
             <div className={cl("switches")}>
                 {switches.length === 0 && (
                     <Paragraph weight="medium" className={cl("switches-row")} style={{ color: "var(--text-muted)" }}>
-                        Buttons of enabled plugins will appear here.
+                        {t("Buttons of enabled plugins will appear here.")}
                     </Paragraph>
                 )}
                 {switches}
@@ -91,24 +95,25 @@ function Section(props: {
 }
 
 function UIElementsModal(props: RenderModalProps) {
+    const { t } = useI18n();
     const { uiElements } = useSettings(["uiElements.*"]);
 
     return (
-        <Modal {...props} size="md" title="Manage plugin UI elements">
+        <EndcordModal {...props} size="md" title={t("Manage plugin UI elements")}>
             <div className={cl("modal-content")}>
                 <Section
-                    title="Chatbar Buttons"
-                    description="These are the buttons on the right side of the chat input bar"
+                    title={t("Chatbar Buttons")}
+                    description={t("These are the buttons on the right side of the chat input bar")}
                     buttonMap={ChatBarButtonMap}
                     settings={uiElements.chatBarButtons}
                 />
                 <Section
-                    title="Message Popover Buttons"
-                    description="These are the floating buttons on the right when you hover over a message"
+                    title={t("Message Popover Buttons")}
+                    description={t("These are the floating buttons on the right when you hover over a message")}
                     buttonMap={MessagePopoverButtonMap}
                     settings={uiElements.messagePopoverButtons}
                 />
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

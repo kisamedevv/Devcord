@@ -12,16 +12,14 @@ const settings = definePluginSettings({
     reactionCount: {
         description: "Number of reactions (0-42)",
         type: OptionType.NUMBER,
-        default: 5,
-        min: 0,
-        max: 42
+        default: 5
     },
 });
 
 export default definePlugin({
     name: "MoreQuickReactions",
     description: "Increases the number of reactions available in the Quick React hover menu",
-    authors: [Devs.iamme],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Emotes", "Reactions", "Customisation", "Shortcuts"],
     settings,
 
@@ -31,7 +29,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: "#{intl::MESSAGE_UTILITIES_A11Y_LABEL}),children",
+            find: "#{intl::MESSAGE_UTILITIES_A11Y_LABEL}",
             replacement: {
                 match: /(?<=length>=3\?.{0,40})\.slice\(0,3\)/,
                 replace: ".slice(0,$self.reactionCount)"

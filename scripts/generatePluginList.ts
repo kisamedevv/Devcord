@@ -16,12 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { PluginTarget, PluginTargets } from "@utils/pluginTargets";
 import { Dirent, readdirSync, readFileSync, writeFileSync } from "fs";
 import { access, readFile } from "fs/promises";
 import { join, sep } from "path";
 import { normalize as posixNormalize, sep as posixSep } from "path/posix";
-import { BigIntLiteral, createSourceFile, Identifier, isArrayLiteralExpression, isCallExpression, isExportAssignment, isIdentifier, isObjectLiteralExpression, isPropertyAccessExpression, isPropertyAssignment, isSatisfiesExpression, isStringLiteral, isVariableStatement, NamedDeclaration, NodeArray, ObjectLiteralExpression, ScriptTarget, StringLiteral, SyntaxKind } from "typescript";
+import { BigIntLiteral, createSourceFile, Identifier, isArrayLiteralExpression, isAsExpression, isCallExpression, isExportAssignment, isIdentifier, isNewExpression, isNoSubstitutionTemplateLiteral, isObjectLiteralExpression, isPropertyAccessExpression, isPropertyAssignment, isSatisfiesExpression, isStringLiteral, isVariableStatement, NamedDeclaration, Node, NodeArray, ObjectLiteralExpression, ScriptTarget, StringLiteral, SyntaxKind } from "typescript";
 
 import { getPluginTarget } from "./utils.mjs";
 
@@ -41,7 +40,7 @@ interface PluginData {
     hasCommands: boolean;
     required: boolean;
     enabledByDefault: boolean;
-    target?: PluginTarget;
+    target: "discordDesktop" | "vesktop" | "desktop" | "web" | "dev";
     filePath: string;
 }
 
@@ -68,13 +67,17 @@ function parseDevs() {
         if (!isVariableStatement(child)) continue;
 
         const devsDeclaration = child.declarationList.declarations.find(d => hasName(d, "Devs"));
-        if (!devsDeclaration?.initializer || !isCallExpression(devsDeclaration.initializer)) continue;
+        if (!devsDeclaration?.initializer) continue;
 
-        const value = devsDeclaration.initializer.arguments[0];
+        // Vencord: Object.freeze({...} satisfies ...). Endcord: new Proxy({...} as any, handler) as any.
+        let value: Node | undefined = devsDeclaration.initializer;
+        while (value && (isAsExpression(value) || isSatisfiesExpression(value))) value = value.expression;
+        if (value && (isCallExpression(value) || isNewExpression(value))) value = value.arguments?.[0];
+        while (value && (isAsExpression(value) || isSatisfiesExpression(value))) value = value.expression;
 
-        if (!isSatisfiesExpression(value) || !isObjectLiteralExpression(value.expression)) throw new Error("Failed to parse devs: not an object literal");
+        if (!value || !isObjectLiteralExpression(value)) throw new Error("Failed to parse devs: not an object literal");
 
-        for (const prop of value.expression.properties) {
+        for (const prop of value.properties) {
             const name = (prop.name as Identifier).text;
             const value = isPropertyAssignment(prop) ? prop.initializer : prop;
 
@@ -124,8 +127,15 @@ async function parseFile(fileName: string) {
             switch (key) {
                 case "name":
                 case "description":
-                    if (!isStringLiteral(value)) throw fail(`${key} is not a string literal`);
-                    data[key] = value.text;
+                    let text = "";
+                    if (isStringLiteral(value) || isNoSubstitutionTemplateLiteral(value)) {
+                        text = value.text;
+                    } else if (isCallExpression(value) && isIdentifier(value.expression) && value.expression.text === "t" && isStringLiteral(value.arguments[0])) {
+                        text = (value.arguments[0] as StringLiteral).text;
+                    } else {
+                        throw fail(`${key} is not a string literal or t() call`);
+                    }
+                    data[key] = text;
                     break;
                 case "patches":
                     data.hasPatches = true;
@@ -137,8 +147,12 @@ async function parseFile(fileName: string) {
                     if (!isArrayLiteralExpression(value)) throw fail("authors is not an array literal");
                     data.authors = value.elements.map(e => {
                         if (!isPropertyAccessExpression(e)) throw fail("authors array contains non-property access expressions");
-                        const d = devs[getName(e)!];
-                        if (!d) throw fail(`couldn't look up author ${getName(e)}`);
+                        const name = getName(e)!;
+                        let d = devs[name];
+                        if (!d) {
+                            d = { name, id: "0" };
+                            devs[name] = d;
+                        }
                         return d;
                     });
                     break;
@@ -167,7 +181,7 @@ async function parseFile(fileName: string) {
 
         const target = getPluginTarget(fileName);
         if (target) {
-            if (!PluginTargets.includes(target as PluginTarget)) throw fail(`invalid target ${target}`);
+            if (!["web", "discordDesktop", "vesktop", "desktop", "dev"].includes(target)) throw fail(`invalid target ${target}`);
             data.target = target as any;
         }
 

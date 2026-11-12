@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
 
@@ -23,11 +11,12 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { OpenExternalIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
+import { Guild, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
 import definePlugin from "@utils/types";
-import { Guild, User } from "@endcord/discord-types";
 import { findCssClassesLazy } from "@webpack";
 import { Clickable, ConfirmModal, IconUtils, Menu, openModal, Parser } from "@webpack/common";
 
@@ -47,10 +36,9 @@ const guildPopoutPatch: NavContextMenuPatchCallback = (children, { guild }: { gu
     if (!guild) return;
     children.push(
         <Menu.MenuItem
-            label="View Reviews"
+            label={t("View Reviews")}
             id="vc-rdb-server-reviews"
             icon={OpenExternalIcon}
-            leadingAccessory={{ type: "icon", icon: OpenExternalIcon }}
             action={() => openReviewsModal(guild.id, guild.name, ReviewType.Server)}
         />
     );
@@ -60,10 +48,9 @@ const userContextPatch: NavContextMenuPatchCallback = (children, { user }: { use
     if (!user) return;
     children.push(
         <Menu.MenuItem
-            label="View Reviews"
+            label={t("View Reviews")}
             id="vc-rdb-user-reviews"
             icon={OpenExternalIcon}
-            leadingAccessory={{ type: "icon", icon: OpenExternalIcon }}
             action={() => openReviewsModal(user.id, user.username, ReviewType.User)}
         />
     );
@@ -73,7 +60,7 @@ export default definePlugin({
     name: "ReviewDB",
     description: "Review other users (Adds a new settings to profiles)",
     tags: ["Friends", "Servers"],
-    authors: [Devs.mantikafasi, Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
     contextMenus: {
@@ -85,14 +72,6 @@ export default definePlugin({
     },
 
     patches: [
-        {
-            // DM profile sidebar
-            find: ".SIDEBAR,disableToolbar:",
-            replacement: {
-                match: /user:(\i),widgets:.{0,100}?\}\),(?=.{0,100}unownedWishlistItems:\i,wishlistId:\i)/,
-                replace: "$&$self.renderProfileComponent({user:$1,isSideBar:true}),"
-            }
-        },
         {
             // User popout
             // Same find as ShowConnections
@@ -125,7 +104,7 @@ export default definePlugin({
                     if (lastReviewId && lastReviewId < user.lastReviewID) {
                         s.lastReviewId = user.lastReviewID;
                         if (user.lastReviewID !== 0)
-                            showToast({ text: "You have new reviews on your profile!" });
+                            showToast("You have new reviews on your profile!");
                     }
                 }
 
@@ -136,11 +115,11 @@ export default definePlugin({
                         confirmText: "Ok",
                         onCancel: async () =>
                             EndcordNative.native.openExternal(
-                                "https://reviewdb.mantikafasi.dev/api/redirect?"
-                                + new URLSearchParams({
+                                `https://reviewdb.mantikafasi.dev/api/redirect?${
+                                 new URLSearchParams({
                                     token: Auth.token!,
                                     page: "dashboard/appeal"
-                                })
+                                })}`
                             )
                     } : {};
 
@@ -169,7 +148,7 @@ export default definePlugin({
     renderProfileComponent: ErrorBoundary.wrap(({ user, isSideBar = false }: { user: User; isSideBar?: boolean; }) => {
         const [reviewData] = useAwaiter(() => getReviews(user.id, { limit: 4 }), { deps: [user.id], fallbackValue: null });
 
-        // Discord are masters at using a crap ton of html elements and css classes to create a simple ui that could have
+        // Discord are masters at using a huge number of html elements and css classes to create a simple ui that could have
         // been made with less than half of the number of elements, so we have to do this insanity to replicate their ui
         const reviewsSection = (
             <section className={ProfileCardClasses.container}>
@@ -180,13 +159,14 @@ export default definePlugin({
                             onClick={() => !reviewData?.hasOptedOut && openReviewsModal(user.id, user.username, ReviewType.User)}
                         >
                             <div className={classes(ProfileCardOverlayClasses.overlay, ProfileCardContainerClasses.innerContainer, ProfileCardClasses.card)}>
-                                <Paragraph size={isSideBar ? "sm" : "xs"} weight="medium">User Reviews</Paragraph>
-                                {!!reviewData?.reviewCount
+                                <Paragraph size={isSideBar ? "sm" : "xs"} weight="medium">{t("User Reviews")}</Paragraph>
+                                {reviewData?.reviewCount
                                     ? (
                                         <div className={ProfileCardContainerClasses.icons}>
                                             {reviewData.reviews
                                                 .filter(review => review.id !== 0)
                                                 .slice(0, 4)
+                                                .reverse()
                                                 .map((review, idx) => {
                                                     const showCount = idx === 3 && reviewData.reviewCount > 4;
 

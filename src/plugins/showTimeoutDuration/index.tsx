@@ -8,15 +8,15 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Paragraph } from "@components/Paragraph";
 import { TooltipContainer } from "@components/TooltipContainer";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { canonicalizeMatch } from "@utils/patches";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { findComponentLazy } from "@webpack";
-import { ChannelStore, GuildMemberStore } from "@webpack/common";
+import { ChannelStore, GuildMemberStore, Text } from "@webpack/common";
 import { ReactNode } from "react";
 
 const countDownFilter = canonicalizeMatch(/#{intl::MAX_AGE_NEVER}/);
@@ -70,7 +70,7 @@ export default definePlugin({
     name: "ShowTimeoutDuration",
     description: "Shows how much longer a user's timeout will last, either in the timeout icon tooltip or next to it",
     tags: ["Servers", "Utility"],
-    authors: [Devs.Ven, Devs.Sqaaakoi],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 
@@ -93,9 +93,8 @@ export default definePlugin({
         return (
             <div className="vc-std-wrapper">
                 <TooltipContainer text={text}>{children}</TooltipContainer>
-                <Paragraph size="md" style={{ color: "var(--status-danger, var(--text-default))" }}>
-                    {renderTimeout(message, true)} timeout remaining
-                </Paragraph>
+                <Text variant="text-md/normal" color="status-danger">
+                    {renderTimeout(message, true)}{" "}{t("timeout remaining")}</Text>
             </div>
         );
     }, { noop: true })

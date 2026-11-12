@@ -17,6 +17,9 @@
         "moduleResolution": "bundler",
         "strict": true,
         "noImplicitAny": false,
+        "noUnusedLocals": true,
+        "noImplicitOverride": true,
+        "noFallthroughCasesInSwitch": true,
         "target": "ESNEXT",
         "jsx": "preserve",
 
@@ -33,7 +36,7 @@
             "@webpack": ["./src/webpack/webpack"],
             "@webpack/patcher": ["./src/webpack/patchWebpack"],
             "@webpack/wreq.d": ["./src/webpack/wreq.d"],
-            "@webpack/types": ["./src/webpack/types"]
+            "@webpack/types": ["./src/webpack/types"],
         },
 
         "plugins": [
@@ -43,7 +46,7 @@
                 "afterDeclarations": true
             }
         ],
-        "outDir": "who-fucking-cares-dude"
+        "outDir": "dist/types"
     },
-    "include": ["src/**/*", "browser/**/*", "scripts/**/*"]
+    "include": ["src/**/*", "browser/**/*", "desktop/**/*", "scripts/**/*", "eslint.config.mjs"],
 }

@@ -1,3 +1,5 @@
+/* eslint-disable simple-header/header */
+
 /*!
  * BetterDiscord addon meta parser
  * Copyright 2023 BetterDiscord contributors
@@ -70,7 +72,7 @@ export function getThemeInfo(css: string, fileName: string): UserThemeHeader {
             accum = line.substring(l + 1);
         }
         else {
-            accum += " " + line.replace("\\n", "\n").replace(escapedAtRegex, "@");
+            accum += ` ${line.replace("\\n", "\n").replace(escapedAtRegex, "@")}`;
         }
     }
     header[field] = accum.trim();

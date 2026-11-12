@@ -7,11 +7,11 @@
 import { InlineCode } from "@components/CodeBlock";
 import { ExpandableSection } from "@components/ExpandableCard";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
+import { HeadingSecondary } from "@components/Heading";
 import { InfoIcon } from "@components/Icons";
-import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Modal, openModal, TextArea, TextInput, useState } from "@webpack/common";
 
 import { parseTagArguments } from ".";
@@ -71,18 +71,18 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
         >
             <Flex flexDirection="column" gap={12}>
                 <section>
-                    <Heading className={Margins.bottom8}>Name</Heading>
+                    <HeadingSecondary>{t("Name")}</HeadingSecondary>
                     <TextInput value={name} onChange={setName} placeholder="greet" />
                 </section>
 
                 <section>
-                    <Heading className={Margins.bottom8}>Response</Heading>
+                    <HeadingSecondary>{t("Response")}</HeadingSecondary>
                     <TextArea value={message} onChange={setMessage} placeholder={EXAMPLE_RESPONSE} autosize />
                 </section>
 
                 {detectedArguments.length > 0 && (
                     <section>
-                        <Heading className={Margins.bottom8}>Detected Arguments</Heading>
+                        <HeadingSecondary>{t("Detected Arguments")}</HeadingSecondary>
                         <Paragraph>
                             <ul>
                                 {detectedArguments.map(arg => (
@@ -99,24 +99,23 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
                     renderContent={() => (
                         <Flex flexDirection="column" gap={12}>
                             <Paragraph>
-                                Your response can include variables wrapped in double curly braces which will become command arguments, for example <InlineCode>{"Hello {{user}}"}</InlineCode>.
+                                {t("Your response can include variables wrapped in double curly braces which will become command arguments, for example")}{" "}<InlineCode>{"Hello {{user}}"}</InlineCode>.
                             </Paragraph>
                             <Paragraph>
-                                You can specify arguments with default values by using an equals sign, for example <InlineCode>{"Hello {{user = pal}}"}</InlineCode>.
+                                {t("You can specify arguments with default values by using an equals sign, for example")}{" "}<InlineCode>{"Hello {{user = pal}}"}</InlineCode>.
                             </Paragraph>
 
                             <section>
-                                <Paragraph><b>Example Command response:</b> <InlineCode>{EXAMPLE_RESPONSE}</InlineCode></Paragraph>
-                                <Paragraph><b>Example usage:</b> <InlineCode>{"/greet user:@Clyde"}</InlineCode></Paragraph>
-                                <Paragraph><b>Example output:</b> <InlineCode>{"Hello @Clyde! I am feeling great."}</InlineCode></Paragraph>
+                                <Paragraph><b>{t("Example Command response:")}</b> <InlineCode>{EXAMPLE_RESPONSE}</InlineCode></Paragraph>
+                                <Paragraph><b>{t("Example usage:")}</b> <InlineCode>{"/greet user:@Clyde"}</InlineCode></Paragraph>
+                                <Paragraph><b>{t("Example output:")}</b> <InlineCode>{"Hello @Clyde! I am feeling great."}</InlineCode></Paragraph>
                             </section>
                         </Flex>
                     )}
                 >
                     <Flex alignItems="center" gap={8}>
                         <InfoIcon color="var(--text-muted)" height={16} width={16} />
-                        View Arguments guide
-                    </Flex>
+                        {t("View Arguments guide")}</Flex>
                 </ExpandableSection>
             </Flex>
         </Modal>

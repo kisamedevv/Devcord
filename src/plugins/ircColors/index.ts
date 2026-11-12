@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { hash as h64 } from "@intrnl/xxhash64";
@@ -24,10 +12,10 @@ import { useMemo } from "@webpack/common";
 
 // Calculate a CSS color string based on the user ID
 function calculateNameColorForUser(id?: string) {
-    const { lightness, saturation, seed } = settings.use(["lightness", "saturation", "seed"]);
-    const idHash = useMemo(() => id ? h64(id + seed) : null, [id, seed]);
+    const { lightness } = settings.use(["lightness"]);
+    const idHash = useMemo(() => id ? h64(id) : null, [id]);
 
-    return idHash && `hsl(${idHash % 360n}, ${saturation}%, ${lightness}%)`;
+    return idHash && `hsl(${idHash % 360n}, 100%, ${lightness}%)`;
 }
 
 const settings = definePluginSettings({
@@ -35,20 +23,6 @@ const settings = definePluginSettings({
         description: "Lightness, in %. Change if the colors are too light or too dark",
         type: OptionType.NUMBER,
         default: 70,
-        min: 0,
-        max: 100
-    },
-    saturation: {
-        description: "Saturation, in %. Change if the colors are too vibrant or dull",
-        type: OptionType.NUMBER,
-        default: 100,
-        min: 0,
-        max: 100
-    },
-    seed: {
-        description: "Changing this will shuffle everyone's username color to a new color",
-        type: OptionType.STRING,
-        default: "",
     },
     memberListColors: {
         description: "Replace role colors in the member list",
@@ -75,7 +49,7 @@ export default definePlugin({
     name: "IrcColors",
     description: "Makes username colors in chat unique, like in IRC clients",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Grzesiek11, Devs.jamesbt365],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
@@ -83,7 +57,7 @@ export default definePlugin({
             find: '="SYSTEM_TAG"',
             replacement: {
                 // Override colorString with our custom color and disable gradients if applying the custom color.
-                match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i),/,
+                match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i|Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i, arguments\[0\]\)),/,
                 replace: "$self.wrapMessageColorProps($1, arguments[0]),"
             }
         },

@@ -1,32 +1,19 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
+import { WebpackRequire } from "@endcord/discord-types/webpack";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
-import { WebpackRequire } from "@endcord/discord-types/webpack";
-import { Flux, FluxDispatcher } from "@webpack/common";
 
 const settings = definePluginSettings({
     disableAnalytics: {
         type: OptionType.BOOLEAN,
-        description: "Block Discord's tracking analytics. Disable this if you want badges to track your progress (eg: hours streamed).",
+        description: "Disable Discord's tracking (analytics/'science')",
         default: true,
         restartNeeded: true
     }
@@ -35,7 +22,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "NoTrack",
     description: "Disable Discord's tracking (analytics/'science'), metrics and Sentry crash reporting",
-    authors: [Devs.Cyn, Devs.Ven, Devs.Nuckyz, Devs.Arrow],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     required: true,
 
     settings,
@@ -46,7 +33,7 @@ export default definePlugin({
             predicate: () => settings.store.disableAnalytics,
             replacement: {
                 match: /\(0,\i\.analyticsTrackingStoreMaker\)/,
-                replace: "$self.analyticsTrackingStoreMaker",
+                replace: "(()=>{})",
             },
         },
         {
@@ -112,14 +99,23 @@ export default definePlugin({
                     return;
                 }
 
-                const srcRequest = new XMLHttpRequest();
-                srcRequest.open("GET", assetPath, false);
-                srcRequest.send();
-
-                // Final condition to see if this is the Sentry WebpackInstance
-                // This is matching window.DiscordSentry=, but without `window` to avoid issues on some proxies
-                if (!srcRequest.responseText.includes(".DiscordSentry=")) {
+                // Discord names these bundles after what they are. Only a bundle with some other name is downloaded
+                // again to look inside, since that blocks the page while it loads
+                const fileName = assetPath.slice(assetPath.lastIndexOf("/") + 1).toLowerCase();
+                if (/libdiscore|fast-connect/.test(fileName)) {
                     return;
+                }
+
+                if (!fileName.includes("sentry")) {
+                    const srcRequest = new XMLHttpRequest();
+                    srcRequest.open("GET", assetPath, false);
+                    srcRequest.send();
+
+                    // Final condition to see if this is the Sentry WebpackInstance
+                    // This is matching window.DiscordSentry=, but without `window` to avoid issues on some proxies
+                    if (!srcRequest.responseText.includes(".DiscordSentry=")) {
+                        return;
+                    }
                 }
 
                 new Logger("NoTrack", "#8caaee").info("Disabling Sentry by erroring its WebpackInstance");
@@ -141,37 +137,5 @@ export default definePlugin({
                 Reflect.deleteProperty(window, "DiscordSentry");
             }
         });
-    },
-
-    analyticsTrackingStoreMaker() {
-        class AnalyticsTrackingStoreStub extends Flux.Store {
-            static displayName = "AnalyticsTrackingStore";
-
-            requestDrain() { }
-
-            async submitEventsImmediately() {
-                // This is supposed to return a Discord rest response but we can't know what the correct shape would be, because
-                // 1. It's not used anywhere
-                // 2. It takes a dynamic url
-                // Instead we throw an error with the same structure as a Discord rest error which they probably should handle gracefully.
-                // Discord also throws a plain object instead of Error class
-
-                throw {
-                    ok: false,
-                    status: 500,
-                    body: {
-                        message: "Analytics tracking is disabled by NoTrack",
-                        code: 0
-                    },
-                    headers: {},
-                    text: JSON.stringify({
-                        message: "Analytics tracking is disabled by NoTrack",
-                        code: 0
-                    })
-                };
-            }
-        }
-
-        return new AnalyticsTrackingStoreStub(FluxDispatcher);
     }
 });

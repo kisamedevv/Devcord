@@ -1,39 +1,32 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./updater";
 import "./ipcPlugins";
 import "./settings";
+import "./bootGuard";
 
 import { debounce } from "@shared/debounce";
+import { isSafeExternalUrl } from "@shared/externalLinks";
 import { IpcEvents } from "@shared/IpcEvents";
+import { RENDERER_FILE } from "@shared/pluginChunks";
 import { BrowserWindow, ipcMain, nativeTheme, shell, systemPreferences } from "electron";
+import monacoHtml from "file://monacoWin.html?minify&base64";
 import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
 import { open, readdir, readFile } from "fs/promises";
 import { release } from "os";
 import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
-import { RendererSettings } from "./settings";
+import { getMemoryStats, trimAndMeasure } from "./memoryTrim";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
-import { ALLOWED_PROTOCOLS, QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
+import { QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
 import { makeLinksOpenExternally } from "./utils/externalLinks";
+import { handleIpc } from "./utils/ipc";
 
 const RENDERER_CSS_PATH = join(__dirname, IS_VESKTOP ? "endcordDesktopRenderer.css" : "renderer.css");
 
@@ -69,58 +62,32 @@ function getThemeData(fileName: string) {
     return readFile(safePath, "utf-8");
 }
 
-ipcMain.handle(IpcEvents.OPEN_QUICKCSS, () => shell.openPath(QUICK_CSS_PATH));
+handleIpc(IpcEvents.OPEN_QUICKCSS, () => shell.openPath(QUICK_CSS_PATH));
 
-ipcMain.handle(IpcEvents.OPEN_EXTERNAL, (_, url) => {
-    try {
-        var { protocol } = new URL(url);
-    } catch {
-        throw "Malformed URL";
-    }
-    if (!ALLOWED_PROTOCOLS.includes(protocol))
-        throw "Disallowed protocol.";
+handleIpc(IpcEvents.GET_MEMORY_STATS, () => getMemoryStats());
+handleIpc(IpcEvents.TRIM_MEMORY, ({ sender }) => {
+    const win = BrowserWindow.fromWebContents(sender);
+    return win ? trimAndMeasure(win) : 0;
+});
 
-    shell.openExternal(url)
-        .catch(err => console.error("[Endcord] Failed to open external link", url, err));
+handleIpc(IpcEvents.OPEN_EXTERNAL, (_, url) => {
+    if (!isSafeExternalUrl(url)) throw "Disallowed URL.";
+
+    // eslint-disable-next-line no-restricted-syntax -- checked just above
+    shell.openExternal(url);
 });
 
 
-ipcMain.handle(IpcEvents.GET_QUICK_CSS, () => readCss());
-ipcMain.handle(IpcEvents.SET_QUICK_CSS, (_, css) =>
-    writeFileSync(QUICK_CSS_PATH, css)
-);
+handleIpc(IpcEvents.GET_QUICK_CSS, () => readCss());
+handleIpc(IpcEvents.SET_QUICK_CSS, (_, css) => {
+    if (typeof css !== "string") throw new Error("Invalid CSS");
 
-ipcMain.handle(IpcEvents.GET_THEMES_LIST, () => listThemes());
-ipcMain.handle(IpcEvents.GET_THEME_DATA, (_, fileName) => getThemeData(fileName));
-
-/**
- * Birleştirilmiş tema + quickcss. Preload, Discord'un ilk boyasından önce
- * bunu senkron olarak isteyip sayfaya enjekte eder; böylece tema açılıştan
- * itibaren devrede olur, beyaz/siyah flaş olmaz.
- */
-ipcMain.on(IpcEvents.GET_STARTUP_CSS, e => {
-    try {
-        const { enabledThemes = [] } = RendererSettings.store;
-        const parts: string[] = [];
-
-        for (const fileName of enabledThemes) {
-            const safePath = ensureSafePath(THEMES_DIR, fileName);
-            if (!safePath) continue;
-
-            const css = readFileSync(safePath, "utf-8");
-            if (css) parts.push(css);
-        }
-
-        const quickCss = readFileSync(QUICK_CSS_PATH, "utf-8");
-        if (quickCss) parts.push(quickCss);
-
-        e.returnValue = parts.join("\n");
-    } catch (err) {
-        console.error("[Endcord] Failed to build startup CSS", err);
-        e.returnValue = "";
-    }
+    writeFileSync(QUICK_CSS_PATH, css);
 });
-ipcMain.handle(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
+
+handleIpc(IpcEvents.GET_THEMES_LIST, () => listThemes());
+handleIpc(IpcEvents.GET_THEME_DATA, (_, fileName) => getThemeData(fileName));
+handleIpc(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
     let accentColor = systemPreferences.getAccentColor?.() ?? "";
 
     if (accentColor.length && accentColor[0] !== "#") {
@@ -132,14 +99,10 @@ ipcMain.handle(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
     };
 });
 
-ipcMain.handle(IpcEvents.OPEN_THEMES_FOLDER, () => shell.openPath(THEMES_DIR));
-ipcMain.handle(IpcEvents.OPEN_SETTINGS_FOLDER, () => shell.openPath(SETTINGS_DIR));
+handleIpc(IpcEvents.OPEN_THEMES_FOLDER, () => shell.openPath(THEMES_DIR));
+handleIpc(IpcEvents.OPEN_SETTINGS_FOLDER, () => shell.openPath(SETTINGS_DIR));
 
-let fsWatchers = [] as FSWatcher[];
-
-ipcMain.handle(IpcEvents.INIT_FILE_WATCHERS, ({ sender }) => {
-    fsWatchers.forEach(w => w.close());
-
+handleIpc(IpcEvents.INIT_FILE_WATCHERS, ({ sender }) => {
     let quickCssWatcher: FSWatcher | undefined;
     let rendererCssWatcher: FSWatcher | undefined;
 
@@ -160,13 +123,10 @@ ipcMain.handle(IpcEvents.INIT_FILE_WATCHERS, ({ sender }) => {
         });
     }
 
-    fsWatchers = [quickCssWatcher, themesWatcher, rendererCssWatcher].filter(Boolean) as FSWatcher[];
-
     sender.once("destroyed", () => {
         quickCssWatcher?.close();
         themesWatcher.close();
         rendererCssWatcher?.close();
-        fsWatchers = [];
     });
 });
 
@@ -174,7 +134,7 @@ ipcMain.on(IpcEvents.GET_MONACO_THEME, e => {
     e.returnValue = nativeTheme.shouldUseDarkColors ? "vs-dark" : "vs-light";
 });
 
-ipcMain.handle(IpcEvents.OPEN_MONACO_EDITOR, async () => {
+handleIpc(IpcEvents.OPEN_MONACO_EDITOR, async () => {
     const title = "Endcord QuickCSS Editor";
     const existingWindow = BrowserWindow.getAllWindows().find(w => w.title === title);
     if (existingWindow && !existingWindow.isDestroyed()) {
@@ -195,32 +155,17 @@ ipcMain.handle(IpcEvents.OPEN_MONACO_EDITOR, async () => {
         }
     });
 
-    // Intercept quit shortcuts so they don't quit the main application
-    win.webContents.on("before-input-event", (e, input) => {
-        if (input.type !== "keyDown") return;
-
-        const key = input.key.toLowerCase();
-        const isQuit = (input.control && !input.alt && !input.shift && key === "q")
-            || (input.alt && !input.control && !input.shift && key === "f4");
-
-        if (isQuit) {
-            e.preventDefault();
-            win.close();
-        }
-    });
-
     makeLinksOpenExternally(win);
 
-    await win.loadURL(DESKTOP_MONACO_EDITOR_URL);
+    await win.loadURL(`data:text/html;base64,${monacoHtml}`);
 });
 
-ipcMain.handle(IpcEvents.GET_RENDERER_CSS, () => readFile(RENDERER_CSS_PATH, "utf-8"));
+handleIpc(IpcEvents.GET_RENDERER_CSS, () => readFile(RENDERER_CSS_PATH, "utf-8"));
 
-if (IS_DISCORD_DESKTOP) {
-    ipcMain.on(IpcEvents.PRELOAD_GET_RENDERER_JS, e => {
-        e.returnValue = readFileSync(join(__dirname, "renderer.js"), "utf-8");
-    });
-}
+
+ipcMain.on(IpcEvents.PRELOAD_GET_RENDERER_JS, e => {
+    e.returnValue = readFileSync(join(__dirname, RENDERER_FILE), "utf-8");
+});
 
 ipcMain.on(IpcEvents.SUPPORTS_WINDOWS_MATERIAL, e => {
     e.returnValue = process.platform === "win32" && Number(release().split(".")[2]) >= 22621;

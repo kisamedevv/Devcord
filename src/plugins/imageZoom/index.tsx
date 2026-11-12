@@ -1,25 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { debounce } from "@shared/debounce";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { createRoot, Menu } from "@webpack/common";
@@ -92,7 +81,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
         <Menu.MenuGroup id="image-zoom">
             <Menu.MenuCheckboxItem
                 id="vc-square"
-                label="Square Lens"
+                label={t("Square Lens")}
                 checked={square}
                 action={() => {
                     settings.store.square = !square;
@@ -100,7 +89,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
             />
             <Menu.MenuCheckboxItem
                 id="vc-nearest-neighbour"
-                label="Nearest Neighbour"
+                label={t("Nearest Neighbour")}
                 checked={nearestNeighbour}
                 action={() => {
                     settings.store.nearestNeighbour = !nearestNeighbour;
@@ -108,7 +97,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
             />
             <Menu.MenuControlItem
                 id="vc-zoom"
-                label="Zoom"
+                label={t("Zoom")}
                 control={(props, ref) => (
                     <Menu.MenuSliderControl
                         ref={ref}
@@ -117,13 +106,12 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
                         maxValue={50}
                         value={settings.store.zoom}
                         onChange={debounce((value: number) => settings.store.zoom = value, 100)}
-                        renderValue={(value: number) => `${value.toFixed(3)}x`}
                     />
                 )}
             />
             <Menu.MenuControlItem
                 id="vc-size"
-                label="Lens Size"
+                label={t("Lens Size")}
                 control={(props, ref) => (
                     <Menu.MenuSliderControl
                         ref={ref}
@@ -137,7 +125,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
             />
             <Menu.MenuControlItem
                 id="vc-zoom-speed"
-                label="Zoom Speed"
+                label={t("Zoom Speed")}
                 control={(props, ref) => (
                     <Menu.MenuSliderControl
                         ref={ref}
@@ -158,7 +146,7 @@ export default definePlugin({
     name: "ImageZoom",
     description: "Lets you zoom in to images and gifs. Use scroll wheel to zoom in and shift + scroll wheel to increase lens radius / size",
     tags: ["Media", "Utility"],
-    authors: [Devs.Aria],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["ImageUtilities"],
 
     managedStyle,

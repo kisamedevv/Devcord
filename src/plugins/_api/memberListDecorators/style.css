@@ -9,7 +9,3 @@
     /* Margin to match default Discord decorators */
     margin-left: 0.25em;
 }
-
-[class*="withDisplayNameStyles"] [class^="name"] {
-    flex: initial;
-}

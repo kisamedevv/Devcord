@@ -5,14 +5,15 @@
  */
 
 import { ChatBarButton } from "@api/ChatButtons";
-import { ClockIcon, UploadIcon } from "@components/Icons";
-import { Devs } from "@utils/constants";
-import { pluralise } from "@utils/misc";
-import definePlugin from "@utils/types";
+import { UploadIcon } from "@components/Icons";
 import { Message } from "@endcord/discord-types";
 import { MessageFlags, MessageType } from "@endcord/discord-types/enums";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import { pluralise } from "@utils/misc";
+import definePlugin from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { AuthenticationStore, ChannelStore, EditMessageStore, MessageStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast } from "@webpack/common";
+import { AuthenticationStore, ChannelStore, EditMessageStore, MessageStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, Toasts } from "@webpack/common";
 
 const { uniqueId } = findByPropsLazy("uniqueId");
 
@@ -39,15 +40,15 @@ async function addAttachments(channelId: string, messageId: string, existingAtta
     if (files.length + existingAttachmentCount > 10) {
         const remaining = 10 - existingAttachmentCount;
         if (remaining <= 0) {
-            showToast({ text: "You cannot add more attachments to this message.", variant: "critical" });
+            showToast("You cannot add more attachments to this message.", Toasts.Type.FAILURE);
             return;
         }
 
-        showToast({ text: `You can only add ${pluralise(remaining, "more attachment")} to this message.`, variant: "critical" });
+        showToast(`You can only add ${pluralise(remaining, "more attachment")} to this message.`, Toasts.Type.FAILURE);
         return;
     }
 
-    showToast({ text: "Uploading, this can take a while...", icon: ClockIcon, iconColor: "var(--text-default)" });
+    showToast("Uploading, this can take a while...", Toasts.Type.MESSAGE);
 
     const { body: { attachments } } = await RestAPI.post({
         url: `/channels/${channelId}/attachments`,
@@ -74,7 +75,6 @@ async function addAttachments(channelId: string, messageId: string, existingAtta
         )
     );
 
-
     const msg = MessageStore.getMessage(channelId, messageId);
 
     await RestAPI.patch({
@@ -87,7 +87,7 @@ async function addAttachments(channelId: string, messageId: string, existingAtta
         }
     });
 
-    showToast({ text: `${files.length === 1 ? "Attachment" : "Attachments"} added successfully!`, variant: "success" });
+    showToast(`${files.length === 1 ? "Attachment" : "Attachments"} added successfully!`, Toasts.Type.SUCCESS);
 }
 
 function canAddAttachments(msg: Message) {
@@ -114,7 +114,7 @@ function handlePaste(e: ClipboardEvent) {
 export default definePlugin({
     name: "AddAttachments",
     description: "Allows you to add new attachments while editing messages",
-    authors: [Devs.Lumap],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     start() {
         document.addEventListener("paste", handlePaste, { capture: true });
@@ -134,6 +134,8 @@ export default definePlugin({
             return {
                 label: "Add Attachments",
                 icon: UploadIcon,
+                message: msg,
+                channel,
                 onClick: () => chooseAttachments(msg.channel_id, msg.id, msg.attachments.length)
             };
         },
@@ -149,7 +151,7 @@ export default definePlugin({
 
             return (
                 <ChatBarButton
-                    tooltip="Add Attachments"
+                    tooltip={t("Add Attachments")}
                     onClick={() => chooseAttachments(msg.channel_id, msg.id, msg.attachments.length)}
                 >
                     <UploadIcon height={18} width={18} />

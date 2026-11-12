@@ -1,24 +1,13 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { openInviteModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 
 import { authorize, getToken } from "./auth";
@@ -30,8 +19,7 @@ export const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <Button onClick={() => authorize()}>
-                Authorize with ReviewDB
-            </Button>
+                {t("Authorize with ReviewDB")}</Button>
         )
     },
     notifyReviews: {
@@ -58,7 +46,7 @@ export const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <div className={cl("button-grid")} >
-                <Button onClick={openBlockModal}>Manage Blocked Users</Button>
+                <Button onClick={openBlockModal}>{t("Manage Blocked Users")}</Button>
 
                 <Button
                     variant="positive"
@@ -66,24 +54,21 @@ export const settings = definePluginSettings({
                         EndcordNative.native.openExternal("https://github.com/sponsors/mantikafasi");
                     }}
                 >
-                    Support ReviewDB development
-                </Button>
+                    {t("Support ReviewDB development")}</Button>
 
                 <Button variant="link" onClick={async () => {
                     let url = "https://reviewdb.mantikafasi.dev";
                     const token = await getToken();
                     if (token)
-                        url += "/api/redirect?token=" + encodeURIComponent(token);
+                        url += `/api/redirect?token=${encodeURIComponent(token)}`;
 
                     EndcordNative.native.openExternal(url);
                 }}>
-                    ReviewDB website
-                </Button>
+                    {t("ReviewDB website")}</Button>
 
 
                 <Button variant="link" onClick={() => openInviteModal("eWPBSbvznt")}>
-                    ReviewDB Support Server
-                </Button>
+                    {t("ReviewDB Support Server")}</Button>
             </div >
         )
     }

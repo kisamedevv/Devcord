@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
@@ -22,27 +10,14 @@ import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import EndcordToolboxPlugin from "@plugins/endcordToolbox";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { FluxStore } from "@endcord/discord-types";
-import { findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
-import { Menu, Popout, useRef, useState, useStateFromStores } from "@webpack/common";
+import { findComponentByCodeLazy } from "@webpack";
+import { Menu } from "@webpack/common";
 
 import managedStyle from "./style.css?managed";
 
-interface ConnectedAccount {
-    id: string;
-    type: string;
-    revoked: boolean;
-    showActivity: boolean;
-}
-
-interface ConnectedAccountsStore extends FluxStore {
-    getAccounts(): ConnectedAccount[];
-}
-
 const Button = findComponentByCodeLazy(".GREEN,positionKeyStemOverride:");
-const ConnectedAccountsStore = findStoreLazy("ConnectedAccountsStore") as ConnectedAccountsStore;
-const ConnectedAccountActions = findByPropsLazy("setShowActivity");
 
 const ShowCurrentGame = getUserSettingLazy<boolean>("status", "showCurrentGame")!;
 
@@ -68,6 +43,7 @@ const settings = definePluginSettings({
 function Icon() {
     const { oldIcon } = settings.use(["oldIcon"]);
     const showCurrentGame = ShowCurrentGame.useSetting();
+
 
     const redLinePath = !oldIcon
         ? "M22.7 2.7a1 1 0 0 0-1.4-1.4l-20 20a1 1 0 1 0 1.4 1.4Z"
@@ -99,66 +75,26 @@ function GameActivityToggleButton(props: { nameplate?: any; }) {
     const { location } = settings.use(["location"]);
     const showCurrentGame = ShowCurrentGame.useSetting();
 
-    const connectedAccounts = useStateFromStores([ConnectedAccountsStore], () => ConnectedAccountsStore.getAccounts());
-    const spotifyAccounts = connectedAccounts.filter(account => account.type === "spotify" && !account.revoked);
-    // The update is an API request which takes a bit to update the store, so we have to use our own state to reflect the change immediately
-    const [shareSpotifyActivity, setShareSpotifyActivity] = useState(spotifyAccounts[0]?.showActivity ?? false);
-
-    const buttonRef = useRef<HTMLButtonElement | null>(null);
-
     if (location !== "PANEL" && isPluginEnabled(EndcordToolboxPlugin.name)) return null;
 
-    const buttonProps = {
-        tooltipText: showCurrentGame ? "Disable Game Activity" : "Enable Game Activity",
-        icon: Icon,
-        role: "switch",
-        ariaChecked: !showCurrentGame,
-        redGlow: !showCurrentGame,
-        plated: props?.nameplate != null,
-        onClick: () => ShowCurrentGame.updateSetting(old => !old)
-    };
-
-    // Only show switch if there's exactly one Spotify account connected. Otherwise it may lead to confusion
-    if (spotifyAccounts.length !== 1)
-        return <Button {...buttonProps} />;
-
-    const spotifyAccount = spotifyAccounts[0];
-
     return (
-        <Popout
-            position="top"
-            align="left"
-            targetElementRef={buttonRef}
-            renderPopout={({ closePopout }) => (
-                <Menu.Menu navId="vc-gameActivityToggle-menu" onClose={closePopout}>
-                    <Menu.MenuCheckboxItem
-                        id="vc-toggle-spotify"
-                        label="Share Spotify Activity"
-                        checked={shareSpotifyActivity}
-                        action={async () => {
-                            ConnectedAccountActions.setShowActivity(spotifyAccount.type, spotifyAccount.id, !shareSpotifyActivity);
-                            setShareSpotifyActivity(!shareSpotifyActivity);
-                        }}
-                    />
-                </Menu.Menu>
-            )}
-        >
-            {popoutProps => (
-                <Button
-                    ref={buttonRef}
-                    onContextMenu={popoutProps.onClick}
-                    {...buttonProps}
-                />
-            )}
-        </Popout>
+        <Button
+            tooltipText={showCurrentGame ? "Disable Game Activity" : "Enable Game Activity"}
+            icon={Icon}
+            role="switch"
+            aria-checked={!showCurrentGame}
+            redGlow={!showCurrentGame}
+            plated={props?.nameplate != null}
+            onClick={() => ShowCurrentGame.updateSetting(old => !old)}
+        />
     );
 }
 
 export default definePlugin({
     name: "GameActivityToggle",
-    description: "Adds a button next to the mic and deafen button to toggle game activity. Right click it to toggle Spotify activity.",
+    description: "Adds a button next to the mic and deafen button to toggle game activity.",
     tags: ["Activity", "Shortcuts"],
-    authors: [Devs.Nuckyz, Devs.RuukuLada],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["UserSettingsAPI"],
     settings,
 
@@ -168,7 +104,7 @@ export default definePlugin({
         {
             find: "#{intl::USER_PROFILE_ACCOUNT_POPOUT_BUTTON_A11Y_LABEL}",
             replacement: {
-                match: /children:\[(?=.{0,25}?accountContainerRef)/,
+                match: /children:\[(?=(?:\.\.\.[^,]{0,100},)?.{0,25}?accountContainerRef)/,
                 replace: "children:[$self.GameActivityToggleButton(arguments[0]),"
             }
         }
@@ -183,7 +119,7 @@ export default definePlugin({
         return (
             <Menu.MenuCheckboxItem
                 id="game-activity-toggle-toolbox"
-                label="Enable Game Activity"
+                label={t("Enable Game Activity")}
                 checked={showCurrentGame}
                 action={() => ShowCurrentGame.updateSetting(old => !old)}
             />

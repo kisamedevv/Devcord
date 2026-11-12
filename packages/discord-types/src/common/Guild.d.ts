@@ -1,3 +1,4 @@
+import { DiscordRecord } from './Record';
 import {
     GuildDefaultMessageNotifications,
     GuildExplicitContentFilter,
@@ -8,7 +9,6 @@ import {
     PermissionOverwriteType,
     SystemChannelFlags,
 } from "../../enums";
-import { DiscordRecord } from "./Record";
 
 // copy(Object.keys(findByProps("CREATOR_MONETIZABLE")).map(JSON.stringify).join("|"))
 export type GuildFeatures =

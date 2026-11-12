@@ -4,20 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Card } from "@components/Card";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Heading } from "@components/Heading";
 import { Link } from "@components/Link";
-import { Paragraph } from "@components/Paragraph";
+import { Notice } from "@components/Notice";
+import { RenderModalProps } from "@endcord/discord-types";
 import { GUILD_ID, INVITE_KEY, RAW_SKU_ID } from "@plugins/decor/lib/constants";
 import { useCurrentUserDecorationsStore } from "@plugins/decor/lib/stores/CurrentUserDecorationsStore";
 import { cl, DecorationModalClasses, requireAvatarDecorationModal, requireCreateStickerModal } from "@plugins/decor/ui";
 import { AvatarDecorationModalPreview } from "@plugins/decor/ui/components";
 import { openInviteModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { RenderModalProps } from "@endcord/discord-types";
 import { findComponentByCodeLazy } from "@webpack";
-import { closeAllModals, FluxDispatcher, GuildStore, Modal, NavigationRouter, openModal, TextInput, useEffect, useMemo, UserStore, useState } from "@webpack/common";
+import { closeAllModals, FluxDispatcher, Forms, GuildStore, Modal, NavigationRouter, openModal, Text, TextInput, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 const FileUpload = findComponentByCodeLazy(".currentTarget.files", "lineClamp:1");
 
@@ -58,7 +57,7 @@ function CreateDecorationModal(props: RenderModalProps) {
     return <Modal
         {...props}
         size="lg"
-        title="Create Decoration"
+        title={t("Create Decoration")}
         actions={[
             {
                 text: "Cancel",
@@ -79,39 +78,35 @@ function CreateDecorationModal(props: RenderModalProps) {
     >
         <div className={cl("create-decoration-modal-content", DecorationModalClasses.modal)}>
             <ErrorBoundary>
-                <Card variant="warning">
-                    Make sure your decoration does not violate <Link
+                <Notice.Warning>
+                    {t("Make sure your decoration does not violate")}{" "}<Link
                         href="https://github.com/decor-discord/.github/blob/main/GUIDELINES.md"
                     >
-                        the guidelines
-                    </Link> before submitting it.
-                </Card>
+                        {t("the guidelines")}</Link>{" "}{t("before submitting it.")}</Notice.Warning>
                 <div className={cl("create-decoration-modal-form-preview-container")}>
                     <div className={cl("create-decoration-modal-form")}>
-                        {error !== null && <Paragraph size="xs" style={{ color: "var(--text-danger, var(--text-default))" }}>{error.message}</Paragraph>}
+                        {error !== null && <Text color="text-danger" variant="text-xs/normal">{error.message}</Text>}
                         <section>
-                            <Heading className={Margins.bottom8}>File</Heading>
+                            <Forms.FormTitle tag="h5">{t("File")}</Forms.FormTitle>
                             <FileUpload
                                 filename={file?.name}
-                                placeholder="Choose a file"
-                                buttonText="Browse"
+                                placeholder={t("Choose a file")}
+                                buttonText={t("Browse")}
                                 filters={[{ name: "Decoration file", extensions: ["png", "apng"] }]}
                                 onFileSelect={setFile}
                             />
-                            <Paragraph className={Margins.top8}>
-                                File should be APNG or PNG.
-                            </Paragraph>
+                            <Forms.FormText className={Margins.top8}>
+                                {t("File should be APNG or PNG.")}</Forms.FormText>
                         </section>
                         <section>
-                            <Heading className={Margins.bottom8}>Name</Heading>
+                            <Forms.FormTitle tag="h5">{t("Name")}</Forms.FormTitle>
                             <TextInput
-                                placeholder="Companion Cube"
+                                placeholder={t("Companion Cube")}
                                 value={name}
                                 onChange={setName}
                             />
-                            <Paragraph className={Margins.top8}>
-                                This name will be used when referring to this decoration.
-                            </Paragraph>
+                            <Forms.FormText className={Margins.top8}>
+                                {t("This name will be used when referring to this decoration.")}</Forms.FormText>
                         </section>
                     </div>
                     <div>
@@ -121,8 +116,8 @@ function CreateDecorationModal(props: RenderModalProps) {
                         />
                     </div>
                 </div>
-                <Card variant="info" defaultPadding className={Margins.bottom8}>
-                    To receive updates on your decoration's review, join <Link
+                <Notice.Info className={Margins.bottom8}>
+                    {t("To receive updates on your decoration's review, join")}{" "}<Link
                         href={`https://discord.gg/${INVITE_KEY}`}
                         onClick={async e => {
                             e.preventDefault();
@@ -139,9 +134,7 @@ function CreateDecorationModal(props: RenderModalProps) {
                             }
                         }}
                     >
-                        Decor's Discord server
-                    </Link> and allow direct messages.
-                </Card>
+                        {t("Decor's Discord server")}</Link>{" "}{t("and allow direct messages.")}</Notice.Info>
             </ErrorBoundary>
         </div>
     </Modal>;

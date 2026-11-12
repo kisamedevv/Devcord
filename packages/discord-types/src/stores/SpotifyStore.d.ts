@@ -1,5 +1,5 @@
-import { ActivityFlags } from "../../enums";
 import { FluxStore } from "..";
+import { ActivityFlags } from "../../enums";
 
 export type SpotifyDeviceType = "computer" | "smartphone" | "speaker" | "tv" | "game_console" | "automobile" | "unknown";
 export type SpotifyMediaType = "track" | "episode";
@@ -32,7 +32,6 @@ export interface SpotifySocketAndDevice {
 export interface SpotifyArtist {
     id: string;
     name: string;
-    external_urls: { spotify: string; };
 }
 
 export interface SpotifyImage {

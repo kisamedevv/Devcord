@@ -9,12 +9,11 @@ import { disableStyle, enableStyle } from "@api/Styles";
 import { buildPluginMenuEntries, buildThemeMenuEntries } from "@plugins/endcordToolbox/menu";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import { getIntlMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
 import { ComponentDispatch, FocusLock, Menu, useEffect, useRef } from "@webpack/common";
-import type { HTMLAttributes, ReactElement, ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 import fullHeightStyle from "./fullHeightContext.css?managed";
 
@@ -78,7 +77,7 @@ function Layer({ mode, baseLayer = false, ...props }: LayerProps) {
 export default definePlugin({
     name: "BetterSettings",
     description: "Enhances your settings-menu-opening experience",
-    authors: [Devs.Kyuuhachi],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Appearance", "Customisation", "Organisation"],
     settings,
 
@@ -96,8 +95,8 @@ export default definePlugin({
             find: "this.renderArtisanalHack()",
             replacement: [
                 {
-                    match: /class (\i)( extends \i\.PureComponent.+?jsx\)\(\1,\{mode:)/,
-                    replace: "var $1=$self.Layer;class EndcordPatchedOldFadeLayer$2",
+                    match: /class (\i)(?= extends \i\.PureComponent.+?static contextType=.+?jsx\)\(\1,\{mode:)/,
+                    replace: "var $1=$self.Layer;class EndcordPatchedOldFadeLayer",
                     predicate: () => settings.store.disableFade
                 },
                 { // Lazy-load contents
@@ -136,16 +135,15 @@ export default definePlugin({
             predicate: () => settings.store.disableFade
         },
         { // Disable initial and exit delay for settings menu
-            find: '||"replace"===',
+            // The 300ms used to be a named constant; newer Discord writes the number where the layer waits
+            find: "componentWillLeave=e=>{let{instant:",
             replacement: [
                 {
-                    // FIXME: Stable compat: everything, keep only 300(?=\*!\i)
-                    match: /(?:(?<=\?0:\i\.\i))|(?:300(?=\*!\i))/g,
+                    match: /(?<=transitionState:\i\.\i\.(?:ENTERED|EXITED)\}\),\i(?:\?\.)?\(\)\},)(?:\i\?0:\i\.\i|300\*!\i)/g,
                     replace: "0"
                 },
                 {
-                    // FIXME: Stable compat: \i\.\i|300, keep only 300
-                    match: /(?<=setTimeout\(\(\)=>\i\(\),)\i\.\i|300(?=\))/,
+                    match: /(?<=closeModal\(this\.props\.modalKey\),setTimeout\(\(\)=>\i\(\),)(?:\i\.\i|300)/,
                     replace: "0"
                 }
             ],
@@ -186,7 +184,7 @@ export default definePlugin({
         return <Layer {...props} />;
     },
 
-    transformSettingsEntries(list: ReactElement<any>[]): ReactNode[] {
+    transformSettingsEntries(list) {
         const items: ReactNode[] = [];
 
         for (const item of list) {
@@ -203,13 +201,9 @@ export default definePlugin({
                         {children}
                     </Menu.MenuItem>
                 );
-            } else if (key === "user_section" || (key?.endsWith("_section") && props.label)) {
-                const label = key === "user_section"
-                    ? getIntlMessage("USER_SETTINGS")
-                    : props.label;
-
+            } else if (key.endsWith("_section") && props.label) {
                 items.push(
-                    <Menu.MenuItem key={key} label={label} id={label}>
+                    <Menu.MenuItem key={key} label={props.label} id={props.label}>
                         {this.transformSettingsEntries(props.children)}
                     </Menu.MenuItem>
                 );

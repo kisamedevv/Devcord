@@ -1,3 +1,5 @@
+/* eslint-disable simple-header/header */
+
 /*!
  * crxToZip
  * Copyright (c) 2013 Rob Wu <rob@robwu.nl>

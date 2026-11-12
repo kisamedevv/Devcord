@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button } from "@components/Button";
 import { Card } from "@components/Card";
 import { ErrorCard } from "@components/ErrorCard";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
-import { Paragraph } from "@components/Paragraph";
+import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
-import { promptToRestart } from "@utils/promptToRestart";
+import { relaunch } from "@utils/native";
 import { changes, checkForUpdates, update, updateError } from "@utils/updater";
-import { React, showToast, useState } from "@webpack/common";
+import { Button, ConfirmModal, Forms, openModal, React, Toasts, useState } from "@webpack/common";
+import type { PropsWithChildren } from "react";
 
 import { runWithDispatch } from "./runWithDispatch";
 
@@ -25,7 +25,7 @@ export interface CommonProps {
 
 export function HashLink({ repo, hash, disabled = false }: { repo: string, hash: string, disabled?: boolean; }) {
     return (
-        <Link href={`${repo}/commit/${hash}`} disabled={disabled}>
+        <Link href={repo} disabled={disabled}>
             {hash}
         </Link>
     );
@@ -59,17 +59,19 @@ export function Changes({ updates, repo, repoPending }: CommonProps & { updates:
 }
 
 export function Newer(props: CommonProps) {
+    const { t } = useI18n();
     return (
         <>
-            <Paragraph className={Margins.bottom8}>
-                Your local copy has more recent commits. Please stash or reset them.
-            </Paragraph>
+            <Forms.FormText className={Margins.bottom8}>
+                {t("Your local copy has more recent commits. Please stash or reset them.")}
+            </Forms.FormText>
             <Changes {...props} updates={changes} />
         </>
     );
 }
 
-export function Updatable(props: CommonProps) {
+export function Updatable({ children, ...props }: PropsWithChildren<CommonProps>) {
+    const { t } = useI18n();
     const [updates, setUpdates] = useState(changes);
     const [isChecking, setIsChecking] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -80,15 +82,15 @@ export function Updatable(props: CommonProps) {
         <>
             {!updates && updateError ? (
                 <>
-                    <Paragraph>Failed to check updates. Check the console for more info</Paragraph>
+                    <Forms.FormText>{t("Couldn't check for updates right now :( Check your internet and try again in a bit.")}</Forms.FormText>
                     <ErrorCard style={{ padding: "1em" }}>
-                        <p>{updateError.stderr || updateError.stdout || "An unknown error occurred"}</p>
+                        <p>{updateError.stderr || updateError.stdout || t("Something unexpected got in the way, sorry about that.")}</p>
                     </ErrorCard>
                 </>
             ) : (
-                <Paragraph className={Margins.bottom8}>
-                    {isOutdated ? (updates.length === 1 ? "There is 1 Update" : `There are ${updates.length} Updates`) : "Up to Date!"}
-                </Paragraph>
+                <Forms.FormText className={Margins.bottom8}>
+                    {isOutdated ? (updates.length === 1 ? t("There is 1 Update") : t("There are {count} Updates", { count: updates.length })) : t("Up to date")}
+                </Forms.FormText>
             )}
 
             {isOutdated && <Changes updates={updates} {...props} />}
@@ -101,16 +103,27 @@ export function Updatable(props: CommonProps) {
                             if (await update()) {
                                 setUpdates([]);
 
-                                promptToRestart("relaunch", {
-                                    title: "Update Success!",
-                                    subtitle: "Successfully updated. Restart now to apply the changes?",
-                                    confirmText: "Restart",
-                                    cancelText: "Not now!"
+                                await new Promise<void>(r => {
+                                    openModal(props => (
+                                        <ConfirmModal
+                                            {...props}
+                                            title={t("Update installed")}
+                                            subtitle={t("Successfully updated. Restart now to apply the changes?")}
+                                            confirmText={t("Restart")}
+                                            cancelText={t("Not now")}
+                                            variant="primary"
+                                            onConfirm={() => {
+                                                relaunch();
+                                                r();
+                                            }}
+                                            onCancel={r}
+                                        />
+                                    ));
                                 });
                             }
                         })}
                     >
-                        Update Now
+                        {t("Update Now")}
                     </Button>
                 )}
                 <Button
@@ -123,12 +136,20 @@ export function Updatable(props: CommonProps) {
                         } else {
                             setUpdates([]);
 
-                            showToast({ text: "No updates found!", position: "bottom" });
+                            Toasts.show({
+                                message: t("No updates found"),
+                                id: Toasts.genId(),
+                                type: Toasts.Type.MESSAGE,
+                                options: {
+                                    position: Toasts.Position.BOTTOM
+                                }
+                            });
                         }
                     })}
                 >
-                    Check for Updates
+                    {t("Check for Updates")}
                 </Button>
+                {children}
             </Flex>
         </>
     );

@@ -1,24 +1,13 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { LazyComponent, LazyComponentWrapper } from "@utils/lazyReact";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
+import { translateHook } from "@utils/translateHook";
 import type { React } from "@webpack/common";
 import { ComponentType } from "react";
 
@@ -50,7 +39,7 @@ const ErrorBoundary = LazyComponent(() => {
     // This component is used in a lot of files which end up importing other Webpack commons and causing circular imports.
     // For this reason, use a non import access here.
     return class ErrorBoundary extends Endcord.Webpack.Common.React.PureComponent<React.PropsWithChildren<Props>> {
-        state = {
+        override state = {
             error: NO_ERROR as any,
             stack: "",
             message: ""
@@ -71,7 +60,7 @@ const ErrorBoundary = LazyComponent(() => {
             return { error, stack, message };
         }
 
-        componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
             this.props.onError?.({ error, errorInfo, props: this.props.wrappedProps });
             logger.error(`${this.props.message || "A component threw an Error"}\n`, error, errorInfo.componentStack);
         }
@@ -81,7 +70,7 @@ const ErrorBoundary = LazyComponent(() => {
             return this.props.noop;
         }
 
-        render() {
+        override render() {
             if (this.state.error === NO_ERROR) return this.props.children;
 
             if (this.isNoop) return null;
@@ -96,11 +85,12 @@ const ErrorBoundary = LazyComponent(() => {
                     </this.props.fallback>
                 );
 
-            const msg = this.props.message || "An error occurred while rendering this Component. More info can be found below and in your console.";
+            const { translate } = translateHook;
+            const msg = this.props.message || translate("This little part of Endcord tripped over itself. Everything else still works, and the details below help us fix it.");
 
             return (
                 <ErrorCard style={{ overflow: "hidden" }}>
-                    <h1>Oh no!</h1>
+                    <h1>{translate("Oopsie! (｡•́︿•̀｡)")}</h1>
                     <p>{msg}</p>
                     <code>
                         {this.state.message}

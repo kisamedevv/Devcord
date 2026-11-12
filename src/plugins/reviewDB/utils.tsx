@@ -1,24 +1,11 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { classNameFactory } from "@utils/css";
-import * as t from "@endcord/discord-types";
-import { showToast as originalShowToast, UserStore } from "@webpack/common";
+import { Toasts, UserStore } from "@webpack/common";
 
 import { Auth } from "./auth";
 import { Review, UserType } from "./entities";
@@ -43,7 +30,13 @@ export function canReportReview(review: Review) {
     return review.sender.discordID !== UserStore.getCurrentUser().id;
 }
 
-export const showToast: t.showToast = function (options) {
-    options.position = options.position ?? "bottom";
-    return originalShowToast(options);
-};
+export function showToast(message: string, type = Toasts.Type.MESSAGE) {
+    Toasts.show({
+        id: Toasts.genId(),
+        message,
+        type,
+        options: {
+            position: Toasts.Position.BOTTOM, // NOBODY LIKES TOASTS AT THE TOP
+        },
+    });
+}

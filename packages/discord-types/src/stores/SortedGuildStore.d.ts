@@ -20,6 +20,7 @@ export interface GuildsTree {
 
 export class SortedGuildStore extends FluxStore {
     getGuildsTree(): GuildsTree;
+    /** every folder and guild node, depth first */
     getFlattenedGuildFolderList(): GuildsTreeNode[];
     getCompatibleGuildFolders(): GuildFolder[];
     getFastListGuildFolders(): GuildsTreeNode[];

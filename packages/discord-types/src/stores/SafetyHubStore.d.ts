@@ -1,5 +1,5 @@
-import { StandingState } from "../../enums";
 import { FluxStore } from "..";
+import { StandingState } from "../../enums";
 
 export interface AccountStanding {
     state: StandingState;

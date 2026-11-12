@@ -6,15 +6,73 @@
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { isPluginEnabled, isSettingDisabled, isSettingHidden, plugins } from "@api/PluginManager";
+import { IS_SAFE_MODE, restartInSafeMode } from "@api/SafeMode";
 import { Settings, useSettings } from "@api/Settings";
-import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab } from "@components/settings";
+import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings";
+import { openShortcutsModal } from "@components/shortcuts";
+import { t } from "@utils/i18n";
+import { localStorage } from "@utils/localStorage";
+import { relaunch } from "@utils/native";
 import { useAwaiter } from "@utils/react";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { OptionType, Plugin } from "@utils/types";
-import { Menu, showToast, useMemo, useState } from "@webpack/common";
+import { Menu, showToast, Toasts, useMemo, useState } from "@webpack/common";
 import type { ReactNode } from "react";
 
 import { settings } from ".";
+
+const ENDCORD_VERSION_URL = "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json";
+const LS_LAST_SEEN_UPDATE = "endcord_last_seen_updatedAt";
+let _updateAvailable = false;
+let _latestVersion = "";
+let _latestUrl = "";
+
+async function checkForUpdates(showToastIfNew = false) {
+    try {
+        const res = await fetch(`${ENDCORD_VERSION_URL}?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const latestTs: number = data.updatedAt ?? 0;
+        const latestVersion: string = data.version ?? "";
+        const seenTs = Number(localStorage.getItem(LS_LAST_SEEN_UPDATE) ?? "0");
+
+        _latestVersion = latestVersion;
+        _latestUrl = data.downloadUrl ?? "";
+
+        const localTs: number = typeof BUILD_TIMESTAMP === "number" ? BUILD_TIMESTAMP : 0;
+        if (latestTs > localTs && latestTs > seenTs) {
+            _updateAvailable = true;
+            if (showToastIfNew) {
+                Toasts.show({
+                    id: "endcord-update-available",
+                    message: t("Endcord {version} is available. Open the Toolbox to update.", { version: latestVersion }),
+                    type: Toasts.Type.MESSAGE,
+                    options: { duration: 8000 }
+                });
+            }
+        } else {
+            _updateAvailable = false;
+        }
+    } catch { }
+}
+
+let _updateTimer: ReturnType<typeof setTimeout> | null = null;
+let _updateInterval: ReturnType<typeof setInterval> | null = null;
+
+export function startUpdateChecker() {
+    stopUpdateChecker();
+    _updateTimer = setTimeout(() => checkForUpdates(true), 5000);
+    _updateInterval = setInterval(() => checkForUpdates(true), 30 * 60 * 1000);
+}
+
+export function stopUpdateChecker() {
+    if (_updateTimer) clearTimeout(_updateTimer);
+    if (_updateInterval) clearInterval(_updateInterval);
+    _updateTimer = null;
+    _updateInterval = null;
+}
+
+
 
 function buildPluginMenu() {
     const { showPluginMenu } = settings.use(["showPluginMenu"]);
@@ -27,7 +85,7 @@ function buildPluginMenu() {
     return (
         <Menu.MenuItem
             id="plugins"
-            label="Plugins"
+            label={t("Plugins")}
             action={() => openSettingsTabModal(PluginsTab)}
         >
             {pluginEntries}
@@ -42,8 +100,9 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
     const lowerSearch = search.toLowerCase();
 
+    // Only enabled plugins are listed, and those are already loaded; reading the others would evaluate them
     const sortedPlugins = useMemo(() =>
-        Object.values(plugins).sort((a, b) => a.name.localeCompare(b.name)),
+        Object.keys(plugins).filter(name => isPluginEnabled(name)).map(name => plugins[name]).sort((a, b) => a.name.localeCompare(b.name)),
         []
     );
 
@@ -90,8 +149,8 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
                         const baseProps = {
                             id: `${p.name}-${key}`,
-                            key: key,
-                            label: wordsToTitle(wordsFromCamel(key)),
+                            key,
+                            label: t(wordsToTitle(wordsFromCamel(key))),
                             disabled: isSettingDisabled(p.settings, option)
                         };
 
@@ -103,7 +162,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                         checked={s[key]}
                                         action={() => {
                                             s[key] = !s[key];
-                                            if (option.restartNeeded) showToast({ text: "Restart to apply the change" });
+                                            if (option.restartNeeded) showToast(t("Restart to apply the change"));
                                         }}
                                     />
                                 );
@@ -120,7 +179,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                                 checked={s[key] === opt.value}
                                                 action={() => {
                                                     s[key] = opt.value;
-                                                    if (option.restartNeeded) showToast({ text: "Restart to apply the change" });
+                                                    if (option.restartNeeded) showToast(t("Restart to apply the change"));
                                                 }}
                                             />
                                         ))}
@@ -139,7 +198,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                                 ref={ref}
                                                 {...props}
                                                 minValue={option.markers[0]}
-                                                maxValue={option.markers.at(-1)!}
+                                                maxValue={option.markers.at(-1)}
                                                 value={s[key]}
                                                 onChange={v => s[key] = v}
                                             />
@@ -171,7 +230,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
                                     <Menu.MenuItem
                                         id={`${p.name}-open`}
-                                        label={"Open Settings"}
+                                        label={t("Open Settings")}
                                         action={() => openPluginModal(p)}
                                     />
                                 </>
@@ -188,7 +247,7 @@ export function buildThemeMenu() {
     return (
         <Menu.MenuItem
             id="themes"
-            label="Themes"
+            label={t("Themes")}
             action={() => openSettingsTabModal(ThemesTab)}
         >
             {buildThemeMenuEntries()}
@@ -205,19 +264,19 @@ export function buildThemeMenuEntries() {
             <Menu.MenuCheckboxItem
                 id="toggle-quickcss"
                 checked={useQuickCss}
-                label={"Enable QuickCSS"}
+                label={t("Enable QuickCSS")}
                 action={() => {
                     Settings.useQuickCss = !useQuickCss;
                 }}
             />
             <Menu.MenuItem
                 id="edit-quickcss"
-                label="Edit QuickCSS"
+                label={t("Edit QuickCSS")}
                 action={() => EndcordNative.quickCss.openEditor()}
             />
             <Menu.MenuItem
                 id="manage-themes"
-                label="Manage Themes"
+                label={t("Manage Themes")}
                 action={() => openSettingsTabModal(ThemesTab)}
             />
             {!!themes?.length && (
@@ -246,8 +305,10 @@ export function buildThemeMenuEntries() {
 function buildCustomPluginEntries() {
     const pluginEntries = [] as { plugin: Plugin, node: ReactNode; }[];
 
-    for (const plugin of Object.values(plugins)) {
-        if (plugin.toolboxActions && isPluginEnabled(plugin.name)) {
+    for (const name of Object.keys(plugins)) {
+        if (!isPluginEnabled(name)) continue;
+        const plugin = plugins[name];
+        if (plugin.toolboxActions) {
             const entries = typeof plugin.toolboxActions === "function"
                 ? plugin.toolboxActions()
                 : Object.entries(plugin.toolboxActions).map(([text, action]) => {
@@ -296,16 +357,72 @@ function buildCustomPluginEntries() {
     return <Menu.MenuGroup>{submenuEntries}</Menu.MenuGroup>;
 }
 
-export function renderPopout(onClose: () => void) {
+export const getAvailableUpdate = () => _updateAvailable ? _latestVersion : undefined;
+
+export function openUpdater() {
+    if (UpdaterTab) openSettingsTabModal(UpdaterTab);
+    else EndcordNative.native.openExternal(_latestUrl || "https://github.com/Endcord/Endcord/releases");
+}
+
+export function ToolboxMenu({ onClose }: { onClose(): void; }) {
+    const [updateAvailable, setUpdateAvailable] = useState(_updateAvailable);
+
     return (
         <Menu.Menu
             navId="vc-toolbox"
             onClose={onClose}
         >
+            {updateAvailable && (
+                <Menu.MenuGroup label={t("Endcord {version} is available", { version: _latestVersion })}>
+                    <Menu.MenuItem
+                        id="endcord-open-updater"
+                        label={t("Update Endcord")}
+                        action={openUpdater}
+                    />
+                    <Menu.MenuItem
+                        id="endcord-dismiss-update"
+                        label={t("Remind me later")}
+                        action={() => {
+                            localStorage.setItem(LS_LAST_SEEN_UPDATE, String(Date.now()));
+                            _updateAvailable = false;
+                            setUpdateAvailable(false);
+                            onClose();
+                        }}
+                    />
+                </Menu.MenuGroup>
+            )}
+            {!updateAvailable && (
+                <Menu.MenuItem
+                    id="endcord-check-update-idle"
+                    label={t("Check for Updates")}
+                    action={async () => {
+                        await checkForUpdates(false);
+                        setUpdateAvailable(_updateAvailable);
+                        Toasts.show({
+                            id: "endcord-check-done",
+                            message: _updateAvailable
+                                ? t("Endcord {version} is available", { version: _latestVersion })
+                                : t("Endcord is up to date"),
+                            type: _updateAvailable ? Toasts.Type.MESSAGE : Toasts.Type.SUCCESS
+                        });
+                    }}
+                />
+            )}
+
             <Menu.MenuItem
                 id="notifications"
-                label="Open Notification Log"
+                label={t("Open Notification Log")}
                 action={openNotificationLogModal}
+            />
+            <Menu.MenuItem
+                id="shortcuts"
+                label={t("Keyboard Shortcuts")}
+                action={openShortcutsModal}
+            />
+            <Menu.MenuItem
+                id="safe-mode"
+                label={IS_SAFE_MODE ? t("Restart Normally") : t("Restart in Safe Mode")}
+                action={IS_SAFE_MODE ? relaunch : restartInSafeMode}
             />
 
             {buildThemeMenu()}

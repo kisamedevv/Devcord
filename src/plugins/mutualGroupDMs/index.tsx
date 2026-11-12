@@ -1,37 +1,25 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
 
+import { BaseText } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Heading } from "@components/Heading";
-import { Paragraph } from "@components/Paragraph";
+import { Channel, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { isNonNullish } from "@utils/guards";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
-import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { Channel, User } from "@endcord/discord-types";
 import { findByPropsLazy, findCssClassesLazy } from "@webpack";
-import { Avatar, ChannelStore, Clickable, IconUtils, RelationshipStore, ScrollerThin, useMemo, UsernameUtils, UserStore } from "@webpack/common";
+import { Avatar, ChannelStore, Clickable, IconUtils, RelationshipStore, ScrollerThin, Text, useMemo, UserStore } from "@webpack/common";
 import { ComponentType, JSX } from "react";
 
 const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");
+const UserUtils = findByPropsLazy("getGlobalName");
 
 const ProfileListClasses = findCssClassesLazy("empty", "textContainer", "connectionIcon");
 const TabBarClasses = findCssClassesLazy("tabPanelScroller", "tabBarPanel");
@@ -39,14 +27,12 @@ const MutualsListClasses = findCssClassesLazy("row", "icon", "name", "details");
 
 let ExpandableList: ComponentType<any> = () => null;
 
-const logger = new Logger("MutualGroupDMs");
-
 function getGroupDMName(channel: Channel) {
     return channel.name ||
         channel.recipients
             .map(UserStore.getUser)
             .filter(isNonNullish)
-            .map(c => RelationshipStore.getNickname(c.id) || UsernameUtils.getName(c))
+            .map(c => RelationshipStore.getNickname(c.id) || UserUtils.getName(c))
             .join(", ");
 }
 
@@ -61,13 +47,13 @@ function getMutualGDMCountText(user: User) {
     return `${count === 0 ? "No" : count} Mutual Group${count !== 1 ? "s" : ""}`;
 }
 
-function renderClickableGDMs(mutualDms: Channel[], onClose?: () => void) {
+function renderClickableGDMs(mutualDms: Channel[], onClose: () => void) {
     return mutualDms.map(c => (
         <Clickable
             key={c.id}
             className={MutualsListClasses.row}
             onClick={() => {
-                onClose?.();
+                onClose();
                 SelectedChannelActionCreators.selectPrivateChannel(c.id);
             }}
         >
@@ -79,30 +65,32 @@ function renderClickableGDMs(mutualDms: Channel[], onClose?: () => void) {
             </Avatar>
             <div className={MutualsListClasses.details}>
                 <div className={MutualsListClasses.name}>{getGroupDMName(c)}</div>
-                <Paragraph size="xs" weight="medium">{c.recipients.length + 1} Members</Paragraph>
+                <Text variant="text-xs/medium">{c.recipients.length + 1}{" "}{t("Members")}</Text>
             </div>
         </Clickable>
     ));
 }
 
+const IS_PATCHED = Symbol("MutualGroupDMs.Patched");
+
 export default definePlugin({
     name: "MutualGroupDMs",
     description: "Shows mutual group dms in profiles",
     tags: ["Friends", "Appearance"],
-    authors: [Devs.amia],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
-        // Legacy User Profile Modal
+        // User Profile Modal
         {
             find: ".BOT_DATA_ACCESS?(",
             replacement: [
                 {
-                    match: /(?<=initialSection:\i=\i\.\i\.USER_INFO,onClose:\i\}=)(\i)/,
-                    replace: "$self.getProps($1)"
+                    match: /\i\.useEffect.{0,100}(\i)\[0\]\.section/,
+                    replace: "$self.pushSection($1,arguments[0].user);$&"
                 },
                 {
                     match: /\(0,\i\.jsx\)\(\i,\{items:\i,section:(\i)/,
-                    replace: "$1==='MUTUAL_GDMS'?$self.renderMutualGDMs({...arguments[0],isLegacy:true}):$&"
+                    replace: "$1==='MUTUAL_GDMS'?$self.renderMutualGDMs(arguments[0]):$&"
                 },
                 // Discord adds spacing between each item which pushes our tab off screen.
                 // set the gap to zero to ensure ours stays on screen
@@ -117,12 +105,12 @@ export default definePlugin({
             find: ".WIDGETS?",
             replacement: [
                 {
-                    match: /(?<=items:\i,initialSection:\i,onClose:\i\}=)(\i)/,
-                    replace: "$self.getProps($1)"
+                    match: /items:(\i),.+?(?=return\(0,\i\.jsxs?\)\("div)/,
+                    replace: "$&$self.pushSection($1,arguments[0].user);"
                 },
                 {
                     match: /children:(?=.{0,100}?component:.+?section:(\i))/,
-                    replace: "$&$1.section==='MUTUAL_GDMS'?$self.renderMutualGDMs(arguments[0]):"
+                    replace: "$&$1==='MUTUAL_GDMS'?$self.renderMutualGDMs(arguments[0]):"
                 },
                 // Make the gap between each item smaller so our tab can fit.
                 {
@@ -131,7 +119,6 @@ export default definePlugin({
                 },
             ]
         },
-        // Legacy DM Sidebar
         {
             find: 'section:"MUTUAL_FRIENDS"',
             replacement: [
@@ -160,33 +147,33 @@ export default definePlugin({
         try {
             return getMutualGroupDms(userId);
         } catch (e) {
-            logger.error("Failed to get mutual group dms:", e);
+            new Logger("MutualGroupDMs").error("Failed to get mutual group dms:", e);
         }
 
         return [];
     },
 
-    getProps(props: { user: User, items: any[]; }) {
+    pushSection(sections: any[], user: User) {
         try {
-            if (isBotOrSelf(props.user)) return props;
+            if (isBotOrSelf(user) || sections[IS_PATCHED]) return;
 
-            const section = { text: getMutualGDMCountText(props.user), section: "MUTUAL_GDMS" };
-            return { ...props, items: [...props.items, section] };
+            sections[IS_PATCHED] = true;
+            sections.push({
+                text: getMutualGDMCountText(user),
+                section: "MUTUAL_GDMS",
+            });
+        } catch (e) {
+            new Logger("MutualGroupDMs").error("Failed to push mutual group dms section:", e);
         }
-        catch (e) {
-            logger.error("Failed to append mutual group dms section:", e);
-        }
-
-        return props;
     },
 
-    renderMutualGDMs: ErrorBoundary.wrap(({ user, onClose, isLegacy }: { user: User, onClose: () => void; isLegacy: boolean; }) => {
+    renderMutualGDMs: ErrorBoundary.wrap(({ user, onClose }: { user: User, onClose: () => void; }) => {
         const mutualGDms = useMemo(() => getMutualGroupDms(user.id), [user.id]);
         const entries = renderClickableGDMs(mutualGDms, onClose);
 
         return (
             <ScrollerThin
-                className={classes(TabBarClasses.tabPanelScroller, !isLegacy && "vc-mutual-gdms-scroller")}
+                className={TabBarClasses.tabPanelScroller}
                 fade={true}
                 onClose={onClose}
             >
@@ -195,7 +182,7 @@ export default definePlugin({
                     : (
                         <div className={ProfileListClasses.empty}>
                             <div className={ProfileListClasses.textContainer}>
-                                <Heading style={{ color: "var(--text-strong)" }}>You don't have any group chats in common</Heading>
+                                <BaseText tag="h3" size="md" weight="medium" style={{ color: "var(--text-strong)" }}>{t("You don't have any group chats in common")}</BaseText>
                             </div>
                         </div>
                     )
@@ -212,10 +199,10 @@ export default definePlugin({
             <>
                 {hasDivider && Divider}
                 <ExpandableList
-                    listClassName={classes(listStyle, "vc-mutual-gdms-dm-page-list")}
-                    header={"Mutual Groups"}
+                    listClassName={listStyle}
+                    header={t("Mutual Groups")}
                     isLoading={false}
-                    items={renderClickableGDMs(mutualGDms)}
+                    items={renderClickableGDMs(mutualGDms, () => { })}
                 />
             </>
         );

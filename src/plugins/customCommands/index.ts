@@ -1,24 +1,12 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
-import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, registerCommand, sendBotMessage, unregisterCommand } from "@api/Commands";
+import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, registerCommand, sendBotMessage } from "@api/Commands";
 import { migratePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
@@ -92,16 +80,15 @@ export default definePlugin({
     name: "CustomCommands",
     description: "Allows you to create custom slash commands / tags",
     searchTerms: ["MessageTags"],
-    authors: [Devs.Ven, Devs.Luna,],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Commands", "Customisation", "Utility"],
     settings,
 
-    start() {
-        getTags().forEach(registerTagCommand);
-    },
-
-    stop() {
-        getTags().forEach(tag => unregisterCommand(tag.name));
+    async start() {
+        const tags = getTags();
+        for (const tagName in tags) {
+            registerTagCommand(tags[tagName]);
+        }
     },
 
     commands: [
@@ -161,7 +148,7 @@ export default definePlugin({
                     }
 
                     case "list": {
-                        const content = getTags()
+                        const content = Object.values(getTags())
                             .map(tag => `\`${tag.name}\`: ${tag.message.slice(0, 72).replaceAll("\\n", " ")}${tag.message.length > 72 ? "..." : ""}`)
                             .join("\n");
 

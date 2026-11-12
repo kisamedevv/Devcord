@@ -1,5 +1,5 @@
-import { ChannelOverrideFlags, GuildSettingsFlags, NotifyHighlights, UserNotificationSetting } from "../../enums";
 import { Channel, FluxStore, Guild } from "..";
+import { ChannelOverrideFlags, GuildSettingsFlags, NotifyHighlights, UserNotificationSetting } from "../../enums";
 
 export interface MuteConfig {
     selected_time_window: number;
@@ -46,6 +46,7 @@ export class UserGuildSettingsStore extends FluxStore {
 
     allowAllMessages(channel: Channel): boolean;
     allowNoMessages(channel: Channel): boolean;
+    getAddedToMessages(): string[];
     // TODO: finish typing
     getAllSettings(): { userGuildSettings: Record<string, GuildSettings>; };
     getChannelFlags(channel: Channel): ChannelOverrideFlags;
@@ -68,6 +69,7 @@ export class UserGuildSettingsStore extends FluxStore {
     getOptedInChannelsWithPendingUpdates(guildId: string): Record<string, any>;
     getPendingChannelUpdates(guildId: string): Record<string, any>;
     getState(): UserGuildSettingsState;
+    isAddedToMessages(channelId: string): boolean;
     isCategoryMuted(guildId: string, channelId: string): boolean;
     isChannelMuted(guildId: string | null, channelId: string): boolean;
     isChannelOptedIn(guildId: string, channelId: string, usePending?: boolean): boolean;

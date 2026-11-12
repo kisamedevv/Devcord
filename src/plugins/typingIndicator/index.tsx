@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
 
@@ -66,7 +54,7 @@ function TypingIndicator({ channelId, guildId }: { channelId: string; guildId: s
     const myId = UserStore.getCurrentUser()?.id;
 
     const typingUsersArray = Object.keys(typingUsers).filter(id =>
-        id !== myId && !(RelationshipStore.isBlocked(id) && !settings.store.includeBlockedUsers) && !(RelationshipStore.isIgnored(id) && !settings.store.includeIgnoredUsers)
+        id !== myId && !(RelationshipStore.isBlocked(id) && !settings.store.includeBlockedUsers)
     );
     const [a, b, c] = typingUsersArray;
     let tooltipText: string;
@@ -143,11 +131,6 @@ const settings = definePluginSettings({
         description: "Whether to show the typing indicator for muted channels.",
         default: false
     },
-    includeIgnoredUsers: {
-        type: OptionType.BOOLEAN,
-        description: "Whether to show the typing indicator for ignored users.",
-        default: false
-    },
     includeBlockedUsers: {
         type: OptionType.BOOLEAN,
         description: "Whether to show the typing indicator for blocked users.",
@@ -168,7 +151,7 @@ export default definePlugin({
     name: "TypingIndicator",
     description: "Adds an indicator if someone is typing on a channel.",
     tags: ["Notifications", "Appearance", "Servers"],
-    authors: [Devs.Nuckyz, Devs.fawn, Devs.Sqaaakoi],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
@@ -185,7 +168,7 @@ export default definePlugin({
             // This is the thread "spine" that shows in the left
             find: "M0 15H2c0 1.6569",
             replacement: {
-                match: /\(\i,\{thread:(\i),countInVoice:.{0,200}?\]\}\)(?=\])/,
+                match: /mentionsCount:\i.+?null(?<=channel:(\i).+?)/,
                 replace: "$&,$self.TypingIndicator($1.id,$1.getGuildId())"
             }
         }

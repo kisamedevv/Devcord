@@ -9,6 +9,8 @@ export interface PrivateChannelSortEntry {
 
 export class PrivateChannelSortStore extends FluxStore {
     getPrivateChannelIds(): string[];
+    /** returns [favorites, others], both sorted by last message */
     getSortedChannels(): [PrivateChannelSortEntry[], PrivateChannelSortEntry[]];
+    /** returns a map of channel ids to last message ids */
     serializeForOverlay(): Record<string, string>;
 }

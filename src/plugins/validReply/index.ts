@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Channel, Message, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { Channel, Message, User } from "@endcord/discord-types";
 import { findByCodeLazy } from "@webpack";
 import { FluxDispatcher, RestAPI } from "@webpack/common";
 
@@ -34,7 +34,7 @@ export default definePlugin({
     name: "ValidReply",
     description: 'Fixes "Message could not be loaded" upon hovering over the reply',
     tags: ["Chat", "Utility"],
-    authors: [Devs.newwares],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             // Same find as in ReplyTimestamp
@@ -86,7 +86,7 @@ export default definePlugin({
 
                     FluxDispatcher.dispatch({
                         type: "MESSAGE_DELETE",
-                        channelId: channelId,
+                        channelId,
                         message: messageId
                     });
                 } else {

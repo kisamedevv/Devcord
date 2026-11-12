@@ -1,31 +1,16 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { isPluginEnabled } from "@api/PluginManager";
-import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import NoBlockedMessagesPlugin from "@plugins/noBlockedMessages";
+import { CustomEmoji, Message, ReactionEmoji, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import { Queue } from "@utils/Queue";
 import { useForceUpdater } from "@utils/react";
-import definePlugin, { OptionType } from "@utils/types";
-import { CustomEmoji, Message, ReactionEmoji, User } from "@endcord/discord-types";
+import definePlugin from "@utils/types";
 import { ChannelStore, Constants, FluxDispatcher, React, RestAPI, useEffect, useLayoutEffect, UserStore, UserSummaryItem } from "@webpack/common";
 
 interface ReactionCacheEntry {
@@ -89,22 +74,33 @@ function handleClickAvatar(event: React.UIEvent<HTMLElement, Event>) {
     event.stopPropagation();
 }
 
-function ReactionUsers({ message, users }: { message: Message, users: User[]; }) {
+function ReactionUsers({ message, emoji, type }: ReactionProps) {
+    const forceUpdate = useForceUpdater();
+
     useLayoutEffect(() => { // bc need to prevent autoscrolling
         if (Scroll?.scrollCounter > 0) {
             Scroll.setAutomaticAnchor(null);
         }
     });
 
+    useEffect(() => {
+        const cb = (e: any) => {
+            if (e?.messageId === message.id)
+                forceUpdate();
+        };
+        FluxDispatcher.subscribe("MESSAGE_REACTION_ADD_USERS", cb);
+
+        return () => FluxDispatcher.unsubscribe("MESSAGE_REACTION_ADD_USERS", cb);
+    }, [message.id, forceUpdate]);
+
+    const reactions = getReactionsWithQueue(message, emoji, type);
+    const users = Array.from(reactions, ([id]) => UserStore.getUser(id)).filter(Boolean);
+
     return (
         <div
             style={{ marginLeft: "0.5em", transform: "scale(0.9)" }}
         >
-            <div
-                onClick={handleClickAvatar}
-                onKeyDown={handleClickAvatar}
-                style={!settings.store.clickableAvatars ? { pointerEvents: "none" } : {}}
-            >
+            <div onClick={handleClickAvatar} onKeyDown={handleClickAvatar}>
                 <UserSummaryItem
                     users={users}
                     guildId={ChannelStore.getChannel(message.channel_id)?.guild_id}
@@ -118,21 +114,12 @@ function ReactionUsers({ message, users }: { message: Message, users: User[]; })
     );
 }
 
-const settings = definePluginSettings({
-    clickableAvatars: {
-        description: "While this is enabled, clicking a reacting user's avatar will open their profile instead of adding the reaction",
-        type: OptionType.BOOLEAN,
-        default: true,
-        restartNeeded: true
-    }
-});
-
 export default definePlugin({
     name: "WhoReacted",
     description: "Renders the avatars of users who reacted to a message",
     tags: ["Reactions", "Chat", "Appearance"],
-    authors: [Devs.Ven, Devs.KannaDev, Devs.newwares, Devs.paige],
-    settings,
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+
     patches: [
         {
             find: ",reactionRef:",
@@ -158,30 +145,10 @@ export default definePlugin({
         }
     ],
 
-    renderUsers: ErrorBoundary.wrap(({ message, emoji, type }: ReactionProps) => {
-        const forceUpdate = useForceUpdater();
-
-        useEffect(() => {
-            const cb = (e: any) => {
-                if (e?.messageId === message.id)
-                    forceUpdate();
-            };
-            FluxDispatcher.subscribe("MESSAGE_REACTION_ADD_USERS", cb);
-
-            return () => FluxDispatcher.unsubscribe("MESSAGE_REACTION_ADD_USERS", cb);
-        }, [message.id, forceUpdate]);
-
-        if (message.reactions.length > 10) return null;
-
-        const reactionMap = getReactionsWithQueue(message, emoji, type);
-        let users = Array.from(reactionMap, ([id]) => UserStore.getUser(id)).filter(Boolean);
-
-        if (isPluginEnabled(NoBlockedMessagesPlugin.name))
-            users = users.filter(user => !NoBlockedMessagesPlugin.shouldIgnoreUser(user.id));
-
-        return users.length === 0
+    renderUsers: ErrorBoundary.wrap((props: ReactionProps) => {
+        return props.message.reactions.length > 10
             ? null
-            : <ReactionUsers message={message} users={users} />;
+            : <ReactionUsers {...props} />;
     }, { noop: true }),
 
     setScrollObj(scroll: any) {

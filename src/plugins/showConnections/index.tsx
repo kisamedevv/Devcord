@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
@@ -23,11 +11,12 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { CopyIcon, LinkIcon } from "@components/Icons";
+import { ConnectedAccount, User } from "@endcord/discord-types";
 import OpenInAppPlugin from "@plugins/openInApp";
+import { isSafeLink } from "@shared/externalLinks";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
-import { ConnectedAccount, User } from "@endcord/discord-types";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
 import { Tooltip, UserProfileStore } from "@webpack/common";
 
@@ -48,8 +37,7 @@ const settings = definePluginSettings({
     iconSize: {
         type: OptionType.NUMBER,
         description: "Icon size (px)",
-        default: 32,
-        min: 1
+        default: 32
     },
     iconSpacing: {
         type: OptionType.SELECT,
@@ -97,7 +85,8 @@ function ConnectionsComponent({ id, theme }: { id: string, theme: string; }) {
 
 function CompactConnectionComponent({ connection, theme }: { connection: ConnectedAccount, theme: string; }) {
     const platform = platforms.get(useLegacyPlatformType(connection.type));
-    const url = platform.getPlatformUserUrl?.(connection);
+    const platformUrl = platform.getPlatformUserUrl?.(connection);
+    const url = isSafeLink(platformUrl) ? platformUrl : undefined;
 
     const img = (
         <img
@@ -155,9 +144,9 @@ function CompactConnectionComponent({ connection, theme }: { connection: Connect
 
 export default definePlugin({
     name: "ShowConnections",
-    description: "Show connected accounts in user popouts and the DM sidebar",
+    description: "Show connected accounts in user popouts",
     tags: ["Friends", "Appearance"],
-    authors: [Devs.TheKodeToad],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
@@ -165,15 +154,7 @@ export default definePlugin({
             // Same find as ReviewDB
             find: '"UserProfilePopout");',
             replacement: {
-                match: /userId:\i\.id,guild:\i\}\)(?=])/,
-                replace: "$&,$self.profilePopoutComponent(arguments[0])"
-            }
-        },
-        {
-            // Same as FakeNitro
-            find: '.getByName("fork_and_knife")',
-            replacement: {
-                match: /targetUserId:\i\.id.{0,60}?]}\)(?=])/,
+                match: /userId:\i\.id,guild:\i\}\)(?=(?:,Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(arguments\[0\]\))*])/,
                 replace: "$&,$self.profilePopoutComponent(arguments[0])"
             }
         }

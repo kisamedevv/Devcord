@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { settings } from "@plugins/imageZoom";
@@ -126,7 +114,7 @@ export const Magnifier = ErrorBoundary.wrap<MagnifierProps>(({ instance, size: i
             element.current = elem;
             elem.querySelector("img,video")?.setAttribute("draggable", "false");
             if (instance.props.animated) {
-                originalVideoElementRef.current = elem!.querySelector("video")!;
+                originalVideoElementRef.current = elem.querySelector("video")!;
                 originalVideoElementRef.current.addEventListener("timeupdate", syncVideos);
             }
 
@@ -153,10 +141,6 @@ export const Magnifier = ErrorBoundary.wrap<MagnifierProps>(({ instance, size: i
     const imageSrc = useMemo(() => {
         try {
             const imageUrl = new URL(instance.props.src);
-
-            if (imageUrl.protocol !== "http:" && imageUrl.protocol !== "https:")
-                return instance.props.src;
-
             if (imageUrl.pathname.startsWith("/attachments/"))
                 imageUrl.hostname = "cdn.discordapp.com";
 
@@ -178,8 +162,8 @@ export const Magnifier = ErrorBoundary.wrap<MagnifierProps>(({ instance, size: i
             className={cl("lens", { "nearest-neighbor": settings.store.nearestNeighbour, square: settings.store.square })}
             style={{
                 opacity,
-                width: size.current + "px",
-                height: size.current + "px",
+                width: `${size.current}px`,
+                height: `${size.current}px`,
                 transform: `translate(${lensPosition.x}px, ${lensPosition.y}px)`,
             }}
         >

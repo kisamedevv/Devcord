@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Text, type TextProps } from "./Text";
+import { BaseText, type BaseTextProps } from "./BaseText";
 
-export type ParagraphProps = TextProps<"p">;
+export type ParagraphProps = BaseTextProps<"p">;
 
 export function Paragraph({ children, ...restProps }: ParagraphProps) {
     return (
-        <Text tag="p" size="sm" weight="normal" {...restProps}>
+        <BaseText tag="p" size="sm" weight="normal" {...restProps}>
             {children}
-        </Text>
+        </BaseText>
     );
 }

@@ -1,24 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import { generateTextCss } from "@components/BaseText";
 import { generateMarginCss } from "@components/margins";
-import { generateTextCss } from "@components/Text";
 import { classNameFactory as _classNameFactory, classNameToSelector, createAndAppendStyle } from "@utils/css";
+
+import { getScreenStyle } from "~plugins";
 
 // Backwards compat for Vesktop
 /** @deprecated Import this from `@utils/css` instead */
@@ -83,6 +73,29 @@ export function initStyles() {
 document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.append(endcordRootNode);
 }, { once: true });
+
+let screenStyles: HTMLStyleElement | undefined;
+
+/**
+ * Adds the styles of Endcord's own screens, imported with `?screen`: settings, dialogs, the welcome screen. Discord's page
+ * doesn't carry them until one of those is first drawn, so each restyle of Discord has fewer rules to match.
+ * Call it when such a screen renders; after the first call it does nothing
+ */
+export function enableScreenStyles() {
+    if (screenStyles) return;
+
+    const node = screenStyles = createAndAppendStyle("endcord-screens", coreStyleRootNode);
+    const queued = window.EndcordScreenStyles ??= [];
+    // The desktop build keeps the core's own screen styles with the plugin code outside the script, and queues where
+    // each one is instead (see getScreenStyle)
+    const text = (entry: string | { k: string; }) => typeof entry === "string" ? entry : getScreenStyle(entry.k);
+    node.textContent = queued.map(text).join("\n");
+    // A screen whose code is only loaded later, like a plugin's tab, adds its styles as it loads
+    queued.push = (...css: Array<string | { k: string; }>) => {
+        node.textContent += `\n${css.map(text).join("\n")}`;
+        return queued.length;
+    };
+}
 
 export function requireStyle(name: string) {
     const style = styleMap.get(name);

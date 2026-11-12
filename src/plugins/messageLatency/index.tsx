@@ -6,10 +6,10 @@
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { isNonNullish } from "@utils/guards";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { AuthenticationStore, SnowflakeUtils, Tooltip } from "@webpack/common";
 
 type FillValue = ("status-danger" | "status-warning" | "status-positive" | "text-muted");
@@ -30,14 +30,13 @@ export default definePlugin({
     name: "MessageLatency",
     description: "Displays an indicator for messages that took ≥n seconds to send",
     tags: ["Chat", "Utility"],
-    authors: [Devs.arHSM],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings: definePluginSettings({
         latency: {
             type: OptionType.NUMBER,
             description: "Threshold in seconds for latency indicator",
-            default: 2,
-            min: 0
+            default: 2
         },
         detectDiscordKotlin: {
             type: OptionType.BOOLEAN,

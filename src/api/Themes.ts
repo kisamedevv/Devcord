@@ -1,79 +1,44 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import { IS_SAFE_MODE } from "@api/SafeMode";
 import { Settings, SettingsStore } from "@api/Settings";
 import { ThemeStore } from "@endcord/discord-types";
 import { createAndAppendStyle } from "@utils/css";
-import { isNonNullish } from "@utils/guards";
 import { PopoutWindowStore } from "@webpack/common";
 
 import { endcordRootNode,userStyleRootNode } from "./Styles";
 
-let style: HTMLStyleElement;
-let themesStyle: HTMLStyleElement;
+let style: HTMLStyleElement | undefined;
+let themesStyle: HTMLStyleElement | undefined;
+let watchingQuickCss = false;
 
-const themeChangeListeners = new Set<() => void>();
+// Empty Custom CSS and no themes, as on most installs, need no stylesheet on the page at all
+function applyQuickCss(css: string) {
+    if (!style && !css) return;
 
-/**
- * Preload, Discord'un ilk boyasından önce temayı head'e basar (flaş olmasın diye).
- * Renderer sonra kendi @import yolunu kullanıyor; bootstrap etiketi güncel
- * tutuluyor ki tema değişince eski kurallar geride kalmasın.
- */
-const STARTUP_STYLE_ID = "endcord-startup-theme";
-
-async function syncStartupStyle() {
-    if (IS_WEB) return;
-
-    const el = document.getElementById(STARTUP_STYLE_ID) as HTMLStyleElement | null;
-    if (!el) return;
-
-    const parts: string[] = [];
-
-    for (const theme of Settings.enabledThemes) {
-        const data = await EndcordNative.themes.getThemeData(theme).catch(() => null);
-        if (data) parts.push(data);
-    }
-
-    el.textContent = parts.join("\n");
+    style ??= createAndAppendStyle("endcord-custom-css", userStyleRootNode);
+    style.textContent = css;
+    // At the time of writing this, changing textContent resets the disabled state
+    style.disabled = !Settings.useQuickCss;
+    updatePopoutWindows();
 }
 
 async function toggle(isEnabled: boolean) {
-    if (!style) {
+    if (!watchingQuickCss) {
         if (isEnabled) {
-            style = createAndAppendStyle("endcord-custom-css", userStyleRootNode);
-            EndcordNative.quickCss.addChangeListener(css => {
-                style.textContent = css;
-                // At the time of writing this, changing textContent resets the disabled state
-                style.disabled = !Settings.useQuickCss;
-                updatePopoutWindows();
-            });
-            style.textContent = await EndcordNative.quickCss.get();
+            watchingQuickCss = true;
+            EndcordNative.quickCss.addChangeListener(applyQuickCss);
+            applyQuickCss(await EndcordNative.quickCss.get());
         }
-    } else
+    } else if (style)
         style.disabled = !isEnabled;
 }
 
-// for cleanup
-let previousThemeBlobObjectURLs = [] as string[];
-
 async function initThemes() {
-    themesStyle ??= createAndAppendStyle("endcord-themes", userStyleRootNode);
-
     const { themeLinks, enabledThemes } = Settings;
 
     const { ThemeStore } = require("@webpack/common/stores") as typeof import("@webpack/common/stores");
@@ -95,27 +60,26 @@ async function initThemes() {
         .filter(link => link !== null);
 
     if (IS_WEB) {
-        previousThemeBlobObjectURLs.forEach(url => URL.revokeObjectURL(url));
-
-        const objectUrls = await Promise.all(enabledThemes.map(async theme => {
+        for (const theme of enabledThemes) {
             const themeData = await EndcordNative.themes.getThemeData(theme);
-            if (!themeData) return null;
-
+            if (!themeData) continue;
             const blob = new Blob([themeData], { type: "text/css" });
-            return URL.createObjectURL(blob);
-        }));
-
-        previousThemeBlobObjectURLs = objectUrls.filter(isNonNullish);
-        links.push(...previousThemeBlobObjectURLs);
+            links.push(URL.createObjectURL(blob));
+        }
     } else {
         const localThemes = enabledThemes.map(theme => `endcord:///themes/${theme}?v=${Date.now()}`);
         links.push(...localThemes);
     }
 
+    if (!themesStyle && !links.length) return;
+
+    if (!themesStyle) {
+        themesStyle = createAndAppendStyle("endcord-themes", userStyleRootNode);
+        // Custom CSS stays last, so it can still override a theme
+        if (style) userStyleRootNode.insertBefore(themesStyle, style);
+    }
     themesStyle.textContent = links.map(link => `@import url("${link.trim()}");`).join("\n");
-    syncStartupStyle();
     updatePopoutWindows();
-    themeChangeListeners.forEach(listener => listener());
 }
 
 function applyToPopout(popoutWindow: Window | undefined, key: string) {
@@ -139,7 +103,8 @@ function updatePopoutWindows() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (IS_USERSCRIPT) return;
+    // A theme can hide the very button that would turn it off, so safe mode leaves them all out
+    if (IS_USERSCRIPT || IS_SAFE_MODE) return;
 
     initThemes();
 
@@ -150,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     SettingsStore.addChangeListener("enabledThemes", initThemes);
 
     window.addEventListener("message", event => {
+        if (event.origin !== window.location.origin) return;
         const { discordPopoutEvent } = event.data || {};
         if (discordPopoutEvent?.type !== "loaded") return;
 
@@ -162,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }, { once: true });
 
 export function initQuickCssThemeStore(themeStore: ThemeStore) {
-    if (IS_USERSCRIPT) return;
+    if (IS_USERSCRIPT || IS_SAFE_MODE) return;
 
     initThemes();
 
@@ -173,12 +139,4 @@ export function initQuickCssThemeStore(themeStore: ThemeStore) {
         currentTheme = themeStore.theme;
         initThemes();
     });
-}
-
-export function addThemeChangeListener(listener: () => void) {
-    themeChangeListeners.add(listener);
-}
-
-export function removeThemeChangeListener(listener: () => void) {
-    themeChangeListeners.delete(listener);
 }

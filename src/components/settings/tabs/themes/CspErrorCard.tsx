@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import { ErrorCard } from "@components/ErrorCard";
-import { Heading } from "@components/Heading";
 import { Link } from "@components/Link";
-import { Paragraph } from "@components/Paragraph";
 import { CspBlockedUrls, useCspErrors } from "@utils/cspViolations";
+import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
-import { promptToRestart } from "@utils/promptToRestart";
+import { relaunch } from "@utils/native";
 import { useForceUpdater } from "@utils/react";
+import { Button, ConfirmModal, Forms, openModal } from "@webpack/common";
 
 export function CspErrorCard() {
+    const { t } = useI18n();
     if (IS_WEB) return null;
 
     const errors = useCspErrors();
@@ -39,29 +39,40 @@ export function CspErrorCard() {
         });
 
         forceUpdate();
-        promptToRestart("relaunch");
+
+        openModal(props => (
+            <ConfirmModal
+                {...props}
+                title={t("Restart Required")}
+                subtitle={t("A restart is required to apply this change")}
+                confirmText={t("Restart now")}
+                cancelText={t("Later")}
+                variant="primary"
+                onConfirm={relaunch}
+            />
+        ));
     };
 
     const hasImgurHtmlDomain = errors.some(isImgurHtmlDomain);
 
     return (
         <ErrorCard>
-            <Heading className={Margins.bottom8}>Blocked Resources</Heading>
-            <Paragraph>Some images, styles, or fonts were blocked because they come from disallowed domains.</Paragraph>
-            <Paragraph>It is highly recommended to move them to GitHub or Imgur. But you may also allow domains if you fully trust them.</Paragraph>
-            <Paragraph>
-                After allowing a domain, you have to fully close (from tray / task manager) and restart {IS_DISCORD_DESKTOP ? "Discord" : "Vesktop"} to apply the change.
-            </Paragraph>
+            <Forms.FormTitle tag="h5">{t("Blocked Resources")}</Forms.FormTitle>
+            <Forms.FormText>{t("Some images, styles, or fonts were blocked because they come from disallowed domains.")}</Forms.FormText>
+            <Forms.FormText>{t("It is highly recommended to move them to GitHub or Imgur. But you may also allow domains if you fully trust them.")}</Forms.FormText>
+            <Forms.FormText>
+                {t("After allowing a domain, you have to fully close (from tray / task manager) and restart {app} to apply the change.", { app: IS_DISCORD_DESKTOP ? "Discord" : "Endcord Desktop" })}
+            </Forms.FormText>
 
-            <Heading className={classes(Margins.top16, Margins.bottom8)}>Blocked URLs</Heading>
+            <Forms.FormTitle tag="h5" className={classes(Margins.top16, Margins.bottom8)}>{t("Blocked URLs")}</Forms.FormTitle>
             <div className="vc-settings-csp-list">
                 {errors.map((url, i) => (
                     <div key={url}>
                         {i !== 0 && <Divider className={Margins.bottom8} />}
                         <div className="vc-settings-csp-row">
                             <Link href={url}>{url}</Link>
-                            <Button variant="secondary" onClick={() => allowUrl(url)} disabled={isImgurHtmlDomain(url)}>
-                                Allow
+                            <Button color={Button.Colors.PRIMARY} onClick={() => allowUrl(url)} disabled={isImgurHtmlDomain(url)}>
+                                {t("Allow")}
                             </Button>
                         </div>
                     </div>
@@ -71,10 +82,10 @@ export function CspErrorCard() {
             {hasImgurHtmlDomain && (
                 <>
                     <Divider className={classes(Margins.top8, Margins.bottom16)} />
-                    <Paragraph>
-                        Imgur links should be direct links in the form of <code>https://i.imgur.com/...</code>
-                    </Paragraph>
-                    <Paragraph>To obtain a direct link, right-click the image and select "Copy image address".</Paragraph>
+                    <Forms.FormText>
+                        {t("Imgur links should be direct links in the form of https://i.imgur.com/...")}
+                    </Forms.FormText>
+                    <Forms.FormText>{t("To obtain a direct link, right-click the image and select \"Copy image address\".")}</Forms.FormText>
                 </>
             )}
         </ErrorCard>

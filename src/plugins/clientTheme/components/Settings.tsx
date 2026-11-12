@@ -4,17 +4,16 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button } from "@components/Button";
 import { ErrorCard } from "@components/ErrorCard";
-import { Heading } from "@components/Heading";
-import { Paragraph } from "@components/Paragraph";
-import { settings } from "@plugins/clientTheme";
 import { relativeLuminance } from "@plugins/clientTheme/utils/colorUtils";
 import { createOrUpdateThemeColorVars } from "@plugins/clientTheme/utils/styleUtils";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { findByCodeLazy, findStoreLazy } from "@webpack";
-import { ColorPicker, ThemeStore, useStateFromStores } from "@webpack/common";
+import { Button, ColorPicker, Forms, ThemeStore, useStateFromStores } from "@webpack/common";
+
+import { settings } from "..";
 
 const saveClientTheme = findByCodeLazy('type:"UNSYNCED_USER_SETTINGS_UPDATE', '"system"===');
 const NitroThemeStore = findStoreLazy("ClientThemesBackgroundStore");
@@ -69,8 +68,8 @@ export function ThemeSettingsComponent() {
         <div className={cl("settings")}>
             <div className={cl("container")}>
                 <div className={cl("settings-labels")}>
-                    <Heading className={Margins.bottom8}>Theme Color</Heading>
-                    <Paragraph>Add a color to your Discord client theme</Paragraph>
+                    <Forms.FormTitle tag="h3">{t("Theme Color")}</Forms.FormTitle>
+                    <Forms.FormText>{t("Add a color to your Discord client theme")}</Forms.FormText>
                 </div>
                 <ColorPicker
                     color={parseInt(settings.store.color, 16)}
@@ -81,14 +80,14 @@ export function ThemeSettingsComponent() {
             </div>
             {(contrastWarning || nitroThemeEnabled) && (<>
                 <ErrorCard className={Margins.top8}>
-                    <Heading className={Margins.bottom8}>Your theme won't look good!</Heading>
+                    <Forms.FormTitle tag="h2">{t("Your theme won't look good!")}</Forms.FormTitle>
 
-                    {contrastWarning && <Paragraph>{">"} Selected color won't contrast well with text</Paragraph>}
-                    {nitroThemeEnabled && <Paragraph>{">"} Nitro themes aren't supported</Paragraph>}
+                    {contrastWarning && <Forms.FormText>{">"}{" "}{t("Selected color won't contrast well with text")}</Forms.FormText>}
+                    {nitroThemeEnabled && <Forms.FormText>{">"}{" "}{t("Nitro themes aren't supported")}</Forms.FormText>}
 
                     <div className={cl("buttons-container")}>
-                        {(contrastWarning && fixableContrast) && <Button onClick={() => setDiscordTheme(oppositeTheme)} variant="dangerPrimary">Switch to {oppositeTheme} mode</Button>}
-                        {(nitroThemeEnabled) && <Button onClick={() => setDiscordTheme(currentTheme)} variant="dangerPrimary">Disable Nitro Theme</Button>}
+                        {(contrastWarning && fixableContrast) && <Button onClick={() => setDiscordTheme(oppositeTheme)} color={Button.Colors.RED}>{t("Switch to")}{" "}{oppositeTheme} mode</Button>}
+                        {(nitroThemeEnabled) && <Button onClick={() => setDiscordTheme(currentTheme)} color={Button.Colors.RED}>{t("Disable Nitro Theme")}</Button>}
                     </div>
                 </ErrorCard>
             </>)}
@@ -99,7 +98,6 @@ export function ThemeSettingsComponent() {
 export function ResetThemeColorComponent() {
     return (
         <Button onClick={() => onPickColor(0x313338)}>
-            Reset Theme Color
-        </Button>
+            {t("Reset Theme Color")}</Button>
     );
 }

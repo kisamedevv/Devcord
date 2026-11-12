@@ -19,88 +19,23 @@
 import "./checkNodeVersion.js";
 
 import { execFileSync } from "child_process";
-import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
-import { Readable } from "stream";
-import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const BASE_URL = "https://github.com/Endcord/Installer/releases/latest/download/";
-
+// Uses the installers in this repo and the files in dist/, so nothing gets downloaded and run
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
-const FILE_DIR = join(BASE_DIR, "dist", "Installer");
-const ETAG_FILE = join(FILE_DIR, "etag.txt");
+const uninstall = process.argv.includes("--uninstall");
 
-function getFilename() {
-    switch (process.platform) {
-        case "win32":
-            return "EndcordInstallerCli.exe";
-        case "darwin":
-            return "EndcordInstallerCli-darwin";
-        case "linux":
-            return "EndcordInstallerCli-linux";
-        default:
-            throw new Error("Unsupported platform: " + process.platform);
-    }
-}
-
-async function ensureBinary() {
-    const filename = getFilename();
-    console.log("Downloading " + filename);
-
-    mkdirSync(FILE_DIR, { recursive: true });
-
-    const outputFile = join(FILE_DIR, filename);
-
-    const etag = existsSync(outputFile) && existsSync(ETAG_FILE)
-        ? readFileSync(ETAG_FILE, "utf-8")
-        : null;
-
-    const res = await fetch(BASE_URL + filename, {
-        headers: {
-            "User-Agent": "Endcord (https://github.com/Endcord/Endcord)",
-            "If-None-Match": etag
-        }
-    });
-
-    if (res.status === 304) {
-        console.log("Up to date, not redownloading!");
-        return outputFile;
-    }
-    if (!res.ok)
-        throw new Error(`Failed to download installer: ${res.status} ${res.statusText}`);
-
-    writeFileSync(ETAG_FILE, res.headers.get("etag"));
-
-    const body = Readable.fromWeb(res.body);
-    await finished(body.pipe(createWriteStream(outputFile, {
-        mode: 0o755,
-        autoClose: true
-    })));
-
-    console.log("Finished downloading!");
-
-    return outputFile;
-}
-
-
-
-const installerBin = await ensureBinary();
-
-console.log("Now running Installer...");
-
-const argStart = process.argv.indexOf("--");
-const args = argStart === -1 ? [] : process.argv.slice(argStart + 1);
+const run = (command, args) => execFileSync(command, args, { cwd: BASE_DIR, stdio: "inherit" });
 
 try {
-    execFileSync(installerBin, args, {
-        stdio: "inherit",
-        env: {
-            ...process.env,
-            ENDCORD_USER_DATA_DIR: BASE_DIR,
-            ENDCORD_DEV_INSTALL: "1"
-        }
-    });
+    if (process.platform === "win32") {
+        run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", "-NoSite"]);
+        console.log(`Opening the installer. Choose ${uninstall ? "Uninstall" : "Install"} there.`);
+        run(join(BASE_DIR, "EndcordInstaller.exe"), []);
+    } else {
+        run("sh", ["install.sh", ...(uninstall ? ["--uninstall"] : ["--install", "--local", "dist"])]);
+    }
 } catch {
     console.error("Something went wrong. Please check the logs above.");
 }

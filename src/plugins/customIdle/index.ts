@@ -30,20 +30,19 @@ export default definePlugin({
     name: "CustomIdle",
     description: "Allows you to set the time before Discord goes idle (or disable auto-idle)",
     tags: ["Activity", "Customisation"],
-    authors: [Devs.newwares],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {
             find: 'type:"IDLE",idle:',
             replacement: [
                 {
-                    // FIXME: Stable compat: (?:\i\.\i|6e5), keep only 6e5
-                    match: /(?<=Date\.now\(\)-\i>)(?:\i\.\i|6e5)\|\|/,
+                    // The timeout is a constant, or on Canary the number itself (6e5)
+                    match: /(?<=Date\.now\(\)-\i>)(?:\i\.\i|[\d.]+(?:e\d+)?)\|\|/,
                     replace: "$self.getIdleTimeout()||"
                 },
                 {
-                    // FIXME: Stable compat: (?:\i\.\i|6e5), keep only 6e5
-                    match: /Math\.min\((\i\*\i\.\i\.\i\.SECOND),(?:\i\.\i|6e5)\)/,
+                    match: /Math\.min\((\i\*\i\.\i\.\i\.SECOND),(?:\i\.\i|[\d.]+(?:e\d+)?)\)/,
                     replace: "$1" // Decouple idle from afk (phone notifications will remain at user setting or 10 min maximum)
                 },
                 {

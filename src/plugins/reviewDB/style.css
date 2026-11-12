@@ -78,6 +78,7 @@
     gap: 10px;
 }
 
+/* stylelint-disable-next-line media-feature-range-notation */
 @media (max-width: 600px) {
     .vc-rdb-button-grid {
         grid-template-columns: 1fr;
@@ -117,6 +118,7 @@
     opacity: 0.4;
     cursor: not-allowed;
 }
+
 
 .vc-rdb-vote-column {
     position: absolute;

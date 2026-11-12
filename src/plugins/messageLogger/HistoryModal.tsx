@@ -6,12 +6,13 @@
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { TooltipContainer } from "@components/TooltipContainer";
+import { RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
-import { RenderModalProps } from "@endcord/discord-types";
 import { findCssClassesLazy } from "@webpack";
-import { Modal, openModal, TabBar, Timestamp, useState } from "@webpack/common";
+import { Modal,openModal, TabBar, Timestamp, useState } from "@webpack/common";
 
 import { parseEditContent } from ".";
 
@@ -40,7 +41,7 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
         <Modal
             {...modalProps}
             size="lg"
-            title="Message Edit History"
+            title={t("Message Edit History")}
         >
             <TabBar
                 type="top"
@@ -50,7 +51,7 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
                 onItemSelect={setCurrentTab}
             >
                 {message.firstEditTimestamp.getTime() !== message.timestamp.getTime() && (
-                    <TooltipContainer text="This edit state was not logged so it can't be displayed.">
+                    <TooltipContainer text={t("This edit state was not logged so it can't be displayed.")}>
                         <TabBar.Item
                             className="vc-settings-tab-bar-item"
                             id={-1}

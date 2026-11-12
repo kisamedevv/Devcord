@@ -1,28 +1,18 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { Devs } from "@utils/constants";
-import definePlugin from "@utils/types";
+import { migrateRemovedPlugin } from "@api/Settings";
 import { Message } from "@endcord/discord-types";
-import { Menu } from "@webpack/common";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin from "@utils/types";
+import { ChannelStore, Menu } from "@webpack/common";
 
 import { settings } from "./settings";
 import { setShouldShowTranslateEnabledTooltip, TranslateChatBarIcon, TranslateIcon } from "./TranslateIcon";
@@ -30,7 +20,7 @@ import { handleTranslate, TranslationAccessory } from "./TranslationAccessory";
 import { translate } from "./utils";
 
 const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { message: Message; }) => {
-    const content = document.getSelection()?.toString() || getMessageContent(message);
+    const content = getMessageContent(message);
     if (!content) return;
 
     const group = findGroupChildrenByChildId("copy-text", children);
@@ -39,9 +29,8 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
     group.splice(group.findIndex(c => c?.props?.id === "copy-text") + 1, 0, (
         <Menu.MenuItem
             id="vc-trans"
-            label="Translate"
+            label={t("Translate")}
             icon={TranslateIcon}
-            leadingAccessory={{ type: "icon", icon: TranslateIcon }}
             action={async () => {
                 const trans = await translate("received", content);
                 handleTranslate(message.id, trans);
@@ -62,11 +51,13 @@ function getMessageContent(message: Message) {
 
 let tooltipTimeout: any;
 
+migrateRemovedPlugin("Translate", "Translate+");
+
 export default definePlugin({
     name: "Translate",
     description: "Translate messages with Google Translate, DeepL or Kagi.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.Ven, Devs.AshtonMemer, Devs.koish1],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     contextMenus: {
         "message": messageCtxPatch
@@ -74,10 +65,7 @@ export default definePlugin({
     // not used, just here in case some other plugin wants it or w/e
     translate,
 
-    renderMessageAccessory: props =>
-        !props.isMessageSnapshot
-            ? <TranslationAccessory message={props.message} />
-            : null,
+    renderMessageAccessory: props => <TranslationAccessory message={props.message} />,
 
     chatBarButton: {
         icon: TranslateIcon,
@@ -93,6 +81,8 @@ export default definePlugin({
             return {
                 label: "Translate",
                 icon: TranslateIcon,
+                message,
+                channel: ChannelStore.getChannel(message.channel_id),
                 onClick: async () => {
                     const trans = await translate("received", content);
                     handleTranslate(message.id, trans);

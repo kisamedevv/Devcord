@@ -5,10 +5,10 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { Devs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { MessageJSON } from "@endcord/discord-types";
 import { ChannelType } from "@endcord/discord-types/enums";
+import { Devs } from "@utils/constants";
+import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, ReadStateStore, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
@@ -37,18 +37,19 @@ export default definePlugin({
     name: "OnePingPerDM",
     description: "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit",
     tags: ["Notifications", "Customisation"],
-    authors: [Devs.ProffDea],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {
             find: '"NotificationStore"',
             replacement: [
                 {
-                    match: /(\i\.\i\.getDesktopType\(\)===\i\.\i\.NEVER)\)/,
+                    match: /\i\.\i\.getDesktopType\(\)===\i\.\i\.NEVER\)/,
                     replace: "$&if(!$self.isPrivateChannelRead(arguments[0]?.message))return;else "
                 },
                 {
-                    match: /sound:(\i\?\i:void 0,volume:)/,
+                    // Newer Discord writes the volume as a number
+                    match: /sound:(\i\?\i:void 0,volume:(?:\i|[\d.]+),onClick)/,
                     replace: "sound:!$self.isPrivateChannelRead(arguments[0]?.message)?undefined:$1"
                 }
             ]

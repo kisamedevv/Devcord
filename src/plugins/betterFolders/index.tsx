@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
 
@@ -107,11 +95,6 @@ export const settings = definePluginSettings({
         description: "Close other folders when opening a folder",
         default: false
     },
-    closeServerFolder: {
-        type: OptionType.BOOLEAN,
-        description: "Close folder when selecting a server in that folder",
-        default: false,
-    },
     forceOpen: {
         type: OptionType.BOOLEAN,
         description: "Force a folder to open when switching to a server of that folder",
@@ -142,7 +125,7 @@ const GRID_STYLE_NAME = "vc-betterFolders-sidebar-grid";
 export default definePlugin({
     name: "BetterFolders",
     description: "Shows server folders on dedicated sidebar and adds folder related improvements",
-    authors: [Devs.juby, Devs.AutumnVN, Devs.Nuckyz],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Organisation", "Servers", "Appearance"],
     settings,
 
@@ -218,7 +201,7 @@ export default definePlugin({
                 // If we are rendering the normal GuildsBar sidebar, we make Discord think the folder is always collapsed to show better icons (the mini guild icons) and avoid transitions
                 {
                     predicate: () => settings.store.keepIcons,
-                    match: /{folderNode:\i,setNodeRef:\i,.+?expanded:(\i),.+?;(?=let)/,
+                    match: /let ?(?:\i,)*?{folderNode:\i,setNodeRef:\i,.+?expanded:(\i),.+?;(?=let)/,
                     replace: (m, isExpanded) => `${m}${isExpanded}=!!arguments[0]?.isBetterFolders&&${isExpanded};`
                 },
                 // Disable expanding and collapsing folders transition in the normal GuildsBar sidebar
@@ -265,11 +248,6 @@ export default definePlugin({
                     // Add grid styles to fix aligment with other visual refresh elements
                     match: /(?<=className:)\i\.\i(?=,"data-fullscreen")/,
                     replace: `"${GRID_STYLE_NAME} "+$&`
-                },
-                {
-                    // Channels resize slider uses hardcoded offset which is wrong when the Better Folders sidebar is opened
-                    match: /(?<="aria-valuemax":\d+,className:\i\.\i,onClick:\i,onMouseDown:)(\i)/,
-                    replace: "vcEvent=>$1($self.fixChannelsResizeSliderOffset(vcEvent))"
                 }
             ]
         },
@@ -286,7 +264,7 @@ export default definePlugin({
 
     flux: {
         CHANNEL_SELECT(data) {
-            if (!settings.store.closeAllFolders && !settings.store.forceOpen && !settings.store.closeServerFolder)
+            if (!settings.store.closeAllFolders && !settings.store.forceOpen)
                 return;
 
             if (lastGuildId !== data.guildId) {
@@ -294,12 +272,7 @@ export default definePlugin({
                 const guildFolder = getGuildFolder(data.guildId);
 
                 if (guildFolder?.folderId) {
-                    const wasExpanded = ExpandedGuildFolderStore.isFolderExpanded(guildFolder.folderId);
-
-                    if (settings.store.forceOpen && !wasExpanded) {
-                        FolderUtils.toggleGuildFolderExpand(guildFolder.folderId);
-                    }
-                    if (settings.store.closeServerFolder && wasExpanded) {
+                    if (settings.store.forceOpen && !ExpandedGuildFolderStore.isFolderExpanded(guildFolder.folderId)) {
                         FolderUtils.toggleGuildFolderExpand(guildFolder.folderId);
                     }
                 } else if (settings.store.closeAllFolders) {
@@ -401,17 +374,6 @@ export default definePlugin({
             default:
                 return true;
         }
-    },
-
-    fixChannelsResizeSliderOffset(event: MouseEvent) {
-        const betterFoldersSidebar = document.querySelector<HTMLElement>(".vc-betterFolders-sidebar");
-
-        if (betterFoldersSidebar != null) {
-            // @ts-expect-error Readonly, but browser doesn't care
-            event.screenX += sidebar.offsetWidth;
-        }
-
-        return event;
     },
 
     shouldShowTransition(props: any) {

@@ -1,26 +1,13 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { useTimer } from "@utils/react";
-import { formatDuration } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import { React } from "@webpack/common";
 
@@ -40,22 +27,45 @@ const settings = definePluginSettings({
                 label: "30d 23h 00m 42s",
                 value: "human"
             }
-        ] as const
+        ]
     }
 });
+
+function formatDuration(ms: number) {
+    // moment has no way to format a duration, so this is done by hand
+    const human = settings.store.format === "human";
+
+    const format = (n: number) => human ? n : n.toString().padStart(2, "0");
+    const unit = (s: string) => human ? s : "";
+    const delim = human ? " " : ":";
+
+    // thx copilot
+    const d = Math.floor(ms / 86400000);
+    const h = Math.floor((ms % 86400000) / 3600000);
+    const m = Math.floor(((ms % 86400000) % 3600000) / 60000);
+    const s = Math.floor((((ms % 86400000) % 3600000) % 60000) / 1000);
+
+    let res = "";
+    if (d) res += `${d}d `;
+    if (h || res) res += `${format(h)}${unit("h")}${delim}`;
+    if (m || res || !human) res += `${format(m)}${unit("m")}${delim}`;
+    res += `${format(s)}${unit("s")}`;
+
+    return res;
+}
 
 
 
 export default definePlugin({
     name: "CallTimer",
-    description: "Adds a timer to vcs",
+    description: "Shows how long you have been in the current voice call",
     tags: ["Voice", "Utility"],
-    authors: [Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     managedStyle: alignedChatInputFix,
     settings,
 
     startTime: 0,
-    interval: void 0 as NodeJS.Timeout | undefined,
+    interval: void 0,
 
     patches: [
         {
@@ -72,7 +82,7 @@ export default definePlugin({
 
         return (
             <p style={{ margin: 0, fontFamily: "var(--font-code)" }}>
-                {formatDuration(time, settings.store.format === "human")}
+                {formatDuration(time)}
             </p>
         );
     }, { noop: true }),

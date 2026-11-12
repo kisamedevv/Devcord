@@ -64,7 +64,7 @@ async function tryLookup(query: string): Promise<Record<string, any> | undefined
         fmt: "json",
         limit: "1"
     });
-    return await fetch("https://musicbrainz.org/ws/2/recording/?" + params + "&query=" + query, {
+    return await fetch(`https://musicbrainz.org/ws/2/recording/?${params}&query=${query}`, {
         headers: { "User-Agent": ENDCORD_USER_AGENT }
     })
         .then(res => res.ok ? res.json() : Promise.reject(new Error(`${res.status} ${res.statusText}`)))
@@ -95,9 +95,12 @@ async function getUrls(
     }
 
     // If no MBIDs are present, try searching MusicBrainz: first by ISRC (if present), then by name.
+    // MusicBrainz searches with Lucene, where these characters mean something, so each value escapes them before the
+    // whole query is encoded for the address
+    const lucene = (value: string) => value.replace(/[+\-&|!(){}[\]^"~*?:\\/]/g, "\\$&");
     const nameQuery = encodeURIComponent(
-        `artist:"${artistName}" AND recording:"${trackName}"${releaseName ? ` AND release:"${releaseName}"` : ""}`
-    ).replace(/[!()*\-~]/g, "\\$&");
+        `artist:"${lucene(artistName)}" AND recording:"${lucene(trackName)}"${releaseName ? ` AND release:"${lucene(releaseName)}"` : ""}`
+    );
 
     const queries = additionalInfo?.isrc
         ? [encodeURIComponent(`isrc:${additionalInfo.isrc}`), nameQuery]

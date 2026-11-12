@@ -1,22 +1,13 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { DevsById } from "./constants";
+import type { User } from "@endcord/discord-types";
+import { GuildMemberStore, IconUtils } from "@webpack/common";
+
+import { Devs, DevsById } from "./constants";
 
 /**
  * Calls .join(" ") on the arguments
@@ -71,16 +62,21 @@ export const checkIntersecting = (el: Element) => {
     return !(elementBox.bottom < 0 || elementBox.top - documentHeight >= 0);
 };
 
+export const isPluginDev = (id: string) => Object.hasOwn(DevsById, id);
+
+/** The people who make Endcord, out of everyone who has helped build it */
+export const EndcordDeveloperIds: readonly string[] = [String(Devs.rootpoi.id), String(Devs.ewlle.id)];
+export const isEndcordDeveloper = (id: string) => EndcordDeveloperIds.includes(id);
+
 export function identity<T>(value: T): T {
     return value;
 }
 
-export const isPluginDev = (id: string) => Object.hasOwn(DevsById, id);
-export const shouldShowContributorBadge = (id: string) => isPluginDev(id) && DevsById[id].badge !== false;
 
-export function pluralise(amount: number, singular: string, plural = singular + "s") {
+export function pluralise(amount: number, singular: string, plural = `${singular}s`) {
     return amount === 1 ? `${amount} ${singular}` : `${amount} ${plural}`;
 }
+export const pluralize = pluralise;
 
 export function interpolateIfDefined(strings: TemplateStringsArray, ...args: any[]) {
     if (args.some(arg => arg == null)) return "";
@@ -102,3 +98,20 @@ export function removeFromArray<T>(arr: T[], predicate: (e: T) => boolean) {
     const idx = arr.findIndex(predicate);
     if (idx !== -1) arr.splice(idx, 1);
 }
+
+export function getUserAvatarUrl(user: User, guildId?: string, canAnimate?: boolean, size?: number): string {
+    const memberAvatar = guildId ? GuildMemberStore.getMember(guildId, user.id)?.avatar || null : null;
+    if (memberAvatar) {
+        return IconUtils.getGuildMemberAvatarURLSimple({
+            guildId: guildId!,
+            userId: user.id,
+            avatar: memberAvatar,
+            canAnimate,
+            size
+        });
+    }
+
+    return IconUtils.getUserAvatarURL(user, canAnimate, size) ?? IconUtils.getDefaultAvatarURL(user.id, user?.discriminator);
+}
+
+// this is all the way down here because i dont feel like dealing with conflicts

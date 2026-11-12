@@ -1,36 +1,24 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { SafetyIcon } from "@components/Icons";
 import { TooltipContainer } from "@components/TooltipContainer";
-import { Devs } from "@utils/constants";
-import { classes } from "@utils/misc";
-import definePlugin, { OptionType } from "@utils/types";
 import type { Guild, RoleOrUserPermission } from "@endcord/discord-types";
 import { PermissionOverwriteType } from "@endcord/discord-types/enums";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import { classes } from "@utils/misc";
+import definePlugin, { OptionType } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
-import { ChannelStore, Dialog, GuildMemberStore, GuildRoleStore, GuildStore, match, Menu, PermissionsBits, Popout, useEffect, useRef, UserStore } from "@webpack/common";
+import { Button, ChannelStore, Dialog, GuildMemberStore, GuildRoleStore, GuildStore, match, Menu, PermissionsBits, Popout, useEffect, useRef, UserStore } from "@webpack/common";
 
 import openRolesAndUsersPermissionsModal from "./components/RolesAndUsersPermissions";
 import UserPermissions from "./components/UserPermissions";
@@ -60,14 +48,13 @@ export const settings = definePluginSettings({
     },
 });
 
-function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?: MenuItemParentType, withIcon?: boolean; }) {
+function MenuItem(guildId: string, id?: string, type?: MenuItemParentType) {
     if (type === MenuItemParentType.User && !GuildMemberStore.isMember(guildId, id!)) return null;
 
     return (
         <Menu.MenuItem
             id="perm-viewer-permissions"
-            label="View Permissions"
-            leadingAccessory={withIcon ? { type: "icon", icon: SafetyIcon } : undefined}
+            label={t("Permissions")}
             action={() => {
                 const guild = GuildStore.getGuild(guildId);
 
@@ -127,7 +114,7 @@ function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?:
     );
 }
 
-function makeContextMenuPatch(childId: string | string[], type?: MenuItemParentType, withIcon = false): NavContextMenuPatchCallback {
+function makeContextMenuPatch(childId: string | string[], type?: MenuItemParentType): NavContextMenuPatchCallback {
     return (children, props) => {
         if (
             !props ||
@@ -141,9 +128,9 @@ function makeContextMenuPatch(childId: string | string[], type?: MenuItemParentT
         const group = findGroupChildrenByChildId(childId, children);
 
         const item = match(type)
-            .with(MenuItemParentType.User, () => MenuItem(props.guildId, { id: props.user.id, type, withIcon }))
-            .with(MenuItemParentType.Channel, () => MenuItem(props.guild.id, { id: props.channel.id, type, withIcon }))
-            .with(MenuItemParentType.Guild, () => MenuItem(props.guild.id, { withIcon }))
+            .with(MenuItemParentType.User, () => MenuItem(props.guildId, props.user.id, type))
+            .with(MenuItemParentType.Channel, () => MenuItem(props.guild.id, props.channel.id, type))
+            .with(MenuItemParentType.Guild, () => MenuItem(props.guild.id))
             .otherwise(() => null);
 
         if (item == null) return;
@@ -163,7 +150,7 @@ export default definePlugin({
     name: "PermissionsViewer",
     description: "View the permissions a user or channel has, and the roles of a server",
     tags: ["Servers", "Roles", "Utility"],
-    authors: [Devs.Nuckyz, Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
@@ -195,12 +182,13 @@ export default definePlugin({
                 )}
             >
                 {popoutProps => (
-                    <TooltipContainer text="View Permissions">
+                    <TooltipContainer text={t("View Permissions")}>
                         <Button
                             {...popoutProps}
                             ref={buttonRef}
-                            variant="none"
-                            size="min"
+                            color={Button.Colors.CUSTOM}
+                            look={Button.Looks.FILLED}
+                            size={Button.Sizes.NONE}
                             className={classes(className, "vc-permviewer-role-button")}
                         >
                             <SafetyIcon height="16" width="16" />
@@ -215,6 +203,6 @@ export default definePlugin({
         "user-context": makeContextMenuPatch("roles", MenuItemParentType.User),
         "channel-context": makeContextMenuPatch(["mute-channel", "unmute-channel"], MenuItemParentType.Channel),
         "guild-context": makeContextMenuPatch("privacy", MenuItemParentType.Guild),
-        "guild-header-popout": makeContextMenuPatch("privacy", MenuItemParentType.Guild, true)
+        "guild-header-popout": makeContextMenuPatch("privacy", MenuItemParentType.Guild)
     }
 });

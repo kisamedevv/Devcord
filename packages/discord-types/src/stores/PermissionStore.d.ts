@@ -1,4 +1,4 @@
-import { Channel, FluxStore,Guild, Role } from "..";
+import { Channel, Guild, Role, FluxStore } from "..";
 
 export interface GuildPermissionProps {
     canManageGuild: boolean;

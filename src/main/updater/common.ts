@@ -1,27 +1,33 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 export const ENDCORD_FILES = [
     IS_DISCORD_DESKTOP ? "patcher.js" : "endcordDesktopMain.js",
     IS_DISCORD_DESKTOP ? "preload.js" : "endcordDesktopPreload.js",
     IS_DISCORD_DESKTOP ? "renderer.js" : "endcordDesktopRenderer.js",
     IS_DISCORD_DESKTOP ? "renderer.css" : "endcordDesktopRenderer.css",
+    // Endcord Desktop's own two files update with Endcord (desktop/src)
+    ...(IS_DISCORD_DESKTOP ? [] : ["main.js", "preload.js"]),
 ];
+
+/** The release manifest this build reads: Endcord Desktop has its own, signed the same way */
+export const MANIFEST_URL = `https://raw.githubusercontent.com/Endcord/Endcord/main/${IS_DISCORD_DESKTOP ? "" : "desktop/"}version.json`;
+
+/** What the updater has actually checked, for the settings page. Nothing here is assumed */
+export interface UpdateTrust {
+    /** 0 until a release manifest has been fetched */
+    checkedAt: number;
+    signed: boolean;
+    /** Files can only be compared while the release they were signed for is the one running */
+    installedFiles: "match" | "changed" | "unknown";
+    pending: boolean;
+    hasPrevious: boolean;
+    /** The release that was undone because it never started, until a later one starts */
+    rejected: string | null;
+}
 
 export function serializeErrors(func: (...args: any[]) => any) {
     return async function () {

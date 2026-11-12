@@ -1,36 +1,32 @@
 {
     "name": "@endcord/types",
-    "version": "1.15.17",
     "private": false,
+    "version": "1.14.15",
     "description": "",
-    "keywords": [],
-    "license": "GPL-3.0-or-later",
-    "author": "Endcord",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/Endcord/Endcord.git",
-        "directory": "packages/endcord-types"
-    },
     "types": "index.d.ts",
     "scripts": {
         "prepublishOnly": "tsx ./prepare.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "dependencies": {
-        "@types/node": "catalog:",
-        "@endcord/discord-types": "workspace:",
-        "lodash": "catalog:",
-        "moment": "catalog:",
-        "ts-pattern": "catalog:",
-        "type-fest": "catalog:"
-    },
+    "keywords": [],
+    "author": "Endcord",
+    "license": "GPL-3.0-or-later",
     "devDependencies": {
-        "@types/fs-extra": "catalog:",
-        "fs-extra": "catalog:",
-        "tsx": "catalog:"
+        "@types/fs-extra": "^11.0.4",
+        "fs-extra": "^11.3.6",
+        "tsx": "^4.22.4"
+    },
+    "dependencies": {
+        "@types/lodash": "4.17.19",
+        "@types/node": "^26.0.1",
+        "@endcord/discord-types": "workspace:*",
+        "highlight.js": "11.11.1",
+        "moment": "^2.22.2",
+        "ts-pattern": "^5.6.0",
+        "type-fest": "^5.7.0"
     },
     "peerDependencies": {
-        "@types/react": "catalog:",
-        "@types/react-dom": "catalog:"
+        "@types/react": "18.3.1",
+        "@types/react-dom": "18.3.1"
     }
 }

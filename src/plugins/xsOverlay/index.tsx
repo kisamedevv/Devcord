@@ -5,12 +5,13 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { Button } from "@components/Button";
-import { Devs } from "@utils/constants";
-import definePlugin, { makeRange, OptionType, PluginNative, ReporterTestable } from "@utils/types";
 import type { Channel, Embed, GuildMember, MessageAttachment, User } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import { Logger } from "@utils/Logger";
+import definePlugin, { makeRange, OptionType, PluginNative, ReporterTestable } from "@utils/types";
 import { findByCodeLazy, findLazy } from "@webpack";
-import { ChannelStore, GuildRoleStore, GuildStore, UserStore } from "@webpack/common";
+import { Button, ChannelStore, GuildRoleStore, GuildStore, UserStore } from "@webpack/common";
 
 const ChannelTypes = findLazy(m => m.ANNOUNCEMENT_THREAD === 10);
 
@@ -90,16 +91,15 @@ interface NotificationObject {
 }
 
 const notificationsShouldNotify = findByCodeLazy(".SUPPRESS_NOTIFICATIONS))return!1");
+const logger = new Logger("XSOverlay");
 
 const settings = definePluginSettings({
     webSocketPort: {
         type: OptionType.NUMBER,
         description: "Websocket port",
         default: 42070,
-        min: 1,
-        max: 65535,
-        async onChange() {
-            await start();
+        onChange() {
+            start().catch(e => logger.warn(e.message));
         }
     },
     preferUDP: {
@@ -155,7 +155,6 @@ const settings = definePluginSettings({
         type: OptionType.NUMBER,
         description: "Notification duration (secs)",
         default: 3,
-        min: 0
     },
     lengthBasedTimeout: {
         type: OptionType.BOOLEAN,
@@ -180,11 +179,14 @@ let socket: WebSocket;
 
 async function start() {
     if (socket) socket.close();
-    socket = new WebSocket(`ws://127.0.0.1:${settings.store.webSocketPort ?? 42070}/?client=Endcord`);
+    const port = settings.store.webSocketPort ?? 42070;
+    socket = new WebSocket(`ws://127.0.0.1:${port}/?client=Endcord`);
+    // Reject with a readable error instead of a bare Event when XSOverlay isn't running
+    const notReachable = () => new Error(`Could not connect to XSOverlay on port ${port}. Is XSOverlay running?`);
     return new Promise((resolve, reject) => {
         socket.onopen = resolve;
-        socket.onerror = reject;
-        setTimeout(reject, 3000);
+        socket.onerror = () => reject(notReachable());
+        setTimeout(() => reject(notReachable()), 3000);
     });
 }
 
@@ -194,7 +196,7 @@ export default definePlugin({
     name: "XSOverlay",
     description: "Forwards discord notifications to XSOverlay, for easy viewing in VR",
     tags: ["Notifications"],
-    authors: [Devs.Nyako],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["vr", "notify"],
     reporterTestable: ReporterTestable.None,
     settings,
@@ -303,18 +305,19 @@ export default definePlugin({
         }
     },
 
-    start,
+    start() {
+        // XSOverlay may simply not be open yet; we connect again when the next notification comes in
+        start().catch(e => logger.warn(e.message));
+    },
 
     stop() {
         socket.close();
-        Native.closeSocket();
     },
 
     settingsAboutComponent: () => (
         <>
             <Button onClick={() => sendOtherNotif("This is a test notification! explode", "Hello from Vendor!")}>
-                Send test notification
-            </Button>
+                {t("Send test notification")}</Button>
         </>
     )
 });
@@ -322,7 +325,7 @@ export default definePlugin({
 function shouldIgnoreForChannelType(channel: Channel) {
     if (channel.type === ChannelTypes.DM && settings.store.dmNotifications) return false;
     if (channel.type === ChannelTypes.GROUP_DM && settings.store.groupDmNotifications) return false;
-    else return !settings.store.serverNotifications;
+    return !settings.store.serverNotifications;
 }
 
 function sendMsgNotif(titleString: string, content: string, message: Message) {
@@ -341,7 +344,7 @@ function sendMsgNotif(titleString: string, content: string, message: Message) {
                 volume: settings.store.volume,
                 audioPath: settings.store.soundPath,
                 title: titleString,
-                content: content,
+                content,
                 useBase64Icon: true,
                 icon: result,
                 sourceApp: "Endcord"
@@ -360,7 +363,7 @@ function sendOtherNotif(content: string, titleString: string) {
         volume: settings.store.volume,
         audioPath: settings.store.soundPath,
         title: titleString,
-        content: content,
+        content,
         useBase64Icon: false,
         icon: "default",
         sourceApp: "Endcord"
@@ -380,7 +383,13 @@ async function sendToOverlay(notif: NotificationObject) {
         jsonData: JSON.stringify(notif),
         rawData: null
     };
-    if (socket.readyState !== socket.OPEN) await start();
+    if (socket.readyState !== socket.OPEN) {
+        try {
+            await start();
+        } catch {
+            return;
+        }
+    }
     socket.send(JSON.stringify(apiObject));
 }
 

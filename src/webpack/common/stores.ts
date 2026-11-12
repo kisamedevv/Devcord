@@ -1,24 +1,10 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { ConstEnumToRuntimeEnum } from "@utils/types";
 import * as t from "@endcord/discord-types";
-import * as enums from "@endcord/discord-types/enums";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
 
 import { waitForStore } from "./internal";
@@ -27,14 +13,17 @@ export const Flux: t.Flux = findByPropsLazy("connectStores");
 
 export type GenericStore = t.FluxStore & Record<string, any>;
 
-export const DraftType: ConstEnumToRuntimeEnum<typeof enums.DraftType> = findByPropsLazy("ChannelMessage", "SlashCommand");
+export const DraftType = findByPropsLazy("ChannelMessage", "SlashCommand");
 
-export let MessageStore: t.MessageStore;
+export let MessageStore: Omit<t.MessageStore, "getMessages"> & GenericStore & {
+    getMessages(chanId: string): any;
+};
 
 export let PermissionStore: t.PermissionStore;
 export let GuildChannelStore: t.GuildChannelStore;
 export let ReadStateStore: t.ReadStateStore;
 export let PresenceStore: t.PresenceStore;
+export let GIFPickerViewStore: t.GIFPickerViewStore;
 export let AccessibilityStore: t.AccessibilityStore;
 export let PendingReplyStore: t.PendingReplyStore;
 
@@ -86,25 +75,9 @@ export let ExperimentStore: t.ExperimentStore;
 export let UserAffinitiesStore: t.UserAffinitiesStore;
 export let ApplicationStreamingStore: t.ApplicationStreamingStore;
 export let ApplicationStreamPreviewStore: t.ApplicationStreamPreviewStore;
-export let SortedGuildStore: t.SortedGuildStore;
-export let JoinedThreadsStore: t.JoinedThreadsStore;
-export let SafetyHubStore: t.SafetyHubStore;
-export let PrivateChannelSortStore: t.PrivateChannelSortStore;
-export let UserProfileSettingsStore: t.UserProfileSettingsStore;
+export let QuestStore: t.QuestStore;
 export let AuthorizedAppsStore: t.AuthorizedAppsStore;
-export let ChannelSectionStore: t.ChannelSectionStore;
-export let ClientThemesBackgroundStore: t.ClientThemesBackgroundStore;
-export let ConnectedAccountsStore: t.ConnectedAccountsStore;
-export let ChannelMemberStore: t.ChannelMemberStore;
-export let ThreadMemberListStore: t.ThreadMemberListStore;
-export let CollapsedVoiceChannelStore: t.CollapsedVoiceChannelStore;
-export let ReferencedMessageStore: t.ReferencedMessageStore;
-export let SessionsStore: t.SessionsStore;
-export let UserGuildJoinRequestStore: t.UserGuildJoinRequestStore;
-export let SelfPresenceStore: t.SelfPresenceStore;
-export let MessageRequestStore: t.MessageRequestStore;
-export let GIFPickerViewStore: t.GIFPickerViewStore;
-export let GuildReadStateStore: t.GuildReadStateStore;
+export let UserProfileSettingsStore: t.UserProfileSettingsStore;
 
 /**
  * @see jsdoc of {@link t.useStateFromStores}
@@ -128,6 +101,7 @@ waitForStore("NotificationSettingsStore", m => NotificationSettingsStore = m);
 waitForStore("SpellcheckStore", m => SpellCheckStore = m);
 waitForStore("PermissionStore", m => PermissionStore = m);
 waitForStore("PresenceStore", m => PresenceStore = m);
+waitForStore("GIFPickerViewStore", m => GIFPickerViewStore = m);
 waitForStore("ReadStateStore", m => ReadStateStore = m);
 waitForStore("GuildChannelStore", m => GuildChannelStore = m);
 waitForStore("GuildRoleStore", m => GuildRoleStore = m);
@@ -163,13 +137,16 @@ waitForStore("ExperimentStore", m => ExperimentStore = m);
 waitForStore("UserAffinitiesV2Store", m => UserAffinitiesStore = m);
 waitForStore("ApplicationStreamingStore", m => ApplicationStreamingStore = m);
 waitForStore("ApplicationStreamPreviewStore", m => ApplicationStreamPreviewStore = m);
+waitForStore("QuestStore", m => QuestStore = m);
+waitForStore("AuthorizedAppsStore", m => AuthorizedAppsStore = m);
+waitForStore("UserProfileSettingsStore", m => UserProfileSettingsStore = m);
 waitForStore("SortedGuildStore", m => SortedGuildStore = m);
 waitForStore("JoinedThreadsStore", m => JoinedThreadsStore = m);
 waitForStore("SafetyHubStore", m => SafetyHubStore = m);
 waitForStore("PrivateChannelSortStore", m => PrivateChannelSortStore = m);
-waitForStore("UserProfileSettingsStore", m => UserProfileSettingsStore = m);
-waitForStore("AuthorizedAppsStore", m => AuthorizedAppsStore = m);
+waitForStore("ApplicationStreamingSettingsStore", m => ApplicationStreamingSettingsStore = m);
 waitForStore("ChannelSectionStore", m => ChannelSectionStore = m);
+waitForStore("ExpandedGuildFolderStore", m => ExpandedGuildFolderStore = m);
 waitForStore("ClientThemesBackgroundStore", m => ClientThemesBackgroundStore = m);
 waitForStore("ConnectedAccountsStore", m => ConnectedAccountsStore = m);
 waitForStore("ChannelMemberStore", m => ChannelMemberStore = m);
@@ -177,14 +154,53 @@ waitForStore("ThreadMemberListStore", m => ThreadMemberListStore = m);
 waitForStore("CollapsedVoiceChannelStore", m => CollapsedVoiceChannelStore = m);
 waitForStore("ReferencedMessageStore", m => ReferencedMessageStore = m);
 waitForStore("SessionsStore", m => SessionsStore = m);
+waitForStore("GuildAvailabilityStore", m => GuildAvailabilityStore = m);
 waitForStore("UserGuildJoinRequestStore", m => UserGuildJoinRequestStore = m);
-waitForStore("SelfPresenceStore", m => SelfPresenceStore = m);
-waitForStore("MessageRequestStore", m => MessageRequestStore = m);
-waitForStore("GIFPickerViewStore", m => GIFPickerViewStore = m);
-waitForStore("GuildReadStateStore", m => GuildReadStateStore = m);
+waitForStore("BasicGuildStore", m => BasicGuildStore = m);
+waitForStore("GuildProfileStore", m => GuildProfileStore = m);
 waitForStore("ThemeStore", m => {
     ThemeStore = m;
     // Importing this directly causes all webpack commons to be imported, which can easily cause circular dependencies.
     // For this reason, use a non import access here.
     Endcord.Api.Themes.initQuickCssThemeStore(m);
 });
+
+export let SortedGuildStore: t.SortedGuildStore;
+
+export let JoinedThreadsStore: t.JoinedThreadsStore;
+
+export let SafetyHubStore: t.SafetyHubStore;
+
+export let PrivateChannelSortStore: t.PrivateChannelSortStore;
+
+export let ApplicationStreamingSettingsStore: t.ApplicationStreamingSettingsStore;
+
+export let ChannelSectionStore: t.ChannelSectionStore;
+
+export let ExpandedGuildFolderStore: t.ExpandedGuildFolderStore;
+
+export let ClientThemesBackgroundStore: t.ClientThemesBackgroundStore;
+
+export let ConnectedAccountsStore: t.ConnectedAccountsStore;
+
+export let ChannelMemberStore: t.ChannelMemberStore;
+
+export let ThreadMemberListStore: t.ThreadMemberListStore;
+
+export let CollapsedVoiceChannelStore: t.CollapsedVoiceChannelStore;
+
+export let ReferencedMessageStore: t.ReferencedMessageStore;
+
+export let SessionsStore: t.SessionsStore;
+
+export let GuildAvailabilityStore: t.GuildAvailabilityStore;
+
+export let UserGuildJoinRequestStore: t.UserGuildJoinRequestStore;
+
+export let BasicGuildStore: t.BasicGuildStore;
+
+export let GuildProfileStore: t.GuildProfileStore;
+
+/**
+ * @see jsdoc of {@link t.useStateFromStores}
+ */

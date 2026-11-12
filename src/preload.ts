@@ -1,78 +1,51 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import type { Settings } from "@api/Settings";
 import { debounce } from "@shared/debounce";
 import { IpcEvents } from "@shared/IpcEvents";
+import { RENDERER_FILE } from "@shared/pluginChunks";
+import { isDiscordOrigin } from "@shared/trustedOrigins";
 import { contextBridge, webFrame } from "electron/renderer";
+import { join } from "path";
 
-import EndcordNative, { invoke, sendSync } from "./EndcordNative";
+import EndcordNative, { invoke, primeSettings, sendSync } from "./EndcordNative";
+import { loadRenderer, splitRenderer } from "./pluginChunkLoader";
 
-
-// Monaco popout
-if (location.href === DESKTOP_MONACO_EDITOR_URL) {
+// Monaco popout: its code comes from a CDN, so it only gets the three calls it needs
+if (location.protocol === "data:") {
     contextBridge.exposeInMainWorld("setCss", debounce(EndcordNative.quickCss.set));
     contextBridge.exposeInMainWorld("getCurrentCss", EndcordNative.quickCss.get);
     contextBridge.exposeInMainWorld("getTheme", EndcordNative.quickCss.getEditorTheme);
-}
-// Discord
-else {
-    contextBridge.exposeInMainWorld("EndcordNative", EndcordNative);
-    invoke(IpcEvents.INIT_FILE_WATCHERS);
+} else {
+    // Endcord Desktop's window can only stay on Discord (see desktop/src/main.ts), but its blank popouts, which
+    // Discord's page fills itself, start this preload too and must not get a second Endcord
+    if (isDiscordOrigin(window.origin) && (IS_DISCORD_DESKTOP || location.protocol === "https:")) {
+        contextBridge.exposeInMainWorld("EndcordNative", EndcordNative);
+        invoke(IpcEvents.INIT_FILE_WATCHERS);
 
-    if (IS_DISCORD_DESKTOP) {
-        // Tema ve quickcss, Discord'un kendi CSS'i yüklenmeden önce basılır;
-        // böylece açılışta tema flaşı olmaz, tema ilk kareden itibaren devrede.
-        // Not: @import yerine düz metin basılıyor — dosya çekme yok, anında uygulanıyor.
-        const startupCss = sendSync<string>(IpcEvents.GET_STARTUP_CSS);
-        if (startupCss) {
-            webFrame.executeJavaScript(`(() => {
-                const ID = "endcord-startup-theme";
-                let el = document.getElementById(ID);
-                if (!el) {
-                    el = document.createElement("style");
-                    el.id = ID;
-                }
-                el.textContent = ${JSON.stringify(startupCss)};
+        // The renderer file sits next to this preload. Reading it here skips a multi-megabyte synchronous IPC
+        // round trip that blocks both the main process and this renderer during startup.
+        // Only the script is read and run, with the code of the plugins that are on before it. The translation
+        // tables and the other plugins' code after it never run (see @shared/externalLocales, @shared/pluginChunks)
+        let settings: Settings | null = null;
+        try {
+            settings = primeSettings();
+        } catch { }
 
-                // Discord stilleri head'e eklemeye devam eder; bizim etiketimiz
-                // her zaman en sonda kalmalı ki aynı özgüllükte bizim kuralımız kazansın.
-                const keepLast = () => {
-                    const head = document.head;
-                    if (!head) return;
-                    if (el.parentNode !== head || head.lastChild !== el) head.appendChild(el);
-                };
-
-                keepLast();
-                if (document.head) {
-                    new MutationObserver(keepLast).observe(document.head, { childList: true });
-                }
-
-                // Sayfa kurulduktan sonra etiketi documentElement'in sonuna taşı:
-                // Discord'un kendi CSS'i head'de durur, biz sonrasında geliriz,
-                // yani aynı özgüllükte bizim tema kurallarımız yener.
-                document.addEventListener("DOMContentLoaded", () => {
-                    document.documentElement.appendChild(el);
-                });
-            })();`);
+        const rendererPath = join(__dirname, RENDERER_FILE);
+        let rendererJs: string;
+        try {
+            rendererJs = loadRenderer(rendererPath, settings);
+        } catch {
+            rendererJs = splitRenderer(Buffer.from(sendSync<string>(IpcEvents.PRELOAD_GET_RENDERER_JS), "utf-8"), rendererPath, settings);
         }
-
-        webFrame.executeJavaScript(sendSync<string>(IpcEvents.PRELOAD_GET_RENDERER_JS));
-        // Not supported in sandboxed preload scripts but Discord doesn't support it either so who cares
-        require(process.env.DISCORD_PRELOAD!);
+        webFrame.executeJavaScript(rendererJs);
     }
+
+    // Not supported in sandboxed preload scripts but Discord doesn't support it either so who cares
+    if (IS_DISCORD_DESKTOP) require(process.env.DISCORD_PRELOAD!);
 }

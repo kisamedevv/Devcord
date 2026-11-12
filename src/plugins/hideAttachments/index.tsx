@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
@@ -22,10 +10,12 @@ import { get, set } from "@api/DataStore";
 import { updateMessage } from "@api/MessageUpdater";
 import { migratePluginSettings } from "@api/Settings";
 import { ImageInvisible, ImageVisible } from "@components/Icons";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { BasicMessage } from "@endcord/discord-types";
+import { ChannelStore } from "@webpack/common";
 
 const KEY = "HideAttachments_HiddenIds";
 
@@ -40,7 +30,7 @@ const saveHiddenMessages = (ids: Set<string>) => set(KEY, ids);
 
 migratePluginSettings("HideMedia", "HideAttachments");
 
-const hasMedia = (msg: BasicMessage) => msg.attachments.length > 0 || msg.embeds.length > 0 || msg.stickerItems.length > 0 || msg.components.length > 0;
+const hasMedia = (msg: Message) => msg.attachments.length > 0 || msg.embeds.length > 0 || msg.stickerItems.length > 0 || msg.components.length > 0;
 
 async function toggleHide(channelId: string, messageId: string) {
     const ids = await getHiddenMessages();
@@ -55,21 +45,15 @@ export default definePlugin({
     name: "HideMedia",
     description: "Hide attachments and embeds for individual messages via hover button",
     tags: ["Chat", "Appearance"],
-    authors: [Devs.Ven, Devs.c0nnorgg],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageUpdaterAPI"],
 
     patches: [{
         find: "this.renderAttachments(",
-        replacement: [
-            {
-                match: /(?<=\i=)this\.render(?:Attachments|Embeds|StickersAccessories)\((\i)\)/g,
-                replace: "$self.shouldHide($1?.id)?null:$&"
-            },
-            {
-                match: /(?<=\i=)this\.renderComponentAccessories\((\i)\)/,
-                replace: "$self.shouldHide($1?.id)?$self.renderMediaHidden($1):$&"
-            }
-        ]
+        replacement: {
+            match: /(?<=\i=)this\.render(?:Attachments|Embeds|StickersAccessories|ComponentAccessories)\((\i)\)/g,
+            replace: "$self.shouldHide($1?.id)?null:$&"
+        }
     }],
 
     messagePopoverButton: {
@@ -82,16 +66,19 @@ export default definePlugin({
             return {
                 label: isHidden ? "Show Media" : "Hide Media",
                 icon: isHidden ? ImageVisible : ImageInvisible,
+                message: msg,
+                channel: ChannelStore.getChannel(msg.channel_id),
                 onClick: () => toggleHide(msg.channel_id, msg.id)
             };
         },
     },
 
-    renderMediaHidden(message: BasicMessage) {
+    renderMessageAccessory({ message }) {
+        if (!this.shouldHide(message.id)) return null;
+
         return (
             <span className={classes("vc-hideAttachments-accessory", !message.content && "vc-hideAttachments-no-content")}>
-                Media Hidden
-            </span>
+                {t("Media Hidden")}</span>
         );
     },
 

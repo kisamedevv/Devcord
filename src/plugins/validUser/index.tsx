@@ -1,33 +1,21 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
+import { ProfileBadge } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { isNonNullish } from "@utils/guards";
 import { sleep } from "@utils/misc";
 import { Queue } from "@utils/Queue";
 import definePlugin from "@utils/types";
-import { ProfileBadge } from "@endcord/discord-types";
 import { Constants, FluxDispatcher, RestAPI, UserProfileStore, UserStore, useState } from "@webpack/common";
 import { type ComponentType, type ReactNode } from "react";
 
 // LYING to the type checker here
-const UserFlags = Constants.UserFlags as Record<string, number>;
+const { UserFlags } = Constants;
 const badges: Record<string, ProfileBadge> = {
     active_developer: { id: "active_developer", description: "Active Developer", icon: "6bdc42827a38498929a4920da12695d9", link: "https://support-dev.discord.com/hc/en-us/articles/10113997751447" },
     bug_hunter_level_1: { id: "bug_hunter_level_1", description: "Discord Bug Hunter", icon: "2717692c7dca7289b35297368a940dd0", link: "https://support.discord.com/hc/en-us/articles/360046057772-Discord-Bugs" },
@@ -176,7 +164,7 @@ export default definePlugin({
     name: "ValidUser",
     description: "Fix mentions for unknown users showing up as '@unknown-user' (hover over a mention to fix it)",
     tags: ["Chat", "Utility"],
-    authors: [Devs.Ven, Devs.Dolfies],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["MentionCacheFix"],
 
     patches: [
@@ -202,7 +190,7 @@ export default definePlugin({
         return (
             <ErrorBoundary noop>
                 <MentionWrapper
-                    key={"mention" + data.userId}
+                    key={`mention${data.userId}`}
                     RoleMention={RoleMention}
                     UserMention={UserMention}
                     data={data}

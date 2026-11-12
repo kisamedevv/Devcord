@@ -1,26 +1,15 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, sendBotMessage } from "@api/Commands";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import { FluxDispatcher, Menu, React } from "@webpack/common";
 
@@ -40,12 +29,7 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Toggle functionality",
         default: true,
-    },
-    showTypingIn: {
-        type: OptionType.STRING,
-        description: "Comma-separated list of channel IDs to always show typing in",
-        default: ""
-    },
+    }
 });
 
 function SilentTypingEnabledIcon() {
@@ -105,7 +89,7 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
     group.splice(idx + 1, 0,
         <Menu.MenuCheckboxItem
             id="vc-silent-typing"
-            label="Enable Silent Typing"
+            label={t("Enable Silent Typing")}
             checked={isEnabled}
             action={() => settings.store.isEnabled = !settings.store.isEnabled}
         />
@@ -115,7 +99,7 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
 
 export default definePlugin({
     name: "SilentTyping",
-    authors: [Devs.Ven, Devs.Rini, Devs.ImBanana],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Hide that you are typing",
     tags: ["Chat", "Privacy"],
     settings,
@@ -155,9 +139,7 @@ export default definePlugin({
     }],
 
     async startTyping(channelId: string) {
-        if (settings.store.isEnabled && !settings.store.showTypingIn.includes(channelId)) {
-            return;
-        }
+        if (settings.store.isEnabled) return;
         FluxDispatcher.dispatch({ type: "TYPING_START_LOCAL", channelId });
     },
 

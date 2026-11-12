@@ -1,27 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { managedStyleRootNode } from "@api/Styles";
 import { Devs } from "@utils/constants";
 import { createAndAppendStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
-import { Channel } from "@endcord/discord-types";
 
 let style: HTMLStyleElement;
 
@@ -30,14 +17,7 @@ const settings = definePluginSettings({
         type: OptionType.NUMBER,
         description: "Blur Amount (in pixels)",
         default: 10,
-        min: 0,
         onChange: setCss
-    },
-    ignoredChannels: {
-        type: OptionType.STRING,
-        description: "List of channel IDs to not blur attachments in, separated by a space or comma",
-        default: "",
-        multiline: true,
     }
 });
 
@@ -59,14 +39,8 @@ export default definePlugin({
     name: "BlurNSFW",
     description: "Blur attachments in NSFW channels until hovered",
     tags: ["Privacy", "Appearance"],
-    authors: [Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
-
-    shouldBlur(channel?: Channel) {
-        if (!channel?.nsfw) return false;
-        const { ignoredChannels } = settings.store;
-        return !ignoredChannels.includes(channel.id) && !ignoredChannels.includes(channel.parent_id);
-    },
 
     patches: [
         {
@@ -74,7 +48,7 @@ export default definePlugin({
             replacement: [
                 {
                     match: /(\.renderReactions\(\i\).+?className:)/,
-                    replace: '$&($self.shouldBlur(this?.props?.channel)?"vc-nsfw-img ":"")+'
+                    replace: '$&(this?.props?.channel?.nsfw?"vc-nsfw-img ":"")+'
                 }
             ]
         }

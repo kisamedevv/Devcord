@@ -1,24 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { OpenExternalIcon, SearchIcon } from "@components/Icons";
+import { Flex } from "@components/Flex";
+import { OpenExternalIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { Menu } from "@webpack/common";
 
@@ -39,19 +29,30 @@ function search(src: string, engine: string) {
 function makeSearchItem(src: string) {
     return (
         <Menu.MenuItem
-            label="Search Image"
+            label={t("Search Image")}
             key="search-image"
             id="search-image"
-            leadingAccessory={{ type: "icon", icon: SearchIcon }}
         >
             {Object.keys(Engines).map((engine, i) => {
-                const key = "search-image-" + engine;
+                const key = `search-image-${engine}`;
                 return (
                     <Menu.MenuItem
                         key={key}
                         id={key}
-                        label={engine}
-                        leadingAccessory={{ type: "image", src: `https://icons.duckduckgo.com/ip3/${new URL(Engines[engine]).host}.ico` }}
+                        label={
+                            <Flex alignItems="center" gap="0.5em">
+                                <img
+                                    style={{
+                                        borderRadius: "50%",
+                                    }}
+                                    aria-hidden="true"
+                                    height={16}
+                                    width={16}
+                                    src={`https://icons.duckduckgo.com/ip3/${new URL(Engines[engine]).host}.ico`}
+                                />
+                                {engine}
+                            </Flex>
+                        }
                         action={() => search(src, Engines[engine])}
                     />
                 );
@@ -59,8 +60,11 @@ function makeSearchItem(src: string) {
             <Menu.MenuItem
                 key="search-image-all"
                 id="search-image-all"
-                label="All"
-                leadingAccessory={{ type: "icon", icon: OpenExternalIcon }}
+                label={
+                    <Flex alignItems="center" gap="0.5em">
+                        <OpenExternalIcon height={16} width={16} />
+                        {t("All")}</Flex>
+                }
                 action={() => Object.values(Engines).forEach(e => search(src, e))}
             />
         </Menu.MenuItem>
@@ -87,7 +91,7 @@ export default definePlugin({
     name: "ReverseImageSearch",
     description: "Adds ImageSearch to image context menus",
     tags: ["Media", "Utility"],
-    authors: [Devs.Ven, Devs.Nuckyz],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["ImageUtilities"],
 
     patches: [

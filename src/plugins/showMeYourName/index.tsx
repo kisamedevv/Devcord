@@ -8,9 +8,9 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Channel, Message, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Channel, Message, User } from "@endcord/discord-types";
 import { RelationshipStore, StreamerModeStore } from "@webpack/common";
 
 interface UsernameProps {
@@ -30,7 +30,6 @@ const settings = definePluginSettings({
             { label: "Username then nickname", value: "user-nick", default: true },
             { label: "Nickname then username", value: "nick-user" },
             { label: "Username only", value: "user" },
-            { label: "Nickname only", value: "nick" },
         ],
     },
     friendNicknames: {
@@ -58,7 +57,7 @@ export default definePlugin({
     name: "ShowMeYourName",
     description: "Display usernames next to nicks, or no nicks at all",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Rini, Devs.TheKodeToad, Devs.rae],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: '="SYSTEM_TAG"',
@@ -77,7 +76,7 @@ export default definePlugin({
 
             const user = userOverride ?? message.author;
             let username = StreamerModeStore.enabled
-                ? user.username[0] + "…"
+                ? `${user.username[0]}…`
                 : user.username;
 
             if (displayNames)
@@ -99,7 +98,7 @@ export default definePlugin({
 
             const prefix = withMentionPrefix ? "@" : "";
 
-            if (isRepliedMessage && !inReplies || (username.toLowerCase() === nick.toLowerCase() && mode !== "user"))
+            if (isRepliedMessage && !inReplies || username.toLowerCase() === nick.toLowerCase())
                 return <>{prefix}{nick}</>;
 
             if (mode === "user-nick")
@@ -107,9 +106,6 @@ export default definePlugin({
 
             if (mode === "nick-user")
                 return <>{prefix}{nick} <span className="vc-smyn-suffix">{username}</span></>;
-
-            if (mode === "nick")
-                return <>{prefix}{nick}</>;
 
             return <>{prefix}{username}</>;
         } catch {

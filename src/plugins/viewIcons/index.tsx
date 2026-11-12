@@ -1,31 +1,18 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import { ImageIcon } from "@components/Icons";
-import { Devs } from "@utils/constants";
-import { openImageModal } from "@utils/discord";
-import definePlugin, { OptionType } from "@utils/types";
 import type { Channel, Guild, User } from "@endcord/discord-types";
-import { GuildMemberStore, IconUtils, Menu } from "@webpack/common";
-import type { MouseEvent } from "react";
-
+import { Devs } from "@utils/constants";
+import { copyWithToast, openImageModal } from "@utils/discord";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
+import { ContextMenuApi, GuildMemberStore, IconUtils, Menu, React, UserProfileStore } from "@webpack/common";
 
 interface UserContextProps {
     channel: Channel;
@@ -44,20 +31,20 @@ interface GroupDMContextProps {
 const settings = definePluginSettings({
     format: {
         type: OptionType.SELECT,
-        description: "Choose the image format to use for non-animated images. Animated images will always use .webp",
+        description: "Choose the image format to use for non animated images. Animated images will always use .gif",
         options: [
-            {
-                label: "webp",
-                value: "webp",
-                default: true
-            },
             {
                 label: "png",
                 value: "png",
+                default: true
+            },
+            {
+                label: "webp",
+                value: "webp"
             },
             {
                 label: "jpg",
-                value: "jpg",
+                value: "jpg"
             }
         ]
     },
@@ -65,151 +52,416 @@ const settings = definePluginSettings({
         type: OptionType.SELECT,
         displayName: "Image Size",
         description: "The image size to use",
-        options: ["128", "256", "512", "1024", "2048", "4096"].map(n => ({ label: n, value: n, default: n === "1024" }))
+        options: ["256", "512", "1024", "2048", "4096"].map(n => ({ label: n, value: n, default: n === "2048" }))
     }
 });
 
-const openAvatar = (url: string, event?: MouseEvent) => openImage({ url, width: 512, height: 512, event });
-const openBanner = (url: string, event?: MouseEvent) => openImage({ url, width: 1024, event });
-
-interface OpenImageProps {
-    url: string;
-    width: number;
-    height?: number;
-    event?: MouseEvent;
+function downloadImage(url: string, name: string) {
+    try {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        a.target = "_blank";
+        a.rel = "noreferrer noopener";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch {
+        window.open(url, "_blank");
+    }
 }
 
-function openImage({ url, width, height, event }: OpenImageProps) {
-    event?.stopPropagation();
-    const u = new URL(url, window.location.href);
+function getFullSizeUrl(url: string, defaultExt = "png"): string {
+    if (!url) return "";
+    try {
+        const u = new URL(url, window.location.href);
+        const isAnimated = u.searchParams.get("animated") === "true" || u.pathname.includes("/a_");
+        const ext = isAnimated ? "gif" : defaultExt;
+        u.pathname = u.pathname.replace(/\.(png|jpe?g|webp)$/i, `.${ext}`);
+        u.searchParams.set("size", "4096");
+        return u.toString();
+    } catch {
+        return url;
+    }
+}
 
-    const format = url.startsWith("/")
-        ? "png"
-        : u.searchParams.get("animated") === "true"
-            ? "webp"
-            : settings.store.format;
+function getBannerUrl(user: User, guildId?: string): string | null {
+    if (!user) return null;
+    const profile = UserProfileStore?.getUserProfile?.(user.id);
+    const bannerHash = profile?.banner || (user as any).banner;
+    if (bannerHash) {
+        if (typeof bannerHash === "string" && (bannerHash.startsWith("http") || bannerHash.startsWith("data:"))) return bannerHash;
+        const isAnimated = typeof bannerHash === "string" && bannerHash.startsWith("a_");
+        return `https://cdn.discordapp.com/banners/${user.id}/${bannerHash}.${isAnimated ? "gif" : "png"}?size=4096`;
+    }
+    return null;
+}
 
-    u.searchParams.set("size", settings.store.imgSize);
-    u.pathname = u.pathname.replace(/\.(png|jpe?g|webp)$/, `.${format}`);
-    url = u.toString();
+function getGuildMemberBannerUrl(userId: string, guildId?: string): string | null {
+    if (!userId || !guildId) return null;
+    const member = GuildMemberStore?.getMember(guildId, userId);
+    const bannerHash = (member as any)?.banner;
+    if (bannerHash) {
+        if (typeof bannerHash === "string" && (bannerHash.startsWith("http") || bannerHash.startsWith("data:"))) return bannerHash;
+        const isAnimated = typeof bannerHash === "string" && bannerHash.startsWith("a_");
+        return `https://cdn.discordapp.com/guilds/${guildId}/users/${userId}/banners/${bannerHash}.${isAnimated ? "gif" : "png"}?size=4096`;
+    }
+    return null;
+}
 
-    u.searchParams.set("size", "4096");
-    const original = u.toString();
+const openAvatar = (url: string) => openImage(url, 512, 512);
+const openBanner = (url: string) => openImage(url, 1024);
 
-    openImageModal({
-        url,
-        original,
-        width,
-        height
-    });
+function openImage(url: string, width: number, height?: number) {
+    if (!url) return;
+    try {
+        const u = new URL(url, window.location.href);
+
+        const format = url.startsWith("/")
+            ? "png"
+            : u.searchParams.get("animated") === "true"
+                ? "gif"
+                : settings.store.format;
+
+        u.searchParams.set("size", settings.store.imgSize);
+        u.pathname = u.pathname.replace(/\.(png|jpe?g|webp)$/i, `.${format}`);
+        const finalUrl = u.toString();
+
+        u.searchParams.set("size", "4096");
+        const original = u.toString();
+
+        try {
+            openImageModal({
+                url: finalUrl,
+                original,
+                width,
+                height
+            });
+        } catch {
+            window.open(original, "_blank");
+        }
+    } catch {
+        window.open(url, "_blank");
+    }
 }
 
 const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: UserContextProps) => {
     if (!user) return;
-    const memberAvatar = GuildMemberStore.getMember(guildId!, user.id)?.avatar || null;
+    const avatarUrl = IconUtils.getUserAvatarURL(user, true);
+    const memberAvatar = guildId ? GuildMemberStore.getMember(guildId, user.id)?.avatar || null : null;
+    const serverAvatarUrl = memberAvatar
+        ? IconUtils.getGuildMemberAvatarURLSimple({
+            userId: user.id,
+            avatar: memberAvatar,
+            guildId: guildId!,
+            canAnimate: true
+        })
+        : null;
 
-    const avatarDecoration = user.avatarDecorationData ?? user.avatarDecoration;
+    const bannerUrl = getBannerUrl(user, guildId);
+    const serverBannerUrl = getGuildMemberBannerUrl(user.id, guildId);
 
-    children.splice(-1, 0, (
-        <Menu.MenuGroup>
+    const items: React.ReactNode[] = [];
+
+    // Avatar
+    items.push(
+        <Menu.MenuItem
+            id="view-avatar-menu"
+            label={t("Avatar")}
+            action={() => openAvatar(avatarUrl)}
+            icon={ImageIcon}
+        >
             <Menu.MenuItem
                 id="view-avatar"
-                label="View Avatar"
-                action={() => openAvatar(IconUtils.getUserAvatarURL(user, true))}
-                icon={ImageIcon}
-                leadingAccessory={{ type: "icon", icon: ImageIcon }}
+                label={t("View Avatar")}
+                action={() => openAvatar(avatarUrl)}
             />
-            {memberAvatar && (
+            <Menu.MenuItem
+                id="copy-avatar-url"
+                label={t("Copy Avatar Link")}
+                action={() => copyWithToast(getFullSizeUrl(avatarUrl), "Avatar link copied!")}
+            />
+            <Menu.MenuItem
+                id="save-avatar"
+                label={t("Save Avatar")}
+                action={() => downloadImage(getFullSizeUrl(avatarUrl), `${user.username}_avatar`)}
+            />
+        </Menu.MenuItem>
+    );
+
+    // Server Avatar
+    if (serverAvatarUrl) {
+        items.push(
+            <Menu.MenuItem
+                id="view-server-avatar-menu"
+                label={t("Server Avatar")}
+                action={() => openAvatar(serverAvatarUrl)}
+                icon={ImageIcon}
+            >
                 <Menu.MenuItem
                     id="view-server-avatar"
-                    label="View Server Avatar"
-                    action={() => openAvatar(IconUtils.getGuildMemberAvatarURLSimple({
-                        userId: user.id,
-                        avatar: memberAvatar,
-                        guildId: guildId!,
-                        canAnimate: true
-                    }))}
-                    icon={ImageIcon}
-                    leadingAccessory={{ type: "icon", icon: ImageIcon }}
+                    label={t("View Server Avatar")}
+                    action={() => openAvatar(serverAvatarUrl)}
                 />
-            )}
-            {avatarDecoration && (
                 <Menu.MenuItem
-                    id="view-avatar-decoration"
-                    label="View Avatar Decoration"
-                    action={() => openAvatar(IconUtils.getAvatarDecorationURL({
-                        avatarDecoration,
-                        size: 1024,
-                        canAnimate: true
-                    })!)}
-                    icon={ImageIcon}
-                    leadingAccessory={{ type: "icon", icon: ImageIcon }}
+                    id="copy-server-avatar-url"
+                    label={t("Copy Server Avatar Link")}
+                    action={() => copyWithToast(getFullSizeUrl(serverAvatarUrl), "Server avatar link copied!")}
                 />
-            )}
-        </Menu.MenuGroup>
-    ));
+                <Menu.MenuItem
+                    id="save-server-avatar"
+                    label={t("Save Server Avatar")}
+                    action={() => downloadImage(getFullSizeUrl(serverAvatarUrl), `${user.username}_server_avatar`)}
+                />
+            </Menu.MenuItem>
+        );
+    }
+
+    // User Banner
+    if (bannerUrl) {
+        items.push(
+            <Menu.MenuItem
+                id="view-banner-menu"
+                label={t("Banner")}
+                action={() => openBanner(bannerUrl)}
+                icon={ImageIcon}
+            >
+                <Menu.MenuItem
+                    id="view-banner"
+                    label={t("View Banner")}
+                    action={() => openBanner(bannerUrl)}
+                />
+                <Menu.MenuItem
+                    id="copy-banner-url"
+                    label={t("Copy Banner Link")}
+                    action={() => copyWithToast(getFullSizeUrl(bannerUrl), "Banner link copied!")}
+                />
+                <Menu.MenuItem
+                    id="save-banner"
+                    label={t("Save Banner")}
+                    action={() => downloadImage(getFullSizeUrl(bannerUrl), `${user.username}_banner`)}
+                />
+            </Menu.MenuItem>
+        );
+    }
+
+    // Server Banner
+    if (serverBannerUrl) {
+        items.push(
+            <Menu.MenuItem
+                id="view-server-banner-menu"
+                label={t("Server Banner")}
+                action={() => openBanner(serverBannerUrl)}
+                icon={ImageIcon}
+            >
+                <Menu.MenuItem
+                    id="view-server-banner"
+                    label={t("View Server Banner")}
+                    action={() => openBanner(serverBannerUrl)}
+                />
+                <Menu.MenuItem
+                    id="copy-server-banner-url"
+                    label={t("Copy Server Banner Link")}
+                    action={() => copyWithToast(getFullSizeUrl(serverBannerUrl), "Server banner link copied!")}
+                />
+                <Menu.MenuItem
+                    id="save-server-banner"
+                    label={t("Save Server Banner")}
+                    action={() => downloadImage(getFullSizeUrl(serverBannerUrl), `${user.username}_server_banner`)}
+                />
+            </Menu.MenuItem>
+        );
+    }
+
+    children.splice(-1, 0, <Menu.MenuGroup>{items}</Menu.MenuGroup>);
 };
 
 const GuildContext: NavContextMenuPatchCallback = (children, { guild }: GuildContextProps) => {
     if (!guild) return;
 
-    const { id, icon, banner } = guild;
-    if (!banner && !icon) return;
+    const { id, icon, banner, splash } = guild;
+    if (!banner && !icon && !splash) return;
 
-    children.splice(-1, 0, (
-        <Menu.MenuGroup>
-            {icon ? (
+    const items: React.ReactNode[] = [];
+
+    if (icon) {
+        const iconUrl = IconUtils.getGuildIconURL({ id, icon, canAnimate: true })!;
+        items.push(
+            <Menu.MenuItem
+                id="view-guild-icon-menu"
+                label={t("Server Icon")}
+                action={() => openAvatar(iconUrl)}
+                icon={ImageIcon}
+            >
                 <Menu.MenuItem
-                    id="view-icon"
-                    label="View Icon"
-                    action={() =>
-                        openAvatar(IconUtils.getGuildIconURL({
-                            id,
-                            icon,
-                            canAnimate: true
-                        })!)
-                    }
-                    icon={ImageIcon}
-                    leadingAccessory={{ type: "icon", icon: ImageIcon }}
+                    id="view-guild-icon"
+                    label={t("View Icon")}
+                    action={() => openAvatar(iconUrl)}
                 />
-            ) : null}
-            {banner ? (
                 <Menu.MenuItem
-                    id="view-banner"
-                    label="View Banner"
-                    action={() =>
-                        openBanner(IconUtils.getGuildBannerURL(guild, true)!)
-                    }
-                    icon={ImageIcon}
-                    leadingAccessory={{ type: "icon", icon: ImageIcon }}
+                    id="copy-guild-icon-url"
+                    label={t("Copy Icon Link")}
+                    action={() => copyWithToast(getFullSizeUrl(iconUrl), "Server icon link copied!")}
                 />
-            ) : null}
-        </Menu.MenuGroup>
-    ));
+                <Menu.MenuItem
+                    id="save-guild-icon"
+                    label={t("Save Icon")}
+                    action={() => downloadImage(getFullSizeUrl(iconUrl), `${guild.name}_icon`)}
+                />
+            </Menu.MenuItem>
+        );
+    }
+
+    if (banner) {
+        const bannerUrl = IconUtils.getGuildBannerURL(guild, true)!;
+        items.push(
+            <Menu.MenuItem
+                id="view-guild-banner-menu"
+                label={t("Server Banner")}
+                action={() => openBanner(bannerUrl)}
+                icon={ImageIcon}
+            >
+                <Menu.MenuItem
+                    id="view-guild-banner"
+                    label={t("View Banner")}
+                    action={() => openBanner(bannerUrl)}
+                />
+                <Menu.MenuItem
+                    id="copy-guild-banner-url"
+                    label={t("Copy Banner Link")}
+                    action={() => copyWithToast(getFullSizeUrl(bannerUrl), "Server banner link copied!")}
+                />
+                <Menu.MenuItem
+                    id="save-guild-banner"
+                    label={t("Save Banner")}
+                    action={() => downloadImage(getFullSizeUrl(bannerUrl), `${guild.name}_banner`)}
+                />
+            </Menu.MenuItem>
+        );
+    }
+
+    if (splash) {
+        const splashUrl = `https://cdn.discordapp.com/splashes/${id}/${splash}.png?size=4096`;
+        items.push(
+            <Menu.MenuItem
+                id="view-guild-splash-menu"
+                label={t("Server Splash")}
+                action={() => openBanner(splashUrl)}
+                icon={ImageIcon}
+            >
+                <Menu.MenuItem
+                    id="view-guild-splash"
+                    label={t("View Splash")}
+                    action={() => openBanner(splashUrl)}
+                />
+                <Menu.MenuItem
+                    id="copy-guild-splash-url"
+                    label={t("Copy Splash Link")}
+                    action={() => copyWithToast(splashUrl, "Server splash link copied!")}
+                />
+                <Menu.MenuItem
+                    id="save-guild-splash"
+                    label={t("Save Splash")}
+                    action={() => downloadImage(splashUrl, `${guild.name}_splash`)}
+                />
+            </Menu.MenuItem>
+        );
+    }
+
+    children.splice(-1, 0, <Menu.MenuGroup>{items}</Menu.MenuGroup>);
 };
 
 const GroupDMContext: NavContextMenuPatchCallback = (children, { channel }: GroupDMContextProps) => {
     if (!channel) return;
+    const iconUrl = IconUtils.getChannelIconURL(channel);
+    if (!iconUrl) return;
 
     children.splice(-1, 0, (
         <Menu.MenuGroup>
             <Menu.MenuItem
-                id="view-group-channel-icon"
-                label="View Icon"
-                action={() =>
-                    openAvatar(IconUtils.getChannelIconURL(channel)!)
-                }
+                id="view-group-channel-icon-menu"
+                label={t("Group Icon")}
+                action={() => openAvatar(iconUrl)}
                 icon={ImageIcon}
-                leadingAccessory={{ type: "icon", icon: ImageIcon }}
-            />
+            >
+                <Menu.MenuItem
+                    id="view-group-icon"
+                    label={t("View Icon")}
+                    action={() => openAvatar(iconUrl)}
+                />
+                <Menu.MenuItem
+                    id="copy-group-icon-url"
+                    label={t("Copy Icon Link")}
+                    action={() => copyWithToast(getFullSizeUrl(iconUrl), "Group icon link copied!")}
+                />
+                <Menu.MenuItem
+                    id="save-group-icon"
+                    label={t("Save Icon")}
+                    action={() => downloadImage(getFullSizeUrl(iconUrl), `${channel.name || "group"}_icon`)}
+                />
+            </Menu.MenuItem>
         </Menu.MenuGroup>
     ));
 };
 
+function openAvatarContextMenu(e: React.MouseEvent, avatarUrl: string) {
+    if (!avatarUrl) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const fullUrl = getFullSizeUrl(avatarUrl);
+    ContextMenuApi.openContextMenu(e, () => (
+        <Menu.Menu navId="vc-viewicons-avatar-context" onClose={ContextMenuApi.closeContextMenu} aria-label="Avatar Options">
+            <Menu.MenuItem
+                id="viewicons-view-avatar"
+                label={t("View Avatar")}
+                action={() => openAvatar(avatarUrl)}
+            />
+            <Menu.MenuItem
+                id="viewicons-copy-avatar-url"
+                label={t("Copy Avatar Link")}
+                action={() => copyWithToast(fullUrl, "Avatar link copied!")}
+            />
+            <Menu.MenuItem
+                id="viewicons-save-avatar"
+                label={t("Save Avatar")}
+                action={() => downloadImage(fullUrl, "avatar")}
+            />
+        </Menu.Menu>
+    ));
+}
+
+function openBannerContextMenu(e: React.MouseEvent, bannerUrl: string) {
+    if (!bannerUrl) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const fullUrl = getFullSizeUrl(bannerUrl);
+    ContextMenuApi.openContextMenu(e, () => (
+        <Menu.Menu navId="vc-viewicons-banner-context" onClose={ContextMenuApi.closeContextMenu} aria-label="Banner Options">
+            <Menu.MenuItem
+                id="viewicons-view-banner"
+                label={t("View Banner")}
+                action={() => openBanner(bannerUrl)}
+            />
+            <Menu.MenuItem
+                id="viewicons-copy-banner-url"
+                label={t("Copy Banner Link")}
+                action={() => copyWithToast(fullUrl, "Banner link copied!")}
+            />
+            <Menu.MenuItem
+                id="viewicons-save-banner"
+                label={t("Save Banner")}
+                action={() => downloadImage(fullUrl, "banner")}
+            />
+        </Menu.Menu>
+    ));
+}
+
+migrateRemovedPlugin("ViewIcons", "ProfileMedia");
+
 export default definePlugin({
     name: "ViewIcons",
-    authors: [Devs.Ven, Devs.TheKodeToad, Devs.Nuckyz, Devs.nyx],
-    description: "Makes avatars and banners in user profiles clickable, adds View Icon/Banner/Avatar Decoration entries in the user, server and group channel context menu.",
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    description: "Makes avatars and banners in user profiles clickable, adds View/Copy/Save Icon and Banner entries in user, server and group channel context menus.",
     tags: ["Media", "Servers", "Appearance"],
     searchTerms: ["ImageUtilities"],
     dependencies: ["DynamicImageModalAPI"],
@@ -218,6 +470,8 @@ export default definePlugin({
 
     openAvatar,
     openBanner,
+    openAvatarContextMenu,
+    openBannerContextMenu,
 
     contextMenus: {
         "user-context": UserContext,
@@ -239,7 +493,7 @@ export default definePlugin({
             find: '"--custom-cutout-radius":',
             replacement: {
                 match: /style:{(?=\.\.\.\i,backgroundImage:null!=(\i).{0,20}?\?`url\(\$\{\1\}\)`)/,
-                replace: (_, bannerSrc) => `onClick:vcEvent=>${bannerSrc}!=null&&$self.openBanner(${bannerSrc},vcEvent),style:{cursor:${bannerSrc}!=null?"pointer":void 0,`
+                replace: (_, bannerSrc) => `onClick:()=>${bannerSrc}!=null&&$self.openBanner(${bannerSrc}),onContextMenu:e=>${bannerSrc}!=null&&$self.openBannerContextMenu(e,${bannerSrc}),style:{cursor:${bannerSrc}!=null?"pointer":void 0,`
             }
         },
         // Group DMs top small & large icon
@@ -248,7 +502,7 @@ export default definePlugin({
             replacement: {
                 match: /null==\i\.icon\?.+?src:(\(0,\i\.\i\).+?\))(?=[,}])/,
                 // We have to check that icon is not an unread GDM in the server bar
-                replace: (m, iconUrl) => `${m},onClick:vcEvent=>arguments[0]?.size!=="SIZE_40"&&$self.openAvatar(${iconUrl},vcEvent)`
+                replace: (m, iconUrl) => `${m},onClick:()=>arguments[0]?.size!=="SIZE_40"&&$self.openAvatar(${iconUrl})`
             }
         },
         // User DMs top small icon
@@ -256,7 +510,7 @@ export default definePlugin({
             find: ".channel.getRecipientId(),",
             replacement: {
                 match: /(?=,src:(\i.getAvatarURL\(.+?[)]))/,
-                replace: (_, avatarUrl) => `,onClick:vcEvent=>$self.openAvatar(${avatarUrl},vcEvent)`
+                replace: (_, avatarUrl) => `,onClick:()=>$self.openAvatar(${avatarUrl})`
             }
         },
         // User Dms top large icon
@@ -264,7 +518,7 @@ export default definePlugin({
             find: ".EMPTY_GROUP_DM)",
             replacement: {
                 match: /(?<=SIZE_80,)(?=src:(.+?\))[,}])/,
-                replace: (_, avatarUrl) => `onClick:vcEvent=>$self.openAvatar(${avatarUrl},vcEvent),`
+                replace: (_, avatarUrl) => `onClick:()=>$self.openAvatar(${avatarUrl}),`
             }
         }
     ]

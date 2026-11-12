@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { canonicalizeMatch } from "@utils/patches";
 import definePlugin, { OptionType } from "@utils/types";
 
 const settings = definePluginSettings({
@@ -27,7 +28,7 @@ export default definePlugin({
     name: "PermissionFreeWill",
     description: "Disables the client-side restrictions for channel permission management.",
     tags: ["Servers", "Roles"],
-    authors: [Devs.lewisakura],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         // Permission lockout, just set the check to true
@@ -46,15 +47,13 @@ export default definePlugin({
             find: "#{intl::ONBOARDING_CHANNEL_THRESHOLD_WARNING}",
             replacement: [
                 {
-                    // FIXME: Stable compat: (?: \i)?
-                    match: /async function(?: \i)?\(\i,\i\){(?=.{0,60}?removingView:)/,
-                    replace: "$&return true;"
-                },
-                {
-                    // FIXME: Stable compat: (?: \i)?
-                    match: /async function(?: \i)?\(\i,\i,\i\){(?=.{0,80}?\.permissionOverwrites)/,
-                    replace: "$&return true;"
-                },
+                    // replace export getters with functions that always resolve to true. On Canary the two
+                    // functions are plain values; getters for the same names win over values
+                    match: /{(?:\i:\(\)=>\i,?){2}}|(?<=\.d\(\i,)\{\}(?=,\{(\i):async function.+?\},(\i):async function)/,
+                    replace: (m, first, second) => first
+                        ? `{${first}:()=>()=>Promise.resolve(true),${second}:()=>()=>Promise.resolve(true)}`
+                        : m.replaceAll(canonicalizeMatch(/\(\)=>\i/g), "()=>()=>Promise.resolve(true)")
+                }
             ],
             predicate: () => settings.store.onboarding
         }

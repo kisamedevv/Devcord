@@ -1,4 +1,4 @@
-/* oxlint-disable */
+/* eslint-disable */
 
 /**
  * This file is part of AdGuard's Block YouTube Ads (https://github.com/AdguardTeam/BlockYouTubeAdsShortcut).

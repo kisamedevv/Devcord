@@ -1,54 +1,42 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { useSettings } from "@api/Settings";
 import { authorizeCloud, deauthorizeCloud } from "@api/SettingsSync/cloudSetup";
 import { deleteCloudSettings, eraseAllCloudData, getCloudSettings, getCloudSyncDirection, putCloudSettings, setCloudSyncDirection } from "@api/SettingsSync/cloudSync";
+import { isSecureCloudUrl } from "@api/SettingsSync/cloudUrl";
+import { BaseText } from "@components/BaseText";
 import { Button, ButtonProps } from "@components/Button";
 import { CheckedTextInput } from "@components/CheckedTextInput";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
-import { Grid } from "@components/Grid";
 import { Heading } from "@components/Heading";
 import { CloudDownloadIcon, CloudUploadIcon, DeleteIcon, RestartIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
-import { confirmAction } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
-import { Select, Tooltip, useState } from "@webpack/common";
-
+import { ConfirmModal,openModal, Select, Tooltip, useState } from "@webpack/common";
 function validateUrl(url: string) {
-    try {
-        new URL(url);
-        return true;
-    } catch {
-        return "Invalid URL";
-    }
+    return isSecureCloudUrl(url) || t("The address has to start with https://");
 }
 
 const SectionHeading = ({ text }: { text: string; }) => (
-    <Heading tag="h3" className={Margins.bottom16}>
+    <BaseText
+        tag="h5"
+        size="lg"
+        weight="semibold"
+        className={Margins.bottom16}
+    >
         {text}
-    </Heading>
+    </BaseText>
 );
 
 function ButtonWithIcon({ children, Icon, className, ...buttonProps }: ButtonProps & { Icon: IconComponent; }) {
@@ -65,18 +53,15 @@ function CloudSetupSection() {
 
     return (
         <section>
-            <SectionHeading text="Cloud Integrations" />
+            <SectionHeading text={t("Cloud Integrations")} />
 
             <Paragraph size="md" className={Margins.bottom20}>
-                Endcord comes with a cloud integration that adds goodies like settings sync across devices.
-                It <Link href="https://endcord.dev/cloud/privacy">respects your privacy</Link>, and
-                the <Link href="https://github.com/Endcord/Backend">source code</Link> is AGPL 3.0 licensed so you
-                can host it yourself.
+                {t("Endcord comes with a cloud integration that adds goodies like settings sync across devices. It")}{" "}<Link href="https://endcord.com/cloud/privacy">{t("respects your privacy")}</Link>{t(", and the")}{" "}<Link href="https://github.com/Endcord/Endcord">{t("source code")}</Link>{" "}{t("is AGPL 3.0 licensed so you can host it yourself.")}
             </Paragraph>
             <FormSwitch
                 key="backend"
-                title="Enable Cloud Integrations"
-                description="This will request authorization if you have not yet set up cloud integrations."
+                title={t("Enable Cloud Integrations")}
+                description={t("This will request authorization if you have not yet set up cloud integrations.")}
                 value={cloud.authenticated}
                 onChange={v => {
                     if (v)
@@ -85,9 +70,9 @@ function CloudSetupSection() {
                         cloud.authenticated = v;
                 }}
             />
-            <Heading className={classes(Margins.top16, Margins.bottom8)}>Backend URL</Heading>
+            <Heading tag="h5" className={Margins.top16}>{t("Backend URL")}</Heading>
             <Paragraph className={Margins.bottom8}>
-                Which backend to use when using cloud integrations.
+                {t("Which backend to use when using cloud integrations.")}
             </Paragraph>
             <CheckedTextInput
                 key="backendUrl"
@@ -100,9 +85,9 @@ function CloudSetupSection() {
                 validate={validateUrl}
             />
 
-            <Grid columns={1} gap="1em" className={Margins.top8}>
+            <Flex gap="0.5em" className={Margins.top8}>
                 <ButtonWithIcon
-                    variant="primary"
+                    variant="secondary"
                     disabled={!cloud.authenticated}
                     onClick={async () => {
                         await deauthorizeCloud();
@@ -111,9 +96,9 @@ function CloudSetupSection() {
                     }}
                     Icon={RestartIcon}
                 >
-                    Reauthorise
+                    {t("Reauthorise")}
                 </ButtonWithIcon>
-            </Grid>
+            </Flex>
         </section>
     );
 }
@@ -125,12 +110,12 @@ function SettingsSyncSection() {
 
     return (
         <section>
-            <SectionHeading text="Settings Sync" />
+            <SectionHeading text={t("Settings Sync")} />
             <Flex flexDirection="column" gap="1em">
                 <FormSwitch
                     key="cloud-sync"
-                    title="Enable Settings Sync"
-                    description="Save your Endcord settings to the cloud so you can easily keep them the same on all your devices"
+                    title={t("Enable Settings Sync")}
+                    description={t("Save your Endcord settings to the cloud so you can easily keep them the same on all your devices")}
                     value={cloud.settingsSync}
                     onChange={v => { cloud.settingsSync = v; }}
                     disabled={!cloud.authenticated}
@@ -138,30 +123,29 @@ function SettingsSyncSection() {
                 />
 
                 <div>
-                    <Heading className={Margins.bottom8}>
-                        Sync Rules for This Device
+                    <Heading tag="h5">
+                        {t("Sync Rules for This Device")}
                     </Heading>
                     <Paragraph className={Margins.bottom8}>
-                        This setting controls how settings move between <strong>this device</strong> and the cloud.
-                        You can let changes flow both ways, or choose one place to be the main source of truth.
+                        {t("This setting controls how settings move between")}{" "}<strong>{t("this device")}</strong>{" "}{t("and the cloud. You can let changes flow both ways, or choose one place to be the main source of truth.")}
                     </Paragraph>
                     <Select
                         options={[
                             {
-                                label: "Two-way sync (changes go both directions)",
+                                label: t("Two-way sync (changes go both directions)"),
                                 value: "both",
                                 default: true,
                             },
                             {
-                                label: "This device is the source (upload only)",
+                                label: t("This device is the source (upload only)"),
                                 value: "push",
                             },
                             {
-                                label: "The cloud is the source (download only)",
+                                label: t("The cloud is the source (download only)"),
                                 value: "pull",
                             },
                             {
-                                label: "Do not sync automatically (manual sync via buttons below only)",
+                                label: t("Do not sync automatically (manual sync via buttons below only)"),
                                 value: "manual",
                             }
                         ]}
@@ -175,30 +159,30 @@ function SettingsSyncSection() {
                     />
                 </div>
 
-                <Grid columns={2} gap="1em" className={Margins.top20}>
+                <Flex gap="0.5em">
                     <ButtonWithIcon
-                        variant="positive"
+                        variant="secondary"
                         disabled={!sectionEnabled}
                         onClick={() => putCloudSettings(true)}
                         Icon={CloudUploadIcon}
                     >
-                        Upload Settings
+                        {t("Upload Settings")}
                     </ButtonWithIcon>
-                    <Tooltip text="This will replace your current settings with the ones saved in the cloud. Be careful!">
+                    <Tooltip text={t("This will replace your current settings with the ones saved in the cloud. Be careful!")}>
                         {({ onMouseLeave, onMouseEnter }) => (
                             <ButtonWithIcon
-                                variant="dangerPrimary"
+                                variant="dangerSecondary"
                                 onMouseLeave={onMouseLeave}
                                 onMouseEnter={onMouseEnter}
                                 disabled={!sectionEnabled}
                                 onClick={() => getCloudSettings(true, true)}
                                 Icon={CloudDownloadIcon}
                             >
-                                Download Settings
+                                {t("Download Settings")}
                             </ButtonWithIcon>
                         )}
                     </Tooltip>
-                </Grid>
+                </Flex>
             </Flex>
         </section>
     );
@@ -209,34 +193,35 @@ function ResetSection() {
 
     return (
         <section>
-            <SectionHeading text="Reset Cloud Data" />
+            <SectionHeading text={t("Reset Cloud Data")} />
 
-            <Grid columns={2} gap="1em">
+            <Flex gap="0.5em">
                 <ButtonWithIcon
-                    variant="dangerPrimary"
+                    variant="dangerSecondary"
                     disabled={!authenticated || !settingsSync}
                     onClick={() => deleteCloudSettings()}
                     Icon={DeleteIcon}
                 >
-                    Delete Settings from Cloud
+                    {t("Delete Settings from Cloud")}
                 </ButtonWithIcon>
                 <ButtonWithIcon
                     variant="dangerPrimary"
                     disabled={!authenticated}
-                    onClick={() =>
-                        confirmAction({
-                            title: "Are you sure?",
-                            subtitle: "Once your data is erased, we cannot recover it. There's no going back!",
-                            confirmText: "Erase it!",
-                            cancelText: "Nevermind",
-                            onConfirm: eraseAllCloudData,
-                        })
-                    }
+                    onClick={() => openModal(props => (
+                        <ConfirmModal
+                            {...props}
+                            title={t("Are you sure?")}
+                            subtitle={t("Once your data is erased, we cannot recover it. There's no going back!")}
+                            onConfirm={eraseAllCloudData}
+                            confirmText={t("Erase")}
+                            cancelText={t("Nevermind")}
+                        />
+                    ))}
                     Icon={DeleteIcon}
                 >
-                    Delete your Cloud Account
+                    {t("Delete your Cloud Account")}
                 </ButtonWithIcon>
-            </Grid>
+            </Flex>
         </section>
     );
 }
@@ -256,3 +241,4 @@ function CloudTab() {
 }
 
 export default wrapTab(CloudTab, "Cloud");
+

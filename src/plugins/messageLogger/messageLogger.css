@@ -1,18 +1,16 @@
-.messagelogger-deleted [class*="buttonsInner"] [role="button"]:not([aria-label="Clear history"]),
-.messagelogger-deleted [class*="buttonsInner"] [class*="separator"] {
+.messagelogger-deleted [class*="buttons"] {
     display: none;
 }
 
-/* non-deleted messages can have deleted attachments */
-.messagelogger-deleted-attachment,
 .messagelogger-deleted
-    :is(
-        .emoji,
-        [data-type="sticker"],
-        [class*="embedIframe"],
-        [class*="embedSpotify"],
-        [class*="imageContainer"]
-    ) {
+:is(
+    .messagelogger-deleted-attachment,
+    .emoji,
+    [data-type="sticker"],
+    [class*="embedIframe"],
+    [class*="embedSpotify"],
+    [class*="imageContainer"]
+) {
     filter: grayscale(1) !important;
     transition: 150ms filter ease-in-out;
 

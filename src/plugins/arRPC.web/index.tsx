@@ -1,30 +1,16 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 OpenAsar
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { popNotice, showNotice } from "@api/Notices";
-import { Heading } from "@components/Heading";
 import { Link } from "@components/Link";
-import { Margins } from "@components/margins";
-import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { ReporterTestable } from "@utils/types";
 import { findByCodeLazy } from "@webpack";
-import { ApplicationAssetUtils, FluxDispatcher, showToast } from "@webpack/common";
+import { ApplicationAssetUtils, FluxDispatcher, Forms, Toasts } from "@webpack/common";
 
 const fetchApplicationsRPC = findByCodeLazy('"Invalid Origin"', ".application");
 
@@ -32,7 +18,7 @@ async function lookupAsset(applicationId: string, key: string): Promise<string> 
     return (await ApplicationAssetUtils.fetchAssetIds(applicationId, [key]))[0];
 }
 
-const apps: any = {};
+const apps = new Map<string, any>();
 async function lookupApp(applicationId: string): Promise<string> {
     const socket: any = {};
     await fetchApplicationsRPC(socket, applicationId);
@@ -44,16 +30,15 @@ export default definePlugin({
     name: "WebRichPresence (arRPC)",
     description: "Client plugin for arRPC to enable RPC on Discord Web (experimental)",
     tags: ["Activity", "Utility"],
-    authors: [Devs.Ducko],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     reporterTestable: ReporterTestable.None,
     hidden: IS_VESKTOP || "legcord" in window,
 
     settingsAboutComponent: () => (
         <>
-            <Heading className={Margins.bottom8}>How to use arRPC</Heading>
-            <Paragraph>
-                <Link href="https://github.com/OpenAsar/arrpc/tree/main#server">Follow the instructions in the GitHub repo</Link> to get the server running, and then enable the plugin.
-            </Paragraph>
+            <Forms.FormTitle tag="h3">{t("How to use arRPC")}</Forms.FormTitle>
+            <Forms.FormText>
+                <Link href="https://github.com/OpenAsar/arrpc/tree/main#server">{t("Follow the instructions in the GitHub repo")}</Link>{" "}{t("to get the server running, and then enable the plugin.")}</Forms.FormText>
         </>
     ),
 
@@ -67,10 +52,10 @@ export default definePlugin({
         if (assets?.small_image) assets.small_image = await lookupAsset(activity.application_id, assets.small_image);
 
         if (activity) {
-            const appId = activity.application_id;
-            apps[appId] ||= await lookupApp(appId);
+            const appId = String(activity.application_id);
+            if (!apps.has(appId)) apps.set(appId, await lookupApp(appId));
 
-            const app = apps[appId];
+            const app = apps.get(appId);
             activity.name ||= app.name;
         }
 
@@ -92,7 +77,15 @@ export default definePlugin({
             return;
         }
 
-        showToast({ text: "Connected to arRPC", variant: "success" });
+        Toasts.show({ // show toast on success
+            message: "Connected to arRPC",
+            type: Toasts.Type.SUCCESS,
+            id: Toasts.genId(),
+            options: {
+                duration: 1000,
+                position: Toasts.Position.BOTTOM
+            }
+        });
     },
 
     stop() {

@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
@@ -49,7 +37,7 @@ interface StreamData {
 
 export default definePlugin({
     name: "VolumeBooster",
-    authors: [Devs.Nuckyz, Devs.sadan],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Allows you to set the user and stream volume above the default maximum",
     tags: ["Voice", "Utility"],
     settings,
@@ -59,8 +47,8 @@ export default definePlugin({
         {
             find: "#{intl::USER_VOLUME}",
             replacement: {
-                // FIXME: Stable compat: (?:\i\.\i|200 or 100), keep only 200 or 100
-                match: /(?<=maxValue:)\i\.isPlatformEmbedded\?(\i\.\i|200):(?:\i\.\i|100)(?=,)/,
+                // Canary writes the two limits as plain numbers
+                match: /(?<=maxValue:)\i\.isPlatformEmbedded\?(\i\.\i|\d+):(?:\i\.\i|\d+)(?=,)/,
                 replace: (_, higherMaxVolume) => `${higherMaxVolume}*$self.settings.store.multiplier`
             }
         },
@@ -119,10 +107,10 @@ export default definePlugin({
             replacement: [
                 {
                     match: /(\.settings\.audioContextSettings.+?)(\i\[\i\])=(\i\.volume)(.+?setLocalVolume\(\i,).+?\)/,
-                    replace: (_, rest1, localVolume, syncVolume, rest2) => rest1
-                        + `(${localVolume}>200?void 0:${localVolume}=${syncVolume})`
-                        + rest2
-                        + `${localVolume}??${syncVolume})`
+                    replace: (_, rest1, localVolume, syncVolume, rest2) => `${rest1
+                         }(${localVolume}>200?void 0:${localVolume}=${syncVolume})${
+                         rest2
+                         }${localVolume}??${syncVolume})`
                 }
             ]
         }

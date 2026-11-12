@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import * as DataStore from "@api/DataStore";
 import { classNameFactory } from "@utils/css";
@@ -55,8 +43,6 @@ export function GetOsColor(os: string) {
         case "Mac OS X":
         case "iOS":
             return ""; // Default to white/black (theme-dependent)
-        case "Horizon OS": // For Meta Quest (not to be confused with Horizon OS for the Nintendo Switch)
-            return "#0081fb"; // A bright blue, more vibrant and strong and a bit darker than Windows
         default:
             return "#f3799a"; // Pink
     }
@@ -67,7 +53,6 @@ export function GetPlatformIcon(platform: string) {
         case "Discord Android":
         case "Discord iOS":
         case "Discord Client":
-        case "Discord VR":
             return DiscordIcon;
         case "Android Chrome":
         case "Chrome iOS":

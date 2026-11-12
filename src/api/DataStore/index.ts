@@ -1,3 +1,5 @@
+/* eslint-disable simple-header/header */
+
 /*!
  * idb-keyval v6.2.0
  * Copyright 2016, Jake Archibald

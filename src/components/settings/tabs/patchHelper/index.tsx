@@ -1,35 +1,22 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { Button } from "@components/Button";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
+import { HeadingTertiary } from "@components/Heading";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { debounce } from "@shared/debounce";
 import { copyWithToast } from "@utils/discord";
+import { t, useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { classes } from "@utils/misc";
 import { stripIndent } from "@utils/text";
 import { ReplaceFn } from "@utils/types";
 import { search } from "@webpack";
-import { React, TextInput, useMemo, useState } from "@webpack/common";
+import { Button, React, TextInput, useMemo, useState } from "@webpack/common";
 
 import { FullPatchInput } from "./FullPatchInput";
 import { PatchPreview } from "./PatchPreview";
@@ -41,14 +28,15 @@ const findCandidates = debounce(function ({ find, setModule, setError }) {
     const len = keys.length;
 
     if (len === 0)
-        setError("No match. Perhaps that module is lazy loaded?");
+        setError(t("No match. Perhaps that module is lazy loaded?"));
     else if (len !== 1)
-        setError("Multiple matches. Please refine your filter");
+        setError(t("Multiple matches. Please refine your filter"));
     else
         setModule([keys[0], candidates[keys[0]]]);
 });
 
 function PatchHelper() {
+    const { t } = useI18n();
     const [find, setFind] = useState("");
     const [match, setMatch] = useState("");
     const [replacement, setReplacement] = useState<string | ReplaceFn>("");
@@ -107,7 +95,7 @@ function PatchHelper() {
 
     return (
         <SettingsTab>
-            <Heading className={Margins.bottom8}>Full patch</Heading>
+            <HeadingTertiary>{t("Full patch")}</HeadingTertiary>
             <FullPatchInput
                 setFind={onFindChange}
                 setParsedFind={setParsedFind}
@@ -115,7 +103,7 @@ function PatchHelper() {
                 setReplacement={setReplacement}
             />
 
-            <Heading className={classes(Margins.top8, Margins.bottom8)}>Find</Heading>
+            <HeadingTertiary className={Margins.top8}>{t("Find")}</HeadingTertiary>
             <TextInput
                 type="text"
                 value={find}
@@ -123,7 +111,7 @@ function PatchHelper() {
                 error={findError}
             />
 
-            <Heading className={classes(Margins.top8, Margins.bottom8)}>Match</Heading>
+            <HeadingTertiary className={Margins.top8}>{t("Match")}</HeadingTertiary>
             <TextInput
                 type="text"
                 value={match}
@@ -150,14 +138,14 @@ function PatchHelper() {
 
             {!!(find && match && replacement) && (
                 <>
-                    <Heading className={classes(Margins.top20, Margins.bottom8)}>Code</Heading>
+                    <HeadingTertiary className={Margins.top20}>{t("Code")}</HeadingTertiary>
                     <CodeBlock lang="js" content={code} />
                     <Flex className={Margins.top16}>
                         <Button onClick={() => copyWithToast(code)}>
-                            Copy to Clipboard
+                            {t("Copy to Clipboard")}
                         </Button>
-                        <Button onClick={() => copyWithToast("```ts\n" + code + "\n```")}>
-                            Copy as Codeblock
+                        <Button onClick={() => copyWithToast(`\`\`\`ts\n${code}\n\`\`\``)}>
+                            {t("Copy as Codeblock")}
                         </Button>
                     </Flex>
                 </>
@@ -166,4 +154,4 @@ function PatchHelper() {
     );
 }
 
-export default !IS_STANDALONE ? wrapTab(PatchHelper, "PatchHelper") : null;
+export default !IS_STANDALONE ? wrapTab(PatchHelper, "Patch Helper") : null;

@@ -5,9 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import type { Channel, Emoji } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Channel, Emoji } from "@endcord/discord-types";
 
 const settings = definePluginSettings({
     shownEmojis: {
@@ -24,7 +24,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "NoServerEmojis",
-    authors: [Devs.UlyssesZhan],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Do not show server emojis in the autocomplete menu.",
     tags: ["Emotes", "Servers"],
     settings,

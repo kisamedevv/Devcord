@@ -1,30 +1,19 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Channel, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { openUserProfile } from "@utils/discord";
 import { isNonNullish } from "@utils/guards";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import { Channel, User } from "@endcord/discord-types";
 import { AuthenticationStore, Avatar, GuildMemberStore, React, RelationshipStore, TypingStore, UserStore, useStateFromStores } from "@webpack/common";
 import { PropsWithChildren } from "react";
 
@@ -58,8 +47,7 @@ export const buildSeveralUsers = ErrorBoundary.wrap(function buildSeveralUsers({
                     {", "}
                 </React.Fragment>
             ))}
-            and {count} others are typing...
-        </>
+            and {count}{" "}{t("others are typing...")}</>
     );
 }, { noop: true });
 
@@ -86,7 +74,7 @@ const TypingUser = ErrorBoundary.wrap(function TypingUser({ user, guildId }: Typ
                     size="SIZE_16"
                     src={user.getAvatarURL(guildId, 128)} />
             )}
-            {GuildMemberStore.getNick(guildId!, user.id)
+            {GuildMemberStore.getNick(guildId, user.id)
                 || (!guildId && RelationshipStore.getNickname(user.id))
                 || (user as any).globalName
                 || user.username
@@ -99,7 +87,7 @@ export default definePlugin({
     name: "TypingTweaks",
     description: "Show avatars and role colours in the typing indicator",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.zt, Devs.sadan],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     managedStyle,
@@ -136,13 +124,14 @@ export default definePlugin({
     ],
 
     useTypingUsers(channel: Channel | undefined): User[] {
+        // Call the hooks unconditionally; a channel that shows up later must not change the hook order
+        const typingUsers = useStateFromStores([TypingStore], () => channel ? TypingStore.getTypingUsers(channel.id) : {});
+        const myId = useStateFromStores([AuthenticationStore], () => AuthenticationStore.getId());
+
         try {
             if (!channel) {
                 throw new Error("No channel");
             }
-
-            const typingUsers = useStateFromStores([TypingStore], () => TypingStore.getTypingUsers(channel.id));
-            const myId = useStateFromStores([AuthenticationStore], () => AuthenticationStore.getId());
 
             return Object.keys(typingUsers)
                 .filter(id => id && id !== myId && !RelationshipStore.isBlockedOrIgnored(id))

@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name            Endcord
-// @description     A Discord client mod - Web version
+// @description     Endcord for Discord in your browser: plugins, themes and a settings panel right inside Discord
 // @version         %version%
-// @author          Endcord (https://github.com/Endcord)
+// @author          rootpoii (https://github.com/rootpoii)
 // @namespace       https://github.com/Endcord/Endcord
-// @supportURL      https://github.com/Endcord/Endcord
+// @supportURL      https://github.com/Endcord/Endcord/issues
 // @icon            https://raw.githubusercontent.com/Endcord/Endcord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*

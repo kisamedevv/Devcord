@@ -1,32 +1,17 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { Button } from "@components/Button";
 import { ErrorCard } from "@components/ErrorCard";
-import { Heading } from "@components/Heading";
-import { Paragraph } from "@components/Paragraph";
 import { Devs, IS_LINUX } from "@utils/constants";
+import { t as translateText } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
-import { classes } from "@utils/misc";
 import { wordsToTitle } from "@utils/text";
 import definePlugin, { ReporterTestable } from "@utils/types";
-import { AuthenticationStore, ChannelStore, GuildMemberStore, SelectedChannelStore, SelectedGuildStore, useMemo, UserStore, VoiceStateStore } from "@webpack/common";
+import { AuthenticationStore, Button, ChannelStore, Forms, GuildMemberStore, SelectedChannelStore, SelectedGuildStore, useMemo, UserStore, VoiceStateStore } from "@webpack/common";
 import { ReactElement } from "react";
 
 import { getCurrentVoice, settings } from "./settings";
@@ -149,7 +134,7 @@ function playSample(type: string) {
     const myGuildId = SelectedGuildStore.getGuildId();
 
     speak(formatText(
-        settings.store[type + "Message"],
+        settings.store[`${type}Message`],
         currentUser.username,
         "general",
         currentUser.globalName ?? currentUser.username,
@@ -161,7 +146,7 @@ export default definePlugin({
     name: "VcNarrator",
     description: "Announces when users join, leave, or move voice channels via narrator",
     tags: ["Voice", "Accessibility"],
-    authors: [Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     reporterTestable: ReporterTestable.None,
 
     settings,
@@ -186,7 +171,7 @@ export default definePlugin({
                 const [type, id] = getTypeAndChannelId(state, isMe);
                 if (!type) continue;
 
-                const template = settings.store[type + "Message"];
+                const template = settings.store[`${type}Message`];
                 const user = isMe && !settings.store.sayOwnName ? "" : UserStore.getUser(userId).username;
                 const displayName = user && ((UserStore.getUser(userId) as any).globalName ?? user);
                 const nickname = user && (GuildMemberStore.getNick(myGuildId!, userId) ?? displayName);
@@ -204,7 +189,7 @@ export default definePlugin({
             if (!s) return;
 
             const event = s.mute || s.selfMute ? "unmute" : "mute";
-            speak(formatText(settings.store[event + "Message"], "", ChannelStore.getChannel(chanId).name, "", ""));
+            speak(formatText(settings.store[`${event}Message`], "", ChannelStore.getChannel(chanId).name, "", ""));
         },
 
         AUDIO_TOGGLE_SELF_DEAF() {
@@ -213,7 +198,7 @@ export default definePlugin({
             if (!s) return;
 
             const event = s.deaf || s.selfDeaf ? "undeafen" : "deafen";
-            speak(formatText(settings.store[event + "Message"], "", ChannelStore.getChannel(chanId).name, "", ""));
+            speak(formatText(settings.store[`${event}Message`], "", ChannelStore.getChannel(chanId).name, "", ""));
         }
     },
 
@@ -222,7 +207,7 @@ export default definePlugin({
             new Logger("VcNarrator").warn(
                 "SpeechSynthesis not supported or no Narrator voices found. Thus, this plugin will not work. Check my Settings for more info"
             );
-            return;
+
         }
 
     },
@@ -246,21 +231,19 @@ export default definePlugin({
                 : "Try installing some in the Narrator settings of your Operating System";
             errorComponent = <ErrorCard>{error}</ErrorCard>;
         } else if (!hasEnglishVoices) {
-            errorComponent = <ErrorCard>You don't have any English voices installed, so the narrator might sound weird</ErrorCard>;
+            errorComponent = <ErrorCard>{translateText("You don't have any English voices installed, so the narrator might sound weird")}</ErrorCard>;
         }
 
         return (
             <section>
-                <Paragraph>
-                    You can customise the spoken messages below. You can disable specific messages by setting them to nothing
-                </Paragraph>
-                <Paragraph>
-                    The special placeholders <code>{"{{USER}}"}</code>, <code>{"{{DISPLAY_NAME}}"}</code>, <code>{"{{NICKNAME}}"}</code> and <code>{"{{CHANNEL}}"}</code>{" "}
-                    will be replaced with the user's name (nothing if it's yourself), the user's display name, the user's nickname on current server and the channel's name respectively
-                </Paragraph>
+                <Forms.FormText>
+                    {translateText("You can customise the spoken messages below. You can disable specific messages by setting them to nothing")}</Forms.FormText>
+                <Forms.FormText>
+                    {translateText("The special placeholders")}{" "}<code>{"{{USER}}"}</code>, <code>{"{{DISPLAY_NAME}}"}</code>, <code>{"{{NICKNAME}}"}</code>{" "}{translateText("and")}{" "}<code>{"{{CHANNEL}}"}</code>{" "}
+                    {translateText("will be replaced with the user's name (nothing if it's yourself), the user's display name, the user's nickname on current server and the channel's name respectively")}</Forms.FormText>
                 {hasEnglishVoices && (
                     <>
-                        <Heading className={classes(Margins.top20, Margins.bottom8)}>Play Example Sounds</Heading>
+                        <Forms.FormTitle className={Margins.top20} tag="h3">{translateText("Play Example Sounds")}</Forms.FormTitle>
                         <div
                             style={{
                                 display: "grid",

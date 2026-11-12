@@ -1,63 +1,51 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import { popNotice, showNotice } from "@api/Notices";
+import { showNotification } from "@api/Notifications";
 import { isPluginEnabled } from "@api/PluginManager";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, Settings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
-import { Button } from "@components/Button";
 import { Card } from "@components/Card";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { Link } from "@components/Link";
-import { Paragraph } from "@components/Paragraph";
 import { openSettingsTabModal, UpdaterTab } from "@components/settings";
-import { CONTRIB_ROLE_ID, Devs, DONOR_ROLE_ID, KNOWN_ISSUES_CHANNEL_ID, REGULAR_ROLE_ID, SUPPORT_CATEGORY_ID, SUPPORT_CHANNEL_ID, ENDBOT_USER_ID, ENDCORD_GUILD_ID } from "@utils/constants";
-import { sendMessage } from "@utils/discord";
+import { Channel, RenderModalProps } from "@endcord/discord-types";
+import { Devs, ENDCORD_GUILD_ID, SUPPORT_CHANNEL_ID } from "@utils/constants";
+import { openInviteModal, sendMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { isPluginDev, tryOrElse } from "@utils/misc";
+import { openModal } from "@utils/modal";
 import { relaunch } from "@utils/native";
-import { onlyOnce } from "@utils/onlyOnce";
 import { makeCodeblock } from "@utils/text";
 import definePlugin from "@utils/types";
-import { checkForUpdates, isOutdated, update } from "@utils/updater";
-import { Channel, RenderModalProps } from "@endcord/discord-types";
-import { ChannelStore, ConfirmModal, GuildMemberStore, openModal, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, UserStore } from "@webpack/common";
+import { checkForUpdates, update } from "@utils/updater";
+import { Button, ChannelStore, ConfirmModal, Forms, GuildStore, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Toasts, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 import gitHash from "~git-hash";
 import plugins, { PluginMeta } from "~plugins";
 
 import SettingsPlugin from "./settings";
+const CodeBlockRe = /```js\n(.+?)```/s;
 
-const AdditionalAllowedChannelIds = [
-    "1024286218801926184", // Endcord > #bot-commands
-];
-
-const TrustedRolesIds = [
-    CONTRIB_ROLE_ID, // contributor
-    REGULAR_ROLE_ID, // regular
-    DONOR_ROLE_ID, // donor
-];
+const AsyncFunction = async function () { }.constructor;
 
 const ShowCurrentGame = getUserSettingLazy<boolean>("status", "showCurrentGame")!;
 
-const isSupportAllowedChannel = (channel: Channel) => channel.parent_id === SUPPORT_CATEGORY_ID || AdditionalAllowedChannelIds.includes(channel.id);
+const isSupportAllowedChannel = (channel: Channel) => channel.id === SUPPORT_CHANNEL_ID;
+
+// Yetkili Owner Hesapları: the accounts that may tell every client to check for an update
+const ENDCORD_OWNER_IDS = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
+
+// These messages get an update button and a button that runs code in everyone's client, so only Endcord's owners,
+// in Endcord's own server. A plugin developer's stolen account must not be enough
+const isEndcordStaffMessage = ({ channel, message }: Record<string, any>) => channel.guild_id === ENDCORD_GUILD_ID && ENDCORD_OWNER_IDS.includes(message.author?.id);
 
 async function forceUpdate() {
     const outdated = await checkForUpdates();
@@ -74,7 +62,7 @@ async function generateDebugInfoMessage() {
 
     const client = (() => {
         if (IS_DISCORD_DESKTOP) return `Discord Desktop v${DiscordNative.app.getVersion()}`;
-        if (IS_VESKTOP) return `Vesktop v${VesktopNative.app.getVersion()}`;
+        if (IS_VESKTOP) return `Endcord Desktop v${VesktopNative.app.getVersion()}`;
         if ("legcord" in window) return `Legcord v${window.legcord.version}`;
 
         // @ts-expect-error
@@ -102,9 +90,9 @@ async function generateDebugInfoMessage() {
     };
 
     let content = `>>> ${Object.entries(info).map(([k, v]) => `**${k}**: ${v}`).join("\n")}`;
-    content += "\n" + Object.entries(commonIssues)
+    content += `\n${Object.entries(commonIssues)
         .filter(([, v]) => v).map(([k]) => `⚠️ ${k}`)
-        .join("\n");
+        .join("\n")}`;
 
     return content.trim();
 }
@@ -118,7 +106,6 @@ function generatePluginList() {
     const enabledStockPlugins = enabledPlugins.filter(p => !PluginMeta[p].userPlugin);
     const enabledUserPlugins = enabledPlugins.filter(p => PluginMeta[p].userPlugin);
 
-
     let content = `**Enabled Plugins (${enabledStockPlugins.length}):**\n${makeCodeblock(enabledStockPlugins.join(", "))}`;
 
     if (enabledUserPlugins.length) {
@@ -128,36 +115,64 @@ function generatePluginList() {
     return content;
 }
 
-const checkForUpdatesOnce = onlyOnce(checkForUpdates);
-
 const settings = definePluginSettings({}).withPrivateSettings<{
     dismissedDevBuildWarning?: boolean;
+    dismissedDonateWarning?: boolean;
+    invitePromptShown?: boolean;
+    firstSeenAt?: number;
+    starPromptShown?: boolean;
+    devtoolsWarningRestored?: boolean;
 }>();
 
-function DevBuildConfirmModal(props: RenderModalProps) {
-    const s = settings.use(["dismissedDevBuildWarning"]);
+// Vanity invite, it doesn't expire
+const ENDCORD_INVITE_CODE = "endcord";
+const REPO_URL = "https://github.com/Endcord/Endcord";
+const STAR_PROMPT_DELAY = 7 * 24 * 60 * 60 * 1000;
+const UPDATE_COMMAND_COOLDOWN = 10 * 60 * 1000;
 
+let lastUpdateCommand = 0;
+
+// Asks once whether to join the Endcord server. Discord's own invite dialog does the joining, so nothing happens without a click
+async function promptServerInvite() {
+    if (settings.store.invitePromptShown) return;
+    settings.store.invitePromptShown = true;
+    if (GuildStore.getGuild(ENDCORD_GUILD_ID)) return;
+
+    try {
+        await openInviteModal(ENDCORD_INVITE_CODE, ENDCORD_GUILD_ID);
+    } catch (e) {
+        // Most likely offline; ask again on the next connection
+        settings.store.invitePromptShown = false;
+        new Logger("SupportHelper").error("Couldn't open the Endcord server invite", e);
+    }
+}
+
+// Asks for a GitHub star once, after Endcord has been in use for a week
+function promptStar() {
+    const s = settings.store;
+    if (s.starPromptShown) return;
+    s.firstSeenAt ??= Date.now();
+    if (Date.now() - s.firstSeenAt < STAR_PROMPT_DELAY) return;
+
+    s.starPromptShown = true;
+    showNotice(t("Enjoying Endcord? A star on GitHub helps more people find it."), t("Star on GitHub"), () => {
+        popNotice();
+        EndcordNative.native.openExternal(REPO_URL);
+    });
+}
+
+function RunSnippetModal({ code, onConfirm, ...props }: RenderModalProps & { code: string; onConfirm(): void; }) {
     return (
         <ConfirmModal
             {...props}
-            title="Hold on!"
-            confirmText="Understood"
+            title={t("Run this code?")}
+            confirmText={t("Run Snippet")}
+            cancelText={t("Cancel")}
             variant="primary"
-            checkboxProps={{
-                checked: s.dismissedDevBuildWarning === true,
-                onChange: checked => s.dismissedDevBuildWarning = checked
-            }}
+            onConfirm={onConfirm}
         >
-            <div>
-                <Paragraph>You are using a custom build of Endcord, which we do not provide support for!</Paragraph>
-
-                <Paragraph className={Margins.top8}>
-                    We only provide support for <Link href="https://endcord.dev/download">official builds</Link>.
-                    Either <Link href="https://endcord.dev/download">switch to an official build</Link> or figure your issue out yourself.
-                </Paragraph>
-
-                <Paragraph size="md" weight="bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Paragraph>
-            </div>
+            <Forms.FormText>{t("This code runs inside your Discord with full access to your account. Only continue if you understand what it does.")}</Forms.FormText>
+            {Parser.parse(makeCodeblock(code, "js"))}
         </ConfirmModal>
     );
 }
@@ -165,11 +180,18 @@ function DevBuildConfirmModal(props: RenderModalProps) {
 export default definePlugin({
     name: "SupportHelper",
     required: true,
-    description: "Helps us provide support to you",
+    description: t("Helps us provide support to you"),
     authors: [Devs.Ven],
     dependencies: ["UserSettingsAPI"],
 
     settings,
+
+    start() {
+        // NoDevtoolsWarning used to be forced on, which left it enabled in everyone's saved settings
+        if (settings.store.devtoolsWarningRestored) return;
+        settings.store.devtoolsWarningRestored = true;
+        Settings.plugins.NoDevtoolsWarning.enabled = false;
+    },
 
     patches: [{
         find: "#{intl::BEGINNING_DM}",
@@ -182,136 +204,134 @@ export default definePlugin({
     commands: [
         {
             name: "endcord-debug",
-            description: "Send Endcord debug info",
+            description: t("Send Endcord debug info"),
             predicate: ctx => isPluginDev(UserStore.getCurrentUser()?.id) || isSupportAllowedChannel(ctx.channel),
             execute: async () => ({ content: await generateDebugInfoMessage() })
         },
         {
             name: "endcord-plugins",
-            description: "Send Endcord plugin list",
+            description: t("Send Endcord plugin list"),
             predicate: ctx => isPluginDev(UserStore.getCurrentUser()?.id) || isSupportAllowedChannel(ctx.channel),
             execute: () => ({ content: generatePluginList() })
         }
     ],
 
     flux: {
-        async CHANNEL_SELECT({ channelId }) {
-            const isSupportChannel = channelId === SUPPORT_CHANNEL_ID || ChannelStore.getChannel(channelId)?.parent_id === SUPPORT_CATEGORY_ID;
-            if (!isSupportChannel) return;
+        CONNECTION_OPEN() {
+            // Give Discord a moment to finish loading before showing anything
+            setTimeout(() => {
+                promptServerInvite();
+                promptStar();
+            }, 5000);
+        },
 
-            const selfId = UserStore.getCurrentUser()?.id;
-            if (!selfId || isPluginDev(selfId)) return;
+        async MESSAGE_CREATE({ guildId, message }) {
+            if (guildId !== ENDCORD_GUILD_ID || !message || !message.content) return;
 
-            if (!IS_UPDATER_DISABLED) {
-                await checkForUpdatesOnce().catch(() => { });
+            if (ENDCORD_OWNER_IDS.includes(message.author?.id) && message.content.trim() === ".endcord-update") {
+                // Every client answers this message, so repeating it must not turn them into a flood of requests
+                if (IS_UPDATER_DISABLED || Date.now() - lastUpdateCommand < UPDATE_COMMAND_COOLDOWN) return;
+                lastUpdateCommand = Date.now();
 
-                if (isOutdated) {
-                    openModal(props => (
-                        <ConfirmModal
-                            {...props}
-                            variant="primary"
-                            title="Hold on!"
-                            confirmText="Update & Restart Now"
-                            cancelText="View Updates"
-                            onConfirm={forceUpdate}
-                            onCancel={() => openSettingsTabModal(UpdaterTab!)}
-                        >
-                            <div>
-                                <Paragraph>You are using an outdated version of Endcord! Chances are, your issue is already fixed.</Paragraph>
-                                <Paragraph className={Margins.top8}>
-                                    Please first update before asking for support!
-                                </Paragraph>
-                                <Paragraph className={Margins.top8}>
-                                    If you know what you're doing or cannot update, you can dismiss this prompt.
-                                </Paragraph>
-                            </div>
-                        </ConfirmModal>
-                    ));
-                    return;
-                }
-            }
+                try {
+                    if (!await checkForUpdates()) return;
 
-            const roles = GuildMemberStore.getSelfMember(ENDCORD_GUILD_ID)?.roles;
-            if (!roles || TrustedRolesIds.some(id => roles.includes(id))) return;
+                    // A stolen owner account must not be able to restart everyone, so this only makes clients
+                    // check sooner: installing and restarting stay with the user, as with the regular update check
+                    if (!Settings.autoUpdate) {
+                        showNotification({
+                            title: t("An Endcord update is available!"),
+                            body: t("Click here to view the update"),
+                            onClick: () => openSettingsTabModal(UpdaterTab!)
+                        });
+                        return;
+                    }
 
-            if (!IS_WEB && IS_UPDATER_DISABLED) {
-                openModal(props => (
-                    <ConfirmModal
-                        {...props}
-                        title="Hold on!"
-                        confirmText="OK"
-                        variant="primary"
-                    >
-                        <div>
-                            <Paragraph>You are using an externally updated Endcord version, which we do not provide support for!</Paragraph>
-                            <Paragraph className={Margins.top8}>
-                                Please either switch to an <Link href="https://endcord.dev/download">officially supported version of Endcord</Link>, or
-                                contact your package maintainer for support instead.
-                            </Paragraph>
-                        </div>
-                    </ConfirmModal>
-                ));
-                return;
-            }
-
-            if (!IS_STANDALONE && !settings.store.dismissedDevBuildWarning) {
-                openModal(props => <DevBuildConfirmModal {...props} />);
-                return;
+                    await update();
+                    showNotification({
+                        title: t("Endcord has been updated!"),
+                        body: t("Click here to restart"),
+                        onClick: relaunch
+                    });
+                } catch { }
             }
         }
     },
 
     renderMessageAccessory(props) {
-        if (props.message.endcordEmbeddedBy) return null;
-
         const buttons = [] as JSX.Element[];
 
         const shouldAddUpdateButton =
             !IS_UPDATER_DISABLED
-            && (
-                (props.channel.id === KNOWN_ISSUES_CHANNEL_ID) ||
-                (props.channel.parent_id === SUPPORT_CATEGORY_ID && props.message.author.id === ENDBOT_USER_ID)
-            )
+            && isEndcordStaffMessage(props)
             && props.message.content?.toLowerCase().includes("update");
 
         if (shouldAddUpdateButton) {
             buttons.push(
                 <Button
                     key="vc-update"
-                    variant="positive"
+                    color={Button.Colors.GREEN}
                     onClick={async () => {
                         try {
                             if (await forceUpdate())
-                                showToast({ text: "Success! Restarting...", variant: "success" });
+                                showToast(t("Success! Restarting..."), Toasts.Type.SUCCESS);
                             else
-                                showToast({ text: "Already up to date!" });
+                                showToast(t("Already up to date!"), Toasts.Type.MESSAGE);
                         } catch (e) {
                             new Logger(this.name).error("Error while updating:", e);
-                            showToast({ text: "Failed to update :(", variant: "critical" });
+                            showToast(t("Failed to update :("), Toasts.Type.FAILURE);
                         }
                     }}
                 >
-                    Update Now
+                    {t("Update Now")}
                 </Button>
             );
         }
 
-        if (props.channel.parent_id === SUPPORT_CATEGORY_ID && PermissionStore.can(PermissionsBits.SEND_MESSAGES, props.channel)) {
+        if (props.channel.id === SUPPORT_CHANNEL_ID && PermissionStore.can(PermissionsBits.SEND_MESSAGES, props.channel)) {
             if (props.message.content.includes("/endcord-debug") || props.message.content.includes("/endcord-plugins")) {
                 buttons.push(
                     <Button
                         key="vc-dbg"
-                        variant="secondary"
+                        color={Button.Colors.PRIMARY}
                         onClick={async () => sendMessage(props.channel.id, { content: await generateDebugInfoMessage() })}
                     >
-                        Run /endcord-debug
+                        {t("Run /endcord-debug")}
                     </Button>,
                     <Button
                         key="vc-plg-list"
-                        variant="secondary"
+                        color={Button.Colors.PRIMARY}
                         onClick={async () => sendMessage(props.channel.id, { content: generatePluginList() })}
                     >
-                        Run /endcord-plugins
+                        {t("Run /endcord-plugins")}
+                    </Button>
+                );
+            }
+        }
+
+        if (isEndcordStaffMessage(props)) {
+            const match = CodeBlockRe.exec(props.message.content ?? "");
+            if (match) {
+                buttons.push(
+                    <Button
+                        key="vc-run-snippet"
+                        onClick={() => openModal(modalProps => (
+                            <RunSnippetModal
+                                {...modalProps}
+                                code={match[1]}
+                                onConfirm={async () => {
+                                    try {
+                                        await AsyncFunction(match[1])();
+                                        showToast("Success!", Toasts.Type.SUCCESS);
+                                    } catch (e) {
+                                        new Logger(this.name).error("Error while running snippet:", e);
+                                        showToast(t("Failed to run snippet :("), Toasts.Type.FAILURE);
+                                    }
+                                }}
+                            />
+                        ))}
+                    >
+                        {t("Run Snippet")}
                     </Button>
                 );
             }
@@ -329,11 +349,36 @@ export default definePlugin({
 
         return (
             <Card variant="warning" className={Margins.top8} defaultPadding>
-                Please do not private message Endcord plugin developers for support!
+                {t("Please do not private message Endcord plugin developers for support!")}
                 <br />
-                Instead, use the Endcord support channel: {Parser.parse("https://discord.com/channels/1015060230222131221/1026515880080842772")}
+                {t("Instead, use the Endcord support channel:")}{" "}{Parser.parse(`https://discord.com/channels/${ENDCORD_GUILD_ID}/${SUPPORT_CHANNEL_ID}`)}
                 {!ChannelStore.getChannel(SUPPORT_CHANNEL_ID) && " (Click the link to join)"}
             </Card>
         );
     }, { noop: true }),
 });
+
+interface ClientData {
+    name: string;
+    version: string;
+    dev?: boolean;
+    hash?: string | null;
+    shortHash?: string | null;
+}
+
+export function detectClient(): ClientData {
+    if (typeof DiscordNative !== "undefined" && DiscordNative?.app?.getVersion) {
+        return { name: t("Discord Desktop"), version: DiscordNative.app.getVersion() };
+    }
+    if (IS_VESKTOP && VesktopNative?.app?.getVersion) {
+        const hash = tryOrElse(() => VesktopNative.app.getGitHash?.() ?? null, null);
+        return {
+            name: "Endcord Desktop",
+            version: VesktopNative.app.getVersion(),
+            dev: tryOrElse(() => VesktopNative.app.isDevBuild?.() ?? false, false),
+            hash,
+            shortHash: hash?.slice(0, 7) ?? null
+        };
+    }
+    return { name: "Web", version: "1.0.0" };
+}

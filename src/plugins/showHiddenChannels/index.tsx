@@ -1,30 +1,19 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { Channel, Role } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Channel, Role } from "@endcord/discord-types";
 import { findCssClassesLazy } from "@webpack";
 import { ChannelStore, PermissionsBits, PermissionStore, Tooltip } from "@webpack/common";
 
@@ -72,7 +61,7 @@ export default definePlugin({
     name: "ShowHiddenChannels",
     description: "Show channels that you do not have access to view.",
     tags: ["Servers", "Utility"],
-    authors: [Devs.BigDuck, Devs.AverageReactEnjoyer, Devs.D3SOX, Devs.Ven, Devs.Nuckyz, Devs.Nickyux, Devs.Rini],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
@@ -88,7 +77,9 @@ export default definePlugin({
                 // Do not check for unreads when selecting the render level if the channel is hidden
                 {
                     match: /(?<=&&)(?=!\i\.\i\.hasUnread\(this\.record\.id\))/,
-                    replace: "$self.isHiddenChannel(this.record)||"
+                    replace: "$self.isHiddenChannel(this.record)||",
+                    // CleanerChannelGroups takes this whole check out, which leaves nothing for this to do
+                    noWarn: true
                 },
                 // Make channels we dont have access to be the same level as normal ones
                 {
@@ -410,6 +401,13 @@ export default definePlugin({
             ]
         },
         {
+            find: "2026-02-private-channel-hiding",
+            replacement: {
+                match: /(?<=enableObfuscation|enableIntegrityCheck):!0/g,
+                replace: ":false"
+            }
+        },
+        {
             // Make the chat input bar channel list contain hidden channels
             find: ",queryStaticRouteChannels(",
             replacement: [
@@ -434,11 +432,11 @@ export default definePlugin({
             },
         },
         {
-            find: ",openChatWithoutConnecting:",
+            find: 'getConfig({location:"channel_mention"})',
             replacement: {
                 // Show inside voice channel instead of trying to join them when clicking on a channel mention
-                match: /(?<=getChannel\(\i\);if\(null!=(\i))(?=&&.{0,100}?selectVoiceChannel)/,
-                replace: (_, channel) => `&&!$self.isHiddenChannel(${channel})`
+                match: /(?<=getChannel\(\i\);if\(null!=(\i)).{0,200}?return void (?=\i\.default\.selectVoiceChannel)/,
+                replace: (m, channel) => `${m}!$self.isHiddenChannel(${channel})&&`
             }
         },
         {
@@ -477,13 +475,6 @@ export default definePlugin({
             replacement: {
                 match: /(?=function (\i)\(\i\){let{channel:.{0,200}?getSortedRoles\()/,
                 replace: "$self.ChannelBeginHeader=$1;"
-            }
-        },
-        {
-            find: "2026-02-private-channel-hiding",
-            replacement: {
-                match: /(?<=enableObfuscation|enableIntegrityCheck):!0/g,
-                replace: ":false"
             }
         }
     ],
@@ -566,7 +557,7 @@ export default definePlugin({
     ), { noop: true }),
 
     HiddenChannelIcon: ErrorBoundary.wrap(() => (
-        <Tooltip text="Hidden Channel">
+        <Tooltip text={t("Hidden Channel")}>
             {({ onMouseLeave, onMouseEnter }) => (
                 <svg
                     onMouseLeave={onMouseLeave}

@@ -1,220 +1,98 @@
 # Endcord
 
-A Discord client mod, forked from [Vencord](https://github.com/Vendicated/Vencord) and rebranded end to end.
-Everything that ships as `Endcord` in this repository — package names, globals, build output, data directory,
-user plugin folder, installer, UI strings — is Endcord. No leftover `vencord` identifiers.
+Endcord is a desktop client mod for Discord. It loads with the official app and adds plugins, themes, and a settings panel inside Discord.
 
-```
-Data dir      : %appdata%/Endcord        (~/.config/Endcord on Linux)
-User plugins  : <data dir>/userplugins
-Build output  : dist/
-```
+Endcord is a fork of [Vencord](https://github.com/Vendicated/Vencord)
 
-## Install (Windows, one click)
+[Website](https://endcord.com) · [Download](https://endcord.com/download) · [Discord](https://discord.gg/endcord)
 
-Double-click `inject.bat`. It checks dependencies, builds, injects into every installed Discord
-channel it finds, copies the bundled theme into `%appdata%/Endcord/themes` and enables it.
+## Install
 
-```
-inject.bat            full: deps + build + inject + theme
-inject.bat quick      inject + theme only (no rebuild)
-inject.bat uninstall  remove the injection
-```
+Close Discord completely before installing, then open it again when the installer finishes.
 
-Then restart Discord. The window title reads **Endcord**, the theme is **Endcord Soft**.
+### Windows
 
-Injection is a folder (`resources/app`) — Electron loads it before `app.asar`, so Discord's own
-`app.asar` is never modified and a Discord update cannot corrupt the install. Either way, re-run
-`inject.bat` after a Discord update to point the loader at the new `app-x.y.z` folder.
+Windows 10 and 11. Stable, PTB, and Canary.
 
-## Install (from source)
+1. Download [EndcordInstaller.exe](https://endcord.com/EndcordInstaller.exe).
+2. If the browser blocks the file, use [EndcordInstaller.zip](https://endcord.com/EndcordInstaller.zip) instead. It contains the same installer.
+3. Run the installer and start Discord.
 
-```bash
-corepack pnpm install
-corepack pnpm build --standalone   # build only
-node scripts/install-desktop.mjs --install    # inject (add --all for PTB/Canary too)
-node scripts/install-theme.mjs                # theme + default plugins
+### macOS and Linux
+
+macOS: Discord, PTB, or Canary in Applications. Linux: the official `.deb`, `.tar.gz`, or Flatpak; Snap is not supported.
+
+Run this in Terminal:
+
+```sh
+sh -c "$(curl -fsSL https://endcord.com/install.sh)"
 ```
 
-After injecting, start Discord. Settings → Endcord Settings to configure plugins.
+The installer downloads Endcord, checks every file against the release checksums, and patches the Discord installs you pick.
 
-## What's in the box
+On macOS, the first run may stop with "macOS blocked the change". Open **System Settings > Privacy & Security > App Management**, turn on Terminal, reopen Terminal, and run the command again. When Discord updates itself on macOS, run the installer again and choose **Repair Endcord**.
 
-Everything upstream Vencord ships, plus three plugins written for this fork:
+## Uninstall
 
-### EndcordBadges — custom badges, with icons
+On Windows, open the installer again and restore the vanilla client.
 
-Give any user a badge with an icon and colour of your choice. Fully local: badges live in your
-Endcord settings, are rendered client-side on profiles, and never leave your machine.
+On macOS and Linux, run the installer again and choose **Uninstall Endcord**. Your Endcord settings stay on disk in case you come back.
 
-* 22 Discord rozeti (Active Developer, Early Supporter, Nitro, HypeSquad, Bug Hunter, Boosting
-  1/2/3/6/9/12/15/18/24 months, Staff, Certified Moderator, Partnered Server Owner,
-  Early Verified Developer) — PNG olarak gömülür, çalışma anında ağ isteği yok.
-* 20 sade SVG ikon (taç, yıldız, kalp, elmas, alev, şimşek, yaprak, ay, kafatası, kedi,
-  kalkan, parıltı, hayalet, roket, kılıç, kahve, müzik, pati, göz, şef) — renk seçiciyle boyanır.
-* Herhangi bir `https://` veya `data:` görsel URL'i özel ikon olarak da kullanılabilir.
-* Per-badge colour picker plus a preset palette.
-* Assign badges by Discord user ID (comma separated) or by searching the username in the editor.
-  `*` gives the badge to everyone.
-* **Right-click a user → "Endcord Rozeti Ver"** opens a picker: give or take any badge, or create
-  a new one for that user on the spot.
-* Optional display in the member list and next to names in chat.
-* Export/import as JSON so you can back up or share a badge set.
+## Build
 
-How to use:
+Node.js 22 or newer, and [pnpm](https://pnpm.io).
 
-1. Settings → Plugins → EndcordBadges.
-2. Press **Add badge**, name it, pick an icon and colour.
-3. Press **Add me** to put your own ID in (or paste IDs manually).
-4. Open your profile — the badge is there.
-
-Or right-click any user and pick **Endcord Rozeti Ver**.
-
-Badges are client-side only. Other people only see them if they run Endcord with the same badge set.
-
-### Oneko — the cursor cat
-
-A little cat that chases your mouse around the window. Size, speed, colour and follow distance
-are configurable. Pure DOM/CSS, no patches.
-
-### AccountAge — snowflake account age
-
-Adds an entry to the user context menu showing when an account was created (decoded from the
-snowflake ID), plus how old it is. Click it to copy the ISO timestamp.
-
-### EndcordQuickCopy — ID / mention / creation date
-
-Right-click any user and copy their ID, their `@mention` or their account creation date in one
-click.
-
-### EndcordGlass — soft screen transitions
-
-Every view (channel switch, guild pages, modals, popouts) fades in softly instead of popping —
-duration is a slider. The optional backdrop blur is **off by default**; raise the blur slider if
-you want the frosted look back.
-
-### EndcordEyeCare — less strain, less icon
-
-Discord dialled down for long sessions:
-
-* animations and transitions cut to a minimum (the standard reduced-motion recipe) — the single
-  biggest CPU/GPU win
-* icons, emoji and avatars scaled down, so the interface reads quieter
-* softer text ramp, dimmed separators, no drop shadows
-* performance mode drops backdrop filters, shadows and server background images
-* optional `content-visibility` for very long channels
-
-### EndcordCustomProfile — fake profile, Endcord-only
-
-Fake display name, fake badges and a fake account creation date.
-
-* the **Endcord logo in the top right** opens the panel — name, date, badges and sharing, all in
-  one readable place
-* every badge from `github.com/merlinfuchs/discord-badges` is selectable
-* the fake creation date also shows in the AccountAge context menu entry
-* **sharing**: the profile is written into your bio as invisible characters (27 invisible code
-  points, ~4.75 bits each). A normal Discord client sees an empty bio; an Endcord client decodes
-  it and renders your fake name, badges and date. So the fake identity is only ever seen by people
-  running Endcord
-
-### EndcordAppearance — live glass tuning
-
-Sliders for panel opacity and backdrop blur plus a hex field for the accent colour. The theme
-file is never touched; the plugin overrides the theme's variables live.
-
-### EndcordTitle — window and tab name
-
-Keeps Discord's window title (taskbar, alt-tab, browser tab) as **Endcord** instead of "Discord".
-The unread counter is preserved — `(3) Endcord`. Text and counter are both configurable.
-
-## Endcord Soft theme
-
-`themes/endcord-soft.theme.css` — a quiet blue-black glass theme built for Windows 11:
-
-* translucent panels over the desktop, hairline borders instead of heavy outlines
-* single muted accent (`#6c8cff`) instead of Discord's saturated brand blue
-* low-contrast, eye-friendly text ramp; softer scrollbars and selection colour
-* every surface derives from one alpha (`--ecs-alpha`), so the whole theme can be turned
-  more or less transparent in one place
-
-**The theme is applied before Discord's own CSS loads.** The preload script asks the main
-process for the enabled themes and injects them into `document.head` before the first paint, so
-there is no flash of the default theme while Discord boots.
-
-**Full transparency.** The installer sets `transparent: true` and `windowsMaterial: "acrylic"` in
-the settings file, so the window itself is see-through and Win11's acrylic blur shows behind the
-panels — including the empty space when the window is not maximised. Toggle it any time in
-Endcord Settings → "Enable window transparency" / "Background Material".
-
-It is copied into the themes folder and enabled by `inject.bat` / `scripts/install-theme.mjs`.
-Tweak the `--ecs-*` tokens at the top of the file to shift the tone, or use the
-**EndcordAppearance** plugin to change opacity, blur and accent live.
-
-## Notes on Kernixcord
-
-A handful of plugin *ideas* were taken from
-[kanvekin/Kernixcord](https://github.com/kanvekin/Kernixcord) as reference only — badges
-(`BadgesSelector`/`clientSideBadges`/`showBadgesInChat`), the cursor cat (`oneko`) and the user ID
-tool (`idTranslater`). None of its code was imported, copied or vendored: this fork treats that
-repository as untrusted, so every plugin here was written from scratch against Endcord's own
-plugin APIs. That is why there is no remote plugin loader in this build — loading arbitrary code
-from an untrusted repository is exactly the attack surface worth avoiding.
-
-**Every plugin Kernixcord ships is already in Endcord.** Kernixcord is a Vencord fork: its plugin
-list is Vencord's list, and Endcord bundles all of it. The only Kernixcord-exclusive piece is
-`kernixcordRemoteLoader`, which fetches a manifest from GitHub and injects the URLs it returns as
-`<script>` tags — i.e. it executes whatever the network hands it, at runtime, in the renderer. That
-specific mechanism is not going into this build.
-
-The convenience it offered is available here in a shape you can inspect: drop a plugin folder in
-and it gets compiled into the build, from disk, with nothing fetched at runtime.
-
-```bash
-node scripts/add-plugin.mjs <eklenti-klasörü> [--rebuild]
-node scripts/add-plugin.mjs --list
-node scripts/add-plugin.mjs --remove <ad>
+```sh
+git clone https://github.com/Endcord/Endcord.git
+cd Endcord
+pnpm install
+pnpm build
+pnpm inject
 ```
 
-Plugins land in `src/userplugins/` (a first-class folder the build already globs), so you can read
-every line that is about to run before you build.
+`pnpm uninject` removes the local install. `pnpm watch` rebuilds while you edit.
 
-## Structure
+## Plugins
 
-```
-src/
-  api/            public plugin APIs (badges, chat buttons, context menus, settings, ...)
-  components/     shared React components
-  main/           Electron main process (patcher, CSP, updater, settings)
-  plugins/        every bundled plugin
-  plugins/endcordBadges/   icons.tsx · store.ts · settings.tsx · picker.tsx · index.tsx · styles.css
-  plugins/endcordAppearance/
-  plugins/endcordCustomProfile/   payload.ts · profile.ts · settings.tsx · index.tsx
-  plugins/endcordEyeCare/
-  plugins/endcordGlass/
-  plugins/endcordQuickCopy/
-  plugins/endcordTitle/
-  plugins/oneko/
-  plugins/accountAge/    index.tsx · overrides.ts
-  userplugins/      drop-in plugins compiled into the build (see scripts/add-plugin.mjs)
-  webpack/        module finder + patcher
-packages/         @endcord/discord-types, @endcord/types
-scripts/          build pipeline + installer
-  install-desktop.mjs   Discord injector (asar swap, original kept as _app.asar)
-  install-theme.mjs     themes + default plugin enablement
-  add-plugin.mjs        install a plugin folder into src/userplugins
-  generateBadgeIcons.mjs  PNG rozetleri data URI tablosuna çevirir
-themes/           bundled themes (Endcord Soft)
-assets/           bundled badge PNGs (github.com/merlinfuchs/discord-badges)
-inject.bat        Windows one-click install
-```
+Endcord ships with 500 built-in plugins, with every plugin and setting available in English, Turkish, Russian, Spanish and French. Turn them on from the Plugins tab in Discord's settings.
 
-## Adding your own plugin
+Plugin ideas and fixes go through pull requests. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening one.
 
-Drop a folder into `src/plugins/<name>/` (or `<data dir>/userplugins/<name>/` for a private one)
-with an `index.tsx` exporting `definePlugin({ ... })`. See `.skills/authoring-plugins.md` and any
-existing plugin for the shape.
+## Performance
+
+Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in the same memory: within 2% of Vencord and below Equicord on every memory measure, with the lowest idle CPU of the three. Plugins are only loaded when you turn them on.
+
+| | Endcord | Vencord | Equicord | Vanilla Discord |
+|---|---:|---:|---:|---:|
+| Plugins | **500** | 178 | 381 | – |
+| Total RAM | 698 MB | **687 MB** | 727 MB | 672 MB |
+| Renderer RAM | 401 MB | **397 MB** | 415 MB | 366 MB |
+| JS heap after GC | 107 MB | **106 MB** | 110 MB | 98 MB |
+| Idle CPU (one core) | **1.80%** | 1.87% | 1.88% | 1.51% |
+| Launch to usable | 3.75 s | **3.42 s** | 3.43 s | 3.38 s |
+
+Medians of 6 cold launches each, default settings, same Discord Stable build, Intel Core i5-12400F with 32 GB RAM on Windows 10. Bold marks the best of the three mods. See the [benchmark](benchmark/README.md) for the method, every run and a script to run it yourself.
+
+## Endcord Desktop
+
+Endcord's own app: Discord in an Endcord window of its own, with every Endcord plugin, setting and theme, and no Discord desktop app to patch. It's for when Discord's desktop app is no longer the Electron one mods can load into. It runs Discord's web app, the one in your browser, and Discord sees it as that. Like any client mod it's against Discord's terms, the same as the mod itself.
+
+- A tray icon, closing to the tray, and starting with Windows (all in the tray menu)
+- Unread mentions on the taskbar, notifications, and spell-checked text fields with cut, copy and paste
+- Screen sharing with Endcord's own picker. The computer's sound can go along, without your call's voices
+- Updates from Endcord's signed releases, the same way the mod gets them
+- Your Endcord settings and themes come along on its first start, as a copy
+
+Download `EndcordDesktop-win32-x64.zip` from [endcord.com/download](https://endcord.com/download), unzip it anywhere you like, and run `EndcordDesktop.exe`. It adds itself to the Start menu. To build it yourself: `pnpm buildDesktopApp`, which puts it in `dist/EndcordDesktop-<platform>-<arch>`. Windows is what it's tested on; the same build runs on Linux and macOS but hasn't been tried there yet.
+
+Not there yet: push to talk while Discord is in the background, and showing the game you play.
+
+## Credits
+
+Endcord is built on [Vencord](https://github.com/Vendicated/Vencord) by Vendicated and its contributors. Most of its plugins come from [Equicord](https://github.com/Equicord/Equicord), by the Equicord contributors: Endcord includes every one of them. The code that came from both keeps its authors and its copyright notices. Endcord Desktop is Endcord's own code, written with [Vesktop](https://github.com/Vencord/Vesktop) as the example of what a desktop app around Discord's web app needs, and [arRPC](https://github.com/OpenAsar/arrpc) is what the game activity plugin talks to. Thank you all.
 
 ## License
 
-GPL-3.0-or-later. Endcord is a fork of Vencord, Copyright (c) 2022 Vendicated and contributors;
-the original copyright notices are kept in every file.
+[GPL-3.0-or-later](LICENSE), as Vencord's code requires of everything built on it. Copyright © Vendicated and the Vencord contributors, the Equicord contributors, and the Endcord team. Each file's header names the year it was first written.
+
+Endcord is not affiliated with Discord Inc.

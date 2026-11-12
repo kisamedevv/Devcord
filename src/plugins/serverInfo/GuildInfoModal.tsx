@@ -6,16 +6,14 @@
 
 import "./styles.css";
 
-import { Heading } from "@components/Heading";
-import { Margins } from "@components/margins";
-import { Paragraph } from "@components/Paragraph";
+import { Guild, RenderModalProps, User } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym, openImageModal, openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
-import { Guild, RenderModalProps, User } from "@endcord/discord-types";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
-import { FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, IconUtils, Modal, openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, TabBar, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
+import { FluxDispatcher, Forms, GuildChannelStore, GuildMemberStore, GuildRoleStore, IconUtils, Modal,openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, TabBar, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
 
 const IconClasses = findCssClassesLazy("icon", "acronym", "childWrapper");
 const FriendRow = findComponentByCodeLazy("discriminatorClass:", ".isMobileOnline", "avatarSrc:");
@@ -96,8 +94,8 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
                     }
 
                     <div className={cl("name-and-description")}>
-                        <Heading className={cl("name")}>{guild.name}</Heading>
-                        {guild.description && <Paragraph>{guild.description}</Paragraph>}
+                        <Forms.FormTitle tag="h5" className={cl("name")}>{guild.name}</Forms.FormTitle>
+                        {guild.description && <Forms.FormText>{guild.description}</Forms.FormText>}
                     </div>
                 </div>
             }
@@ -125,25 +123,24 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
                     className={cl("tab", { selected: currentTab === Tabs.ServerInfo })}
                     id={Tabs.ServerInfo}
                 >
-                    Server Info
-                </TabBar.Item>
+                    {t("Server Info")}</TabBar.Item>
                 <TabBar.Item
                     className={cl("tab", { selected: currentTab === Tabs.Friends })}
                     id={Tabs.Friends}
                 >
-                    Friends{friendCount !== undefined ? ` (${friendCount})` : ""}
+                    {t("Friends")}{friendCount !== undefined ? ` (${friendCount})` : ""}
                 </TabBar.Item>
                 <TabBar.Item
                     className={cl("tab", { selected: currentTab === Tabs.BlockedUsers })}
                     id={Tabs.BlockedUsers}
                 >
-                    Blocked Users{blockedCount !== undefined ? ` (${blockedCount})` : ""}
+                    {t("Blocked Users")}{blockedCount !== undefined ? ` (${blockedCount})` : ""}
                 </TabBar.Item>
                 <TabBar.Item
                     className={cl("tab", { selected: currentTab === Tabs.IgnoredUsers })}
                     id={Tabs.IgnoredUsers}
                 >
-                    Ignored Users{ignoredCount !== undefined ? ` (${ignoredCount})` : ""}
+                    {t("Ignored Users")}{ignoredCount !== undefined ? ` (${ignoredCount})` : ""}
                 </TabBar.Item>
             </TabBar>
 
@@ -163,7 +160,7 @@ function Owner(guildId: string, owner: User) {
     const ownerAvatarUrl =
         guildAvatar
             ? IconUtils.getGuildMemberAvatarURLSimple({
-                userId: owner!.id,
+                userId: owner.id,
                 avatar: guildAvatar,
                 guildId,
                 canAnimate: true
@@ -209,7 +206,7 @@ function ServerInfoTab({ guild }: GuildProps) {
         <div className={cl("info")}>
             {Object.entries(Fields).map(([name, node]) =>
                 <div className={cl("server-info-pair")} key={name}>
-                    <Heading className={Margins.bottom8}>{name}</Heading>
+                    <Forms.FormTitle tag="h5">{name}</Forms.FormTitle>
                     {typeof node === "string" ? <span>{node}</span> : node}
                 </div>
             )}

@@ -1,35 +1,23 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isPluginEnabled } from "@api/PluginManager";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Heading } from "@components/Heading";
-import { Paragraph } from "@components/Paragraph";
+import type { Channel, RoleOrUserPermission } from "@endcord/discord-types";
 import PermissionsViewerPlugin from "@plugins/permissionsViewer";
 import openRolesAndUsersPermissionsModal from "@plugins/permissionsViewer/components/RolesAndUsersPermissions";
 import { sortPermissionOverwrites } from "@plugins/permissionsViewer/utils";
-import { cl, settings } from "@plugins/showHiddenChannels";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { formatDurationVerbose } from "@utils/text";
-import type { Channel, RoleOrUserPermission } from "@endcord/discord-types";
 import { findByPropsLazy, findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
-import { EmojiStore, FluxDispatcher, GuildMemberStore, GuildStore, Parser, PermissionsBits, PermissionStore, SnowflakeUtils, Timestamp, Tooltip, useEffect, useState } from "@webpack/common";
+import { EmojiStore, FluxDispatcher, GuildMemberStore, GuildStore, Parser, PermissionsBits, PermissionStore, SnowflakeUtils, Text, Timestamp, Tooltip, useEffect, useState } from "@webpack/common";
 import { ComponentType } from "react";
+
+import { cl, settings } from "..";
 
 const enum SortOrderTypes {
     LATEST_ACTIVITY = 0,
@@ -156,9 +144,9 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                 <img className={cl("logo")} src={HiddenChannelLogo} />
 
                 <div className={cl("heading-container")}>
-                    <Heading tag="h1" size="xxl">This is a {!PermissionStore.can(PermissionsBits.VIEW_CHANNEL, channel) ? "hidden" : "locked"} {ChannelTypesToChannelNames[type]} channel</Heading>
+                    <Text variant="heading-xxl/bold">{t("This is a")}{" "}{!PermissionStore.can(PermissionsBits.VIEW_CHANNEL, channel) ? "hidden" : "locked"} {ChannelTypesToChannelNames[type]} channel</Text>
                     {channel.isNSFW() &&
-                        <Tooltip text="NSFW">
+                        <Tooltip text={t("NSFW")}>
                             {({ onMouseLeave, onMouseEnter }) => (
                                 <svg
                                     onMouseLeave={onMouseLeave}
@@ -178,10 +166,9 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                 </div>
 
                 {(!channel.isGuildVoice() && !channel.isGuildStageVoice()) && (
-                    <Paragraph size="lg">
-                        You can not see the {channel.isForumChannel() ? "posts" : "messages"} of this channel.
-                        {channel.isForumChannel() && topic && topic.length > 0 && " However you may see its guidelines:"}
-                    </Paragraph>
+                    <Text variant="text-lg/normal">
+                        {t("You can not see the")}{" "}{channel.isForumChannel() ? "posts" : "messages"}{" "}{t("of this channel.")}{channel.isForumChannel() && topic && topic.length > 0 && " However you may see its guidelines:"}
+                    </Text >
                 )}
 
                 {channel.isForumChannel() && topic && topic.length > 0 && (
@@ -191,46 +178,46 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                 )}
 
                 {lastMessageId &&
-                    <Paragraph size="md">
-                        Last {channel.isForumChannel() ? "post" : "message"} created:
+                    <Text variant="text-md/normal">
+                        {t("Last")}{" "}{channel.isForumChannel() ? "post" : "message"} created:
                         <Timestamp timestamp={new Date(SnowflakeUtils.extractTimestamp(lastMessageId))} />
-                    </Paragraph>
+                    </Text>
                 }
                 {lastPinTimestamp &&
-                    <Paragraph size="md">Last message pin: <Timestamp timestamp={new Date(lastPinTimestamp)} /></Paragraph>
+                    <Text variant="text-md/normal">{t("Last message pin:")}{" "}<Timestamp timestamp={new Date(lastPinTimestamp)} /></Text>
                 }
                 {(rateLimitPerUser ?? 0) > 0 &&
-                    <Paragraph size="md">Slowmode: {formatDurationVerbose(rateLimitPerUser!, "seconds")}</Paragraph>
+                    <Text variant="text-md/normal">{t("Slowmode:")}{" "}{formatDurationVerbose(rateLimitPerUser, "seconds")}</Text>
                 }
                 {(defaultThreadRateLimitPerUser ?? 0) > 0 &&
-                    <Paragraph size="md">
-                        Default thread slowmode: {formatDurationVerbose(defaultThreadRateLimitPerUser!, "seconds")}
-                    </Paragraph>
+                    <Text variant="text-md/normal">
+                        {t("Default thread slowmode:")}{" "}{formatDurationVerbose(defaultThreadRateLimitPerUser!, "seconds")}
+                    </Text>
                 }
                 {((channel.isGuildVoice() || channel.isGuildStageVoice()) && bitrate != null) &&
-                    <Paragraph size="md">Bitrate: {bitrate} bits</Paragraph>
+                    <Text variant="text-md/normal">{t("Bitrate:")}{" "}{bitrate} bits</Text>
                 }
                 {rtcRegion !== undefined &&
-                    <Paragraph size="md">Region: {rtcRegion ?? "Automatic"}</Paragraph>
+                    <Text variant="text-md/normal">{t("Region:")}{" "}{rtcRegion ?? "Automatic"}</Text>
                 }
                 {(channel.isGuildVoice() || channel.isGuildStageVoice()) &&
-                    <Paragraph size="md">Video quality mode: {VideoQualityModesToNames[videoQualityMode ?? VideoQualityModes.AUTO]}</Paragraph>
+                    <Text variant="text-md/normal">{t("Video quality mode:")}{" "}{VideoQualityModesToNames[videoQualityMode ?? VideoQualityModes.AUTO]}</Text>
                 }
                 {(defaultAutoArchiveDuration ?? 0) > 0 &&
-                    <Paragraph size="md">
-                        Default inactivity duration before archiving {channel.isForumChannel() ? "posts" : "threads"}:
-                        {" " + formatDurationVerbose(defaultAutoArchiveDuration!, "minutes")}
-                    </Paragraph>
+                    <Text variant="text-md/normal">
+                        {t("Default inactivity duration before archiving")}{" "}{channel.isForumChannel() ? "posts" : "threads"}:
+                        {` ${formatDurationVerbose(defaultAutoArchiveDuration!, "minutes")}`}
+                    </Text>
                 }
                 {defaultForumLayout != null &&
-                    <Paragraph size="md">Default layout: {ForumLayoutTypesToNames[defaultForumLayout]}</Paragraph>
+                    <Text variant="text-md/normal">{t("Default layout:")}{" "}{ForumLayoutTypesToNames[defaultForumLayout]}</Text>
                 }
                 {defaultSortOrder != null &&
-                    <Paragraph size="md">Default sort order: {SortOrderTypesToNames[defaultSortOrder]}</Paragraph>
+                    <Text variant="text-md/normal">{t("Default sort order:")}{" "}{SortOrderTypesToNames[defaultSortOrder]}</Text>
                 }
                 {defaultReactionEmoji != null &&
                     <div className={cl("default-emoji-container")}>
-                        <Paragraph size="md">Default reaction emoji:</Paragraph>
+                        <Text variant="text-md/normal">{t("Default reaction emoji:")}</Text>
                         {Parser.defaultRules[defaultReactionEmoji.emojiName ? "emoji" : "customEmoji"].react({
                             name: defaultReactionEmoji.emojiName
                                 ? EmojiParser.convertSurrogateToName(defaultReactionEmoji.emojiName)
@@ -244,11 +231,11 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                     </div>
                 }
                 {channel.hasFlag(ChannelFlags.REQUIRE_TAG) &&
-                    <Paragraph size="md">Posts on this forum require a tag to be set.</Paragraph>
+                    <Text variant="text-md/normal">{t("Posts on this forum require a tag to be set.")}</Text>
                 }
                 {availableTags && availableTags.length > 0 &&
                     <div className={cl("tags-container")}>
-                        <Heading tag="h2">Available tags:</Heading>
+                        <Text variant="text-lg/bold">{t("Available tags:")}</Text>
                         <div className={cl("tags")}>
                             {availableTags.map(tag => <TagComponent tag={tag} key={tag.id} />)}
                         </div>
@@ -257,7 +244,7 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                 <div className={cl("allowed-users-and-roles-container")}>
                     <div className={cl("allowed-users-and-roles-container-title")}>
                         {isPluginEnabled(PermissionsViewerPlugin.name) && (
-                            <Tooltip text="Permission Details">
+                            <Tooltip text={t("Permission Details")}>
                                 {({ onMouseLeave, onMouseEnter }) => (
                                     <button
                                         onMouseLeave={onMouseLeave}
@@ -276,7 +263,7 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                                 )}
                             </Tooltip>
                         )}
-                        <Heading tag="h2">Allowed users and roles:</Heading>
+                        <Text variant="text-lg/bold">{t("Allowed users and roles:")}</Text>
                         <Tooltip text={defaultAllowedUsersAndRolesDropdownState ? "Hide Allowed Users and Roles" : "View Allowed Users and Roles"}>
                             {({ onMouseLeave, onMouseEnter }) => (
                                 <button

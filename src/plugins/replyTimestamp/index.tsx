@@ -7,9 +7,9 @@
 import "./style.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import type { Message } from "@endcord/discord-types";
 import { findCssClassesLazy } from "@webpack";
 import { DateUtils, Timestamp } from "@webpack/common";
 import type { HTMLAttributes } from "react";
@@ -59,7 +59,7 @@ export default definePlugin({
     name: "ReplyTimestamp",
     description: "Shows a timestamp on replied-message previews",
     tags: ["Chat", "Appearance"],
-    authors: [Devs.Kyuuhachi],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

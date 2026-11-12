@@ -1,26 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isSettingDisabled } from "@api/PluginManager";
 import { OptionType, PluginSettingBigIntDef, PluginSettingNumberDef } from "@utils/types";
 import { React, TextInput, useState } from "@webpack/common";
 
-import { resolveError, SettingProps, SettingsSection, useSettingState } from "./Common";
+import { resolveError, SettingProps, SettingsSection } from "./Common";
 
 const MAX_SAFE_NUMBER = BigInt(Number.MAX_SAFE_INTEGER);
 
@@ -30,19 +18,11 @@ export function NumberSetting({ setting, pluginSettings, definedSettings, id, on
         return Number(value);
     }
 
-    const [state, setState] = useSettingState<any>(`${pluginSettings[id] ?? setting.default ?? 0}`);
+    const [state, setState] = useState<any>(`${pluginSettings[id] ?? setting.default ?? 0}`);
     const [error, setError] = useState<string | null>(null);
 
-    function getRangeError(value: number | bigint) {
-        const { min, max } = setting;
-        if ((min == null || value >= min) && (max == null || value <= max)) return null;
-
-        if (min != null && max != null) return `Value must be between ${min} and ${max}`;
-        return min != null ? `Value must be at least ${min}` : `Value must be at most ${max}`;
-    }
-
     function handleChange(newValue: any) {
-        const isValid = getRangeError(serialize(newValue)) ?? setting.isValid?.call(definedSettings, newValue) ?? true;
+        const isValid = setting.isValid?.call(definedSettings, newValue) ?? true;
 
         setError(resolveError(isValid));
 

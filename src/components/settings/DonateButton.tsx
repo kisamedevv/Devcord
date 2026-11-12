@@ -1,33 +1,28 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { Button, ButtonProps, TextButton } from "@components/Button";
 import { Heart } from "@components/Heart";
-
-export default function DonateButton({ variant, ...props }: Omit<ButtonProps, "children" | "onClick" | "className">) {
-    const commonProps = {
-        ...props,
-        onClick: () => EndcordNative.native.openExternal("https://github.com/sponsors/Vendicated"),
-        className: "vc-donate-button",
-        children: <><Heart />Donate</>
-    };
-
-    return variant
-        ? <Button variant={variant} {...commonProps} />
-        : <TextButton variant="secondary" {...commonProps} />;
+import { ButtonProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
+import { Button } from "@webpack/common";
+export default function DonateButton({
+    look = Button.Looks.LINK,
+    color = Button.Colors.TRANSPARENT,
+    ...props
+}: Partial<ButtonProps>) {
+    return (
+        <Button
+            {...props}
+            look={look}
+            color={color}
+            onClick={() => EndcordNative.native.openExternal("https://github.com/Endcord/Endcord")}
+            className="vc-donate-button"
+        >
+            <Heart />
+            {t("Donate")}
+        </Button>
+    );
 }

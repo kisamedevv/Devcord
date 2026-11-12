@@ -1,64 +1,51 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { downloadSettingsBackup, uploadSettingsBackup } from "@api/SettingsSync/offline";
 import { Button } from "@components/Button";
-import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
-import { Text } from "@components/Text";
+import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
+import { Text } from "@webpack/common";
+
+import { SnapshotsSection } from "./Snapshots";
 
 function BackupAndRestoreTab() {
+    const { t } = useI18n();
     return (
         <SettingsTab>
             <Flex flexDirection="column" gap="0.5em">
-                <Card variant="warning">
-                    <Heading tag="h4">Warning</Heading>
-                    <Paragraph>Importing a settings file will overwrite your current settings.</Paragraph>
-                </Card>
+                <Text variant="text-md/normal" className={Margins.bottom8}>
+                    {t("You can import and export your Endcord settings as a JSON file. This allows you to easily transfer your settings to another device, or recover your settings after reinstalling Endcord or Discord.")}
+                </Text>
 
-                <Paragraph size="md" className={Margins.bottom8}>
-                    You can import and export your Endcord settings as a JSON file.
-                    This allows you to easily transfer your settings to another device,
-                    or recover your settings after reinstalling Endcord or Discord.
-                </Paragraph>
-
-                <Heading tag="h4">Settings Export contains:</Heading>
-                <Text size="md" className={Margins.bottom8}>
-                    <ul>
-                        <li>&mdash; Custom QuickCSS</li>
-                        <li>&mdash; Theme Links</li>
-                        <li>&mdash; Plugin Settings</li>
+                <Heading tag="h4">{t("Settings Export contains:")}</Heading>
+                <Text variant="text-md/normal" className={Margins.bottom8}>
+                    <ul style={{ listStyle: "square", paddingLeft: "1.25em" }}>
+                        <li>{t("Custom QuickCSS")}</li>
+                        <li>{t("Theme Links")}</li>
+                        <li>{t("Plugin Settings")}</li>
                     </ul>
                 </Text>
 
-                <Flex>
-                    <Button onClick={() => uploadSettingsBackup()}>
-                        Import Settings
-                    </Button>
+                <Flex gap="0.5em">
                     <Button onClick={downloadSettingsBackup}>
-                        Export Settings
+                        {t("Export Settings")}
+                    </Button>
+                    <Button variant="secondary" onClick={() => uploadSettingsBackup()}>
+                        {t("Import Settings")}
                     </Button>
                 </Flex>
+                <Paragraph style={{ color: "var(--text-muted)" }}>{t("Importing a settings file will overwrite your current settings.")}</Paragraph>
             </Flex>
+
+            <SnapshotsSection />
         </SettingsTab >
     );
 }

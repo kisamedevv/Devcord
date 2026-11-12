@@ -1,59 +1,34 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { onceDefined } from "@shared/onceDefined";
 import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
+import { enableCompileCache, flushCompileCache } from "module";
 import { dirname, join } from "path";
 
+import { initMemoryTrim } from "./memoryTrim";
+import { preOpenRenderer } from "./preOpenRenderer";
 import { RendererSettings } from "./settings";
-import { IS_VANILLA } from "./utils/constants";
+import { DATA_DIR, IS_VANILLA } from "./utils/constants";
 
-console.log("[Endcord] Starting up...");
+console.info("[Endcord] Starting up...");
 
-/** Pencere ve sekme başlığı; kullanıcı renderer ayarlarından değiştirebilir. */
-function getAppTitle() {
-    const pluginSettings = (RendererSettings.store as any)?.plugins?.EndcordTitle;
-    const custom = pluginSettings?.title;
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 
-    return typeof custom === "string" && custom.trim() ? custom.trim() : "Endcord";
-}
-
-/**
- * Discord başlığı sürekli "Sayfa - Discord" olarak yeniden yazıyor; sekme adının
- * Endcord kalması için sayfa başlığı olayı iptal edilir ve native başlık kilitlenir.
- */
-function enforceEndcordTitle(window: electron.BrowserWindow) {
-    const nativeSetTitle = window.setTitle.bind(window);
-
-    window.setTitle = (() => nativeSetTitle(getAppTitle())) as typeof window.setTitle;
-    window.on("page-title-updated", event => event.preventDefault());
-
-    nativeSetTitle(getAppTitle());
-}
+if (!IS_VANILLA) preOpenRenderer();
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
 
-// Original Discord app.asar name
-const asarName = require.main!.path.endsWith("app.asar") ? "_app.asar" : "app.asar";
-
-// Original Discord app.asar
-const asarPath = join(dirname(injectorPath), "..", asarName);
+// Locate original Discord asar file
+const resDir = join(dirname(injectorPath), "..");
+let asarPath = join(resDir, "_app.asar");
+if (!existsSync(asarPath)) {
+    asarPath = join(resDir, "app.asar");
+}
 
 const discordPkg = require(join(asarPath, "package.json"));
 require.main!.filename = join(asarPath, discordPkg.main);
@@ -63,46 +38,48 @@ app.setAppPath(asarPath);
 
 if (!IS_VANILLA) {
     const settings = RendererSettings.store;
+    // Repatch after host updates on Windows
+    if (process.platform === "win32") {
+        require("./patchWin32Updater");
 
-    // Repatch after host updates on Windows and Linux
-    if (process.platform === "win32" || process.platform === "linux") {
-        require("./persistAfterDiscordUpdates");
-    }
-
-    if (process.platform === "win32" && settings.winCtrlQ) {
-        const originalBuild = Menu.buildFromTemplate;
-        Menu.buildFromTemplate = function (template) {
-            if (template[0]?.label === "&File") {
-                const { submenu } = template[0];
-                if (Array.isArray(submenu)) {
-                    submenu.push({
-                        label: "Quit (Hidden)",
-                        visible: false,
-                        acceleratorWorksWhenHidden: true,
-                        accelerator: "Control+Q",
-                        click: () => app.quit()
-                    });
+        if (settings.winCtrlQ) {
+            const originalBuild = Menu.buildFromTemplate;
+            Menu.buildFromTemplate = function (template) {
+                if (template[0]?.label === "&File") {
+                    const { submenu } = template[0];
+                    if (Array.isArray(submenu)) {
+                        submenu.push({
+                            label: "Quit (Hidden)",
+                            visible: false,
+                            acceleratorWorksWhenHidden: true,
+                            accelerator: "Control+Q",
+                            click: () => app.quit()
+                        });
+                    }
                 }
-            }
-            return originalBuild.call(this, template);
-        };
+                return originalBuild.call(this, template);
+            };
+        }
     }
 
     class BrowserWindow extends electron.BrowserWindow {
         constructor(options: BrowserWindowConstructorOptions) {
-            if (!options?.webPreferences?.preload || !options.title) {
+            if (!options?.webPreferences?.preload) {
                 super(options);
-                enforceEndcordTitle(this);
                 return;
             }
 
-            const { nativeTitleBar, disableMinSize, transparent, macosVibrancyStyle, windowsMaterial } = settings;
+            const { frameless, winNativeTitleBar, disableMinSize, transparent, macosVibrancyStyle, windowsMaterial } = settings;
 
             const original = options.webPreferences.preload;
             options.webPreferences.preload = join(__dirname, "preload.js");
             options.webPreferences.sandbox = false;
+            // backgroundThrottling stays on, as in Discord itself: a minimized or covered window stops drawing.
+            // The switches below keep its timers and connection running at full speed.
 
-            if (nativeTitleBar) {
+            if (frameless) {
+                options.frame = false;
+            } else if (process.platform === "win32" && winNativeTitleBar) {
                 delete options.frame;
             }
 
@@ -128,14 +105,12 @@ if (!IS_VANILLA) {
 
             super(options);
 
-            // Discord kendi başlığını "Sayfa - Discord" olarak yeniden yazıyor.
-            // Pencere/sekme adının Endcord kalması için başlık kilitleniyor.
-            enforceEndcordTitle(this);
-
             if (disableMinSize) {
                 // Disable the Electron call entirely so that Discord can't dynamically change the size
                 this.setMinimumSize = (_width: number, _height: number) => { };
             }
+
+            if (!settings.disableBackgroundMemoryTrim) initMemoryTrim(this);
         }
     }
     Object.assign(BrowserWindow, electron.BrowserWindow);
@@ -158,9 +133,74 @@ if (!IS_VANILLA) {
     });
 
     process.env.DATA_DIR = join(app.getPath("userData"), "..", "Endcord");
+
+    // Monkey patch commandLine to:
+    // - disable WidgetLayering: Fix DevTools context menus https://github.com/electron/electron/issues/38790
+    // - disable UseEcoQoSForBackgroundProcess: Work around Discord unloading when in background
+    const originalAppend = app.commandLine.appendSwitch;
+    app.commandLine.appendSwitch = function (...args) {
+        if (args[0] === "disable-features") {
+            const disabledFeatures = new Set((args[1] ?? "").split(",").filter(Boolean));
+            disabledFeatures.add("WidgetLayering");
+            disabledFeatures.add("UseEcoQoSForBackgroundProcess");
+            disabledFeatures.add("IntensiveWakeUpThrottling");
+            args[1] = [...disabledFeatures].join(",");
+        } else if (args[0] === "enable-features" && settings.gpuRasterization) {
+            const enabledFeatures = new Set((args[1] ?? "").split(",").filter(Boolean));
+            enabledFeatures.add("CanvasOopRasterization");
+            args[1] = [...enabledFeatures].join(",");
+        }
+        return originalAppend.apply(this, args);
+    };
+
+    // Keep timers and the gateway connection at full speed in the background, so Discord doesn't drop or reload.
+    // Discord adds these two on Windows only; the problem happens on Linux too.
+    // https://github.com/electron/electron/issues/2822
+    // https://github.com/GoogleChrome/chrome-launcher/blob/5a27dd574d47a75fec0fb50f7b774ebf8a9791ba/docs/chrome-flags-for-tools.md#task-throttling
+    // "disable-backgrounding-occluded-windows" is left out on purpose: with it, a window behind a game or browser kept
+    // drawing every frame, which Discord itself doesn't do.
+    app.commandLine.appendSwitch("disable-renderer-backgrounding");
+    app.commandLine.appendSwitch("disable-background-timer-throttling");
+    // Opt-in: GPU rasterization moves painting into the GPU process. It can be smoother on some GPUs, but costs
+    // 50-80 MB more memory there, so by default Endcord leaves Chromium's own choice alone like Discord does.
+    // Chromium's GPU blocklist still applies; forcing zero-copy or native GPU memory buffers is never done.
+    if (settings.gpuRasterization) {
+        app.commandLine.appendSwitch("enable-gpu-rasterization");
+        app.commandLine.appendSwitch("enable-features", "CanvasOopRasterization");
+    }
+
+    // Node keeps the compiled code of the scripts it loads between starts, so Discord's 3 MB main bundle isn't
+    // compiled from scratch every time. Node checks each entry against the file's contents, so an update only
+    // recompiles what changed. Window processes don't write one, so this is the main process only.
+    // DATA_DIR, not the folder above: Discord only moves userData to DISCORD_USER_DATA_DIR once its bundle runs
+    const cacheDir = process.env.ENDCORD_COMPILE_CACHE = join(DATA_DIR, "compile-cache");
+    try {
+        // Each Discord update installs to a new app-* folder, so its entries would pile up. Start over on each one
+        const stamp = join(cacheDir, "discord-install");
+        const install = dirname(process.execPath);
+        if (!existsSync(stamp) || readFileSync(stamp, "utf-8") !== install) {
+            rmSync(cacheDir, { recursive: true, force: true });
+            mkdirSync(cacheDir, { recursive: true });
+            writeFileSync(stamp, install);
+        }
+
+        enableCompileCache(cacheDir);
+    } catch { }
 } else {
-    console.log("[Endcord] Running in vanilla mode. Not loading Endcord");
+    console.info("[Endcord] Running in vanilla mode. Not loading Endcord");
 }
 
-console.log("[Endcord] Loading original Discord app.asar");
+console.info("[Endcord] Loading original Discord app.asar");
 require(require.main!.filename);
+
+if (process.env.ENDCORD_COMPILE_CACHE) {
+    // Discord quits without giving Node the chance to write the cache on exit. Write it once its bundle has loaded,
+    // and again after the modules it loads once it's up
+    const flush = () => {
+        try {
+            flushCompileCache();
+        } catch { }
+    };
+    flush();
+    setTimeout(flush, 60_000).unref();
+}

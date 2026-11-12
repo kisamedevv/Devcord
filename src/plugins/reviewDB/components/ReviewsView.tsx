@@ -1,30 +1,18 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { Paragraph } from "@components/Paragraph";
 import { Auth, authorize } from "@plugins/reviewDB/auth";
 import { Review, ReviewType } from "@plugins/reviewDB/entities";
 import { addReview, getReviews, REVIEWS_PER_PAGE, UserReviewsData } from "@plugins/reviewDB/reviewDbApi";
 import { settings } from "@plugins/reviewDB/settings";
 import { cl, showToast } from "@plugins/reviewDB/utils";
+import { t } from "@utils/i18n";
 import { useAwaiter, useForceUpdater } from "@utils/react";
 import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { React, RelationshipStore, useRef, UserStore } from "@webpack/common";
+import { Forms, React, RelationshipStore, useRef, UserStore } from "@webpack/common";
 
 import ReviewComponent from "./ReviewComponent";
 
@@ -62,7 +50,7 @@ export default function ReviewsView({
 }: Props) {
     const [signal, refetch] = useForceUpdater(true);
 
-    const [reviewData] = useAwaiter(() => getReviews(discordId, { offset: (page - 1) * REVIEWS_PER_PAGE, limit: REVIEWS_PER_PAGE, fetchVotes: true }), {
+    const [reviewData] = useAwaiter(() => getReviews(discordId, { offset: (page - 1) * REVIEWS_PER_PAGE, fetchVotes: true }), {
         fallbackValue: null,
         deps: [refetchSignal, signal, page],
         onSuccess: data => {
@@ -70,7 +58,7 @@ export default function ReviewsView({
             const systemReviews = data!.reviews.filter(r => r.type === ReviewType.System);
             const normalReviews = data!.reviews.filter(r => r.type !== ReviewType.System);
 
-            data!.reviews = [...systemReviews, ...normalReviews];
+            data!.reviews = [...systemReviews, ...normalReviews.reverse()];
             scrollToTop?.();
             onFetchReviews(data!);
         }
@@ -82,7 +70,7 @@ export default function ReviewsView({
         <>
             <ReviewList
                 refetch={refetch}
-                reviews={reviewData!.reviews}
+                reviews={reviewData.reviews}
                 hideOwnReview={hideOwnReview}
                 profileId={discordId}
                 type={type}
@@ -93,7 +81,7 @@ export default function ReviewsView({
                     name={name}
                     discordId={discordId}
                     refetch={refetch}
-                    isAuthor={reviewData!.reviews?.some(r => r.sender.discordID === UserStore.getCurrentUser().id)}
+                    isAuthor={reviewData.reviews?.some(r => r.sender.discordID === UserStore.getCurrentUser().id)}
                 />
             )}
         </>
@@ -116,9 +104,8 @@ function ReviewList({ refetch, reviews, hideOwnReview, profileId, type }: { refe
             )}
 
             {reviews?.length === 0 && (
-                <Paragraph className={cl("placeholder")}>
-                    Looks like nobody reviewed this {type === ReviewType.User ? "user" : "server"} yet. You could be the first!
-                </Paragraph>
+                <Forms.FormText className={cl("placeholder")}>
+                    {t("Looks like nobody reviewed this")}{" "}{type === ReviewType.User ? "user" : "server"}{" "}{t("yet. You could be the first!")}</Forms.FormText>
             )}
         </div>
     );
@@ -139,7 +126,7 @@ export function ReviewsInputComponent(
         <>
             <div onClick={() => {
                 if (!token) {
-                    showToast({ text: "Opening authorization window..." });
+                    showToast("Opening authorization window...");
                     authorize();
                 }
             }}>

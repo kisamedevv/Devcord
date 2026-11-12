@@ -1,40 +1,27 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./styles.css";
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { Button } from "@components/Button";
 import { Card } from "@components/Card";
-import { Heading } from "@components/Heading";
-import { ClockIcon, Microphone } from "@components/Icons";
+import { Microphone } from "@components/Icons";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
+import { CloudUpload as TCloudUpload, RenderModalProps } from "@endcord/discord-types";
+import { CloudUploadPlatform } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { useAwaiter } from "@utils/react";
 import definePlugin from "@utils/types";
 import { chooseFile } from "@utils/web";
-import { CloudUpload as TCloudUpload, RenderModalProps } from "@endcord/discord-types";
-import { CloudUploadPlatform } from "@endcord/discord-types/enums";
 import { findLazy } from "@webpack";
-import { Constants, FluxDispatcher, lodash, Menu, MessageActions, Modal, openModal, PendingReplyStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, useEffect, useState } from "@webpack/common";
+import { Button, Constants, FluxDispatcher, Forms, lodash, Menu, MessageActions, Modal,openModal, PendingReplyStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, Toasts, useEffect, useState } from "@webpack/common";
 import { ComponentType } from "react";
 
 import { VoiceRecorderDesktop } from "./DesktopRecorder";
@@ -43,10 +30,11 @@ import { VoicePreview } from "./VoicePreview";
 import { VoiceRecorderWeb } from "./WebRecorder";
 
 const CloudUpload: typeof TCloudUpload = findLazy(m => m.prototype?.trackUploadFinished);
+
 export const cl = classNameFactory("vc-vmsg-");
 export type VoiceRecorder = ComponentType<{
     setAudioBlob(blob: Blob): void;
-    onRecordingChange(recording: boolean): void;
+    onRecordingChange?(recording: boolean): void;
 }>;
 
 export interface VoiceMessageProps {
@@ -68,12 +56,8 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
                 type: "icon",
                 icon: Microphone
             }}
-            label="Send Voice Message"
-            action={() =>
-                openModal(modalProps => <VoiceMessageModal modalProps={modalProps} />, {
-                    onCloseCallback: () => FluxDispatcher.dispatch({ type: "ENDCORD_STOP_RECORDING" })
-                })
-            }
+            label={t("Send Voice Message")}
+            action={() => openModal(modalProps => <VoiceMessageModal modalProps={modalProps} />)}
         />
     );
 };
@@ -82,11 +66,12 @@ export default definePlugin({
     name: "VoiceMessages",
     description: "Allows you to send voice messages like on mobile. To do so, right click the upload button and click Send Voice Message",
     tags: ["Voice"],
-    authors: [Devs.Ven, Devs.Vap, Devs.Nickyux],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [
         {
+            // The pause label also appears in another module that loads first, and MediaPlaybackSpeed replaces the rate control
             find: "#{intl::VOICE_MESSAGES_A11Y_LABEL}",
             replacement: {
                 match: /(?<=\i=)(?=\i\.memo\(.{0,50}?=1,onVolumeChange:[^}]+?waveform:[^}]+?playbackCacheKey:)/,
@@ -145,7 +130,7 @@ function sendAudio(blob: Blob, meta: AudioMetadata) {
             }
         });
     });
-    upload.on("error", () => showToast({ text: "Failed to upload voice message", variant: "critical" }));
+    upload.on("error", () => showToast("Failed to upload voice message", Toasts.Type.FAILURE));
 
     upload.upload();
 }
@@ -214,14 +199,14 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
     return (
         <Modal
             {...modalProps}
-            title="Record Voice Message"
+            title={t("Record Voice Message")}
             actions={[{
                 text: "Send",
                 variant: "primary",
                 onClick: () => {
                     sendAudio(blob!, meta ?? EMPTY_META);
                     modalProps.onClose();
-                    showToast({ text: "Now sending voice message... Please be patient", icon: ClockIcon, iconColor: "var(--text-default)" });
+                    showToast("Now sending voice message... Please be patient", Toasts.Type.MESSAGE);
                 },
                 disabled: !blob
             }]}
@@ -244,13 +229,12 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         }
                     }}
                 >
-                    Upload File
-                </Button>
+                    {t("Upload File")}</Button>
             </div>
 
-            <Heading className={Margins.bottom8}>Preview</Heading>
+            <Forms.FormTitle>{t("Preview")}</Forms.FormTitle>
             {metaError
-                ? <Paragraph className={cl("error")}>Failed to parse selected audio file: {metaError.message}</Paragraph>
+                ? <Paragraph className={cl("error")}>{t("Failed to parse selected audio file:")}{" "}{metaError.message}</Paragraph>
                 : (
                     <VoicePreview
                         src={blobUrl}
@@ -261,11 +245,11 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
             {isUnsupportedFormat && (
                 <Card variant="warning" className={Margins.top16} defaultPadding>
-                    <Paragraph>Voice Messages have to be OggOpus to be playable on iOS. This file is <code>{blob.type}</code> so it will not be playable on iOS.</Paragraph>
+                    <Forms.FormText>{t("Voice Messages have to be OggOpus to be playable on iOS. This file is")}{" "}<code>{blob.type}</code>{" "}{t("so it will not be playable on iOS.")}</Forms.FormText>
 
-                    <Paragraph className={Margins.top8}>
-                        To fix it, first convert it to OggOpus, for example using the <Link href="https://convertio.co/mp3-opus/">convertio web converter</Link>
-                    </Paragraph>
+                    <Forms.FormText className={Margins.top8}>
+                        {t("To fix it, first convert it to OggOpus, for example using the")}{" "}<Link href="https://convertio.co/mp3-opus/">{t("convertio web converter")}</Link>
+                    </Forms.FormText>
                 </Card>
             )}
         </Modal>

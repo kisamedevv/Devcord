@@ -6,11 +6,11 @@
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Paragraph } from "@components/Paragraph";
 import { SettingsSection } from "@components/settings/tabs/plugins/components/Common";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { defineDefault, OptionType, StartAt } from "@utils/types";
-import { Checkbox } from "@webpack/common";
+import { Checkbox, Text } from "@webpack/common";
 
 const Noop = () => { };
 const NoopLogger = {
@@ -51,14 +51,14 @@ function AllowLevelSetting({ settingKey }: AllowLevelSettingProps) {
             onChange={(_, newValue) => settings.store.allowLevel[settingKey] = newValue}
             size={20}
         >
-            <Paragraph>{settingKey[0].toUpperCase() + settingKey.slice(1)}</Paragraph>
+            <Text variant="text-sm/normal">{settingKey[0].toUpperCase() + settingKey.slice(1)}</Text>
         </Checkbox>
     );
 }
 
 const AllowLevelSettings = ErrorBoundary.wrap(() => {
     return (
-        <SettingsSection name="Filter List" id="filterList" description="Always allow loggers of these types">
+        <SettingsSection name="Filter List" id="filterList" description={t("Always allow loggers of these types")}>
             <div style={{ display: "flex", flexDirection: "row" }}>
                 {Object.keys(settings.store.allowLevel).map(key => (
                     <AllowLevelSetting key={key} settingKey={key as keyof AllowLevels} />
@@ -72,7 +72,7 @@ const settings = definePluginSettings({
     disableLoggers: {
         type: OptionType.BOOLEAN,
         description: "Disables Discords loggers",
-        default: false,
+        default: true,
         restartNeeded: true
     },
     disableSpotifyLogger: {
@@ -108,8 +108,9 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "ConsoleJanitor",
     description: "Disables annoying console messages/errors",
-    authors: [Devs.Nuckyz, Devs.sadan],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Developers", "Console", "Utility"],
+    enabledByDefault: true,
     settings,
 
     startAt: StartAt.Init,

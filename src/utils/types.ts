@@ -1,29 +1,23 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import type { AudioProcessor } from "@api/AudioPlayer";
 import { ProfileBadge } from "@api/Badges";
-import { ChatBarButtonData } from "@api/ChatButtons";
+import { ChatBarButtonData, ChatBarButtonWrapperData } from "@api/ChatButtons";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import type { HeaderBarButtonData } from "@api/HeaderBar";
 import { MemberListDecoratorFactory } from "@api/MemberListDecorators";
 import { MessageAccessoryFactory } from "@api/MessageAccessories";
 import { MessageDecorationFactory } from "@api/MessageDecorations";
 import { MessageClickListener, MessageEditListener, MessageSendListener } from "@api/MessageEvents";
 import { MessagePopoverButtonData } from "@api/MessagePopover";
+import type { NicknameIconFactory } from "@api/NicknameIcons";
+import type { ProfileCollectionData } from "@api/ProfileCollections";
+import type { ProfileSectionData } from "@api/ProfileSections";
+import type { UserAreaButtonData } from "@api/UserArea";
 import { Command, FluxEvents } from "@endcord/discord-types";
 import { ReactNode } from "react";
 import { LiteralUnion } from "type-fest";
@@ -218,6 +212,14 @@ export interface PluginDef {
     renderMessageDecoration?: MessageDecorationFactory;
 
     renderMemberListDecorator?: MemberListDecoratorFactory;
+
+    renderNicknameIcon?: NicknameIconFactory;
+    headerBarButton?: HeaderBarButtonData;
+    audioProcessor?: AudioProcessor;
+    userAreaButton?: UserAreaButtonData;
+    renderProfileCollection?: ProfileCollectionData;
+    chatBarButtonWrapper?: ChatBarButtonWrapperData;
+    renderProfileSection?: ProfileSectionData;
 }
 
 export const enum StartAt {
@@ -278,6 +280,11 @@ export interface PluginSettingDefCommon extends IsDisabledOrHidden, IsValid<unkn
     restartNeeded?: boolean;
     componentProps?: Record<string, any>;
     /**
+     * Keys, passwords, where those get sent, and who may act for the user. These stay out of settings backups
+     * and cloud sync, and an import can't change them once they're set
+     */
+    sensitive?: boolean;
+    /**
      * Set this if the setting only works on Browser or Desktop, not both
      */
     target?: "WEB" | "DESKTOP" | "BOTH";
@@ -310,18 +317,10 @@ export interface PluginSettingStringDef extends PluginSettingDefCommon {
 export interface PluginSettingNumberDef extends PluginSettingDefCommon {
     type: OptionType.NUMBER;
     default?: number;
-    /** The minimum allowed value (inclusive) */
-    min?: number;
-    /** The maximum allowed value (inclusive) */
-    max?: number;
 }
 export interface PluginSettingBigIntDef extends PluginSettingDefCommon {
     type: OptionType.BIGINT;
     default?: BigInt;
-    /** The minimum allowed value (inclusive) */
-    min?: bigint;
-    /** The maximum allowed value (inclusive) */
-    max?: bigint;
 }
 export interface PluginSettingBooleanDef extends PluginSettingDefCommon {
     type: OptionType.BOOLEAN;
@@ -343,6 +342,7 @@ export interface PluginSettingCustomDef {
     type: OptionType.CUSTOM;
     default?: any;
     onChange?: PluginSettingDefCommon["onChange"];
+    restartNeeded?: boolean;
 }
 
 export interface PluginSettingSliderDef extends PluginSettingDefCommon {
@@ -435,9 +435,3 @@ export type PluginNative<PluginExports extends Record<string, (event: Electron.I
 };
 
 export type AllOrNothing<T> = T | { [K in keyof T]?: never; };
-
-export type ConstEnumToRuntimeEnum<T> = {
-    [K in keyof T as T[K] extends number ? T[K] : never]: K;
-} & {
-    [K in keyof T]: T[K];
-};

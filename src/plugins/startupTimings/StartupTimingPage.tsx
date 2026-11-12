@@ -1,27 +1,14 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
-import { Margins } from "@components/margins";
+import { t } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";
-import { React } from "@webpack/common";
+import { Forms, React } from "@webpack/common";
 
 interface AppStartPerformance {
     prefix: string;
@@ -91,18 +78,18 @@ function TimingSection({ title, logs, traceEnd }: TimingSectionProps) {
 
     return (
         <section>
-            <Heading tag="h4" className={Margins.bottom20}>{title}</Heading>
+            <Forms.FormTitle tag="h2">{title}</Forms.FormTitle>
             <code>
                 {traceEnd && (
                     <div style={{ color: "var(--text-strong)", marginBottom: 5, userSelect: "text" }}>
-                        Trace ended at: {(new Date(traceEnd)).toTimeString()}
+                        {t("Trace ended at:")}{" "}{(new Date(traceEnd)).toTimeString()}
                     </div>
                 )}
                 <div style={{ color: "var(--text-strong)", display: "grid", gridTemplateColumns: "repeat(3, auto) 1fr", gap: "2px 10px", userSelect: "text" }}>
-                    <span>Start</span>
-                    <span>Interval</span>
-                    <span>Delta</span>
-                    <span style={{ marginBottom: 5 }}>Event</span>
+                    <span>{t("Start")}</span>
+                    <span>{t("Interval")}</span>
+                    <span>{t("Delta")}</span>
+                    <span style={{ marginBottom: 5 }}>{t("Event")}</span>
                     {AppStartPerformance.logs.map((log, i) => (
                         <TimerItem key={i} {...log} instance={timings[i]} />
                     ))}
@@ -121,7 +108,7 @@ function ServerTrace({ trace }: ServerTraceProps) {
 
     return (
         <section>
-            <Heading className={Margins.bottom8}>Server Trace</Heading>
+            <Forms.FormTitle tag="h3">{t("Server Trace")}</Forms.FormTitle>
             <code>
                 <Flex flexDirection="column" gap="5px" style={{ color: "var(--text-strong)", userSelect: "text" }}>
                     {lines.map((line, idx) => (
@@ -134,14 +121,14 @@ function ServerTrace({ trace }: ServerTraceProps) {
 }
 
 function StartupTimingPage() {
-    if (!AppStartPerformance?.logs) return <div>Loading...</div>;
+    if (!AppStartPerformance?.logs) return <div>{t("Loading...")}</div>;
 
     const serverTrace = AppStartPerformance.logGroups.find(g => g.serverTrace)?.serverTrace;
 
     return (
         <React.Fragment>
             <TimingSection
-                title="Startup Timings"
+                title={t("Startup Timings")}
                 logs={AppStartPerformance.logs}
                 traceEnd={AppStartPerformance.endTime_}
             />

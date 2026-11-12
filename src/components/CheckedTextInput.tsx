@@ -1,20 +1,8 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { React, TextInput, useState } from "@webpack/common";
 
@@ -33,13 +21,15 @@ interface TextInputProps {
      * Otherwise, return a string containing the reason for this input being invalid
      */
     validate(v: string): true | string;
+
+    placeholder?: string;
 }
 
 /**
  * A very simple wrapper around Discord's TextInput that validates input and shows
  * the user an error message and only calls your onChange when the input is valid
  */
-export function CheckedTextInput({ initialValue, onChange, validate }: TextInputProps) {
+export function CheckedTextInput({ initialValue, onChange, validate, placeholder }: TextInputProps) {
     const [value, setValue] = useState(initialValue);
     const [error, setError] = useState<string>();
 
@@ -62,6 +52,7 @@ export function CheckedTextInput({ initialValue, onChange, validate }: TextInput
                 type="text"
                 value={value}
                 onChange={handleChange}
+                placeholder={placeholder}
                 error={error}
             />
         </>

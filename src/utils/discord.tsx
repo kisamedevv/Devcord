@@ -1,24 +1,12 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import type { MessageObject } from "@api/MessageEvents";
-import type { Channel, CloudUpload, ConfirmModalProps, Guild, GuildFeatures, MediaModalItem, MediaModalProps, Message, User } from "@endcord/discord-types";
-import { ChannelActionCreators, ChannelStore, ComponentDispatch, ConfirmModal, Constants, FluxDispatcher, GuildStore, i18n, InviteActions, MessageActions, openMediaModal, openModal, openUserProfileModal, RestAPI, SelectedChannelStore, SelectedGuildStore, showToast, UserProfileStore, UserSettingsActionCreators, UserUtils } from "@webpack/common";
+import type { Channel, CloudUpload, Guild, GuildFeatures, MediaModalItem, MediaModalProps, Message, User } from "@endcord/discord-types";
+import { ChannelActionCreators, ChannelStore, ComponentDispatch, Constants, FluxDispatcher, GuildStore, i18n, InviteActions, MessageActions, openMediaModal, RestAPI, SelectedChannelStore, SelectedGuildStore, Toasts, UserProfileActions, UserProfileStore, UserSettingsActionCreators, UserUtils } from "@webpack/common";
 import { Except } from "type-fest";
 
 import { copyToClipboard } from "./clipboard";
@@ -55,9 +43,11 @@ export function getIntlMessageFromHash(hashedKey: string, values?: Record<Proper
  * @param code The invite code
  * @returns Whether the invite was accepted
  */
-export async function openInviteModal(code: string) {
+export async function openInviteModal(code: string, expectedGuildId?: string) {
     const { invite } = await InviteActions.resolveInvite(code, "Desktop Modal");
-    if (!invite) throw new Error("Invalid invite: " + code);
+    if (!invite) throw new Error(`Invalid invite: ${code}`);
+    // A vanity code goes back on the market when a server loses its boosts
+    if (expectedGuildId && invite.guild?.id !== expectedGuildId) return false;
 
     FluxDispatcher.dispatch({
         type: "INVITE_MODAL_OPEN",
@@ -90,8 +80,8 @@ export function getCurrentGuild(): Guild | undefined {
     return GuildStore.getGuild(getCurrentChannel()?.guild_id!);
 }
 
-export function openPrivateChannel(userId: string) {
-    ChannelActionCreators.openPrivateChannel(userId);
+export function openPrivateChannel(userId: string, navigateToChannel = true) {
+    return ChannelActionCreators.openPrivateChannel({ recipientIds: [userId], navigateToChannel });
 }
 
 export const enum Theme {
@@ -116,10 +106,14 @@ export function insertTextIntoChatInputBox(text: string) {
 
 export async function copyWithToast(text: string, toastMessage = "Copied to clipboard!") {
     await copyToClipboard(text);
-    showToast({ text: toastMessage, variant: "success" });
+    Toasts.show({
+        message: toastMessage,
+        id: Toasts.genId(),
+        type: Toasts.Type.SUCCESS
+    });
 }
 
-interface MessageOptions {
+export interface MessageOptions {
     messageReference: Message["messageReference"];
     allowedMentions: {
         parse: string[];
@@ -175,17 +169,17 @@ export function openImageModal(item: Except<MediaModalItem, "type">, mediaModalP
 
 export async function openUserProfile(id: string) {
     const user = await UserUtils.getUser(id);
-    if (!user) throw new Error("No such user: " + id);
+    if (!user) throw new Error(`No such user: ${id}`);
 
     const guildId = SelectedGuildStore.getGuildId();
-    openUserProfileModal({
+    UserProfileActions.openUserProfileModal({
         userId: id,
         guildId,
         channelId: SelectedChannelStore.getChannelId(),
-        sourceAnalyticsLocations: [
-            "username",
-            "user profile popout",
-        ]
+        analyticsLocation: {
+            page: guildId ? "Guild Channel" : "DM Channel",
+            section: "Profile Popout"
+        }
     });
 }
 
@@ -232,7 +226,7 @@ export function getUniqueUsername(user: User) {
 }
 
 // Discord has a similar function in their code
-export function getGuildAcronym(guild: Guild): string {
+export function getGuildAcronym(guild: Pick<Guild, "name">): string {
     return guild.name
         .replaceAll("'s ", " ")
         .replace(/\w+/g, m => m[0])
@@ -241,35 +235,4 @@ export function getGuildAcronym(guild: Guild): string {
 
 export function hasGuildFeature(guild: Guild, feature: GuildFeatures): boolean {
     return guild.features?.has(feature) ?? false;
-}
-
-export type ConfirmOptions = Pick<ConfirmModalProps, "title" | "subtitle" | "confirmText" | "cancelText" | "variant" | "onConfirm" | "onCancel" | "onCloseCallback">;
-
-export async function confirmAction({ variant, confirmText, title, cancelText, subtitle, onConfirm, onCancel, onCloseCallback }: ConfirmOptions) {
-    return new Promise<boolean>((res, rej) => {
-        const wrap = (fn: Function | undefined, value: boolean) => async (...args: any[]): Promise<void> => {
-            try {
-                await fn?.(...args);
-                res(value);
-            } catch (e) {
-                rej(e);
-            }
-        };
-
-        openModal(modalProps => {
-            return (
-                <ConfirmModal
-                    {...modalProps}
-                    variant={variant}
-                    confirmText={confirmText}
-                    cancelText={cancelText}
-                    title={title}
-                    subtitle={subtitle}
-                    onConfirm={wrap(onConfirm, true)}
-                    onCancel={wrap(onCancel, false)}
-                    onCloseCallback={wrap(onCloseCallback, false)}
-                />
-            );
-        });
-    });
 }

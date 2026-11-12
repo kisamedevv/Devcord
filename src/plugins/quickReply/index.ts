@@ -1,29 +1,17 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
+import { Message } from "@endcord/discord-types";
+import { MessageFlags } from "@endcord/discord-types/enums";
 import NoBlockedMessagesPlugin from "@plugins/noBlockedMessages";
 import NoReplyMentionPlugin from "@plugins/noReplyMention";
 import { Devs, IS_MAC } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@endcord/discord-types";
-import { MessageFlags } from "@endcord/discord-types/enums";
 import { ChannelStore, ComponentDispatch, FluxDispatcher as Dispatcher, MessageActions, MessageStore, MessageTypeSets, PermissionsBits, PermissionStore, RelationshipStore, SelectedChannelStore, UserStore } from "@webpack/common";
 
 let currentlyReplyingId: string | null = null;
@@ -58,7 +46,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "QuickReply",
-    authors: [Devs.fawn, Devs.Ven, Devs.pylix],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Reply to (ctrl + up/down) and edit (ctrl + shift + up/down) messages via keybinds",
     tags: ["Chat", "Shortcuts"],
     settings,
@@ -115,7 +103,7 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 function jumpIfOffScreen(channelId: string, messageId: string) {
-    const element = document.getElementById("message-content-" + messageId);
+    const element = document.getElementById(`message-content-${messageId}`);
     if (!element) return;
 
     const vh = Math.max(document.documentElement.clientHeight, window.innerHeight);
@@ -162,11 +150,11 @@ function getNextMessage(isUp: boolean, isReply: boolean) {
         const msg = findNextNonDeleted(currentlyReplyingId);
         currentlyReplyingId = msg?.id ?? null;
         return msg;
-    } else {
+    }
         const msg = findNextNonDeleted(currentlyEditingId);
         currentlyEditingId = msg?.id ?? null;
         return msg;
-    }
+
 }
 
 function shouldMention(message: Message) {

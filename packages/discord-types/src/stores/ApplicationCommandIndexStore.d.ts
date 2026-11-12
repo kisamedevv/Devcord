@@ -1,3 +1,5 @@
+import { Application, Channel, FluxStore } from "..";
+import { CommandArgument, CommandContext } from "../common/messages/Commands";
 import {
     ApplicationCommandHandlerType,
     ApplicationCommandInputType,
@@ -9,8 +11,6 @@ import {
     ChannelType,
     InteractionContextType
 } from "../../enums";
-import { Application, Channel, FluxStore } from "..";
-import { CommandArgument, CommandContext } from "../common/messages/Commands";
 
 /** Score method for ranking command results. */
 export type ApplicationCommandScoreMethod =

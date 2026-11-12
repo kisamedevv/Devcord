@@ -1,33 +1,21 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Heading } from "@components/Heading";
-import { Paragraph } from "@components/Paragraph";
-import { PermissionsSortOrder, settings } from "@plugins/permissionsViewer";
-import { cl, getGuildPermissionSpecMap, getSortedRolesForMember, sortUserRoles } from "@plugins/permissionsViewer/utils";
-import { getIntlMessage } from "@utils/discord";
-import { classes } from "@utils/misc";
+import { HeadingTertiary } from "@components/Heading";
 import type { Guild, GuildMember, RoleOrUserPermission } from "@endcord/discord-types";
 import { PermissionOverwriteType } from "@endcord/discord-types/enums";
+import { cl, getGuildPermissionSpecMap, getSortedRolesForMember, sortUserRoles } from "@plugins/permissionsViewer/utils";
+import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
+import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
-import { PermissionsBits, Tooltip, useMemo, UserStore } from "@webpack/common";
+import { PermissionsBits, Text, Tooltip, useMemo, UserStore } from "@webpack/common";
 
+import { PermissionsSortOrder, settings } from "..";
 import openRolesAndUsersPermissionsModal from "./RolesAndUsersPermissions";
 
 interface UserPermission {
@@ -57,12 +45,12 @@ function FakeRole({ text, color, ...props }: FakeRoleProps) {
                 />
             </div>
             <div className={RoleClasses.roleName}>
-                <Paragraph
+                <Text
                     className={RoleClasses.roleNameOverflow}
-                    size="xs" weight="medium"
+                    variant="text-xs/medium"
                 >
                     {text}
-                </Paragraph>
+                </Text>
             </div>
         </div>
     );
@@ -76,7 +64,7 @@ interface GrantedByTooltipProps {
 function GrantedByTooltip({ roleName, roleColor }: GrantedByTooltipProps) {
     return (
         <>
-            <Paragraph weight="medium">Granted By</Paragraph>
+            <Text variant="text-sm/medium">{t("Granted By")}</Text>
             <FakeRole text={roleName} color={roleColor} />
         </>
     );
@@ -136,7 +124,7 @@ function UserPermissionsComponent({ guild, guildMember, closePopout }: { guild: 
 
     return <div>
         <div className={cl("user-header-container")}>
-            <Heading tag="h4">Permissions</Heading>
+            <HeadingTertiary>{t("Permissions")}</HeadingTertiary>
             <div className={cl("user-header-btns")}>
                 <Tooltip text={`Sorting by ${permissionsSortOrder === PermissionsSortOrder.HighestRole ? "Highest Role" : "Lowest Role"}`}>
                     {tooltipProps => (
@@ -160,7 +148,7 @@ function UserPermissionsComponent({ guild, guildMember, closePopout }: { guild: 
                         </div>
                     )}
                 </Tooltip>
-                <Tooltip text="Role Details">
+                <Tooltip text={t("Role Details")}>
                     {tooltipProps => (
                         <div
                             {...tooltipProps}

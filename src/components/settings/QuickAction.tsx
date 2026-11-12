@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./QuickAction.css";
+import "./QuickAction.css?screen";
 
-import { Card } from "@components/Card";
 import { classNameFactory } from "@utils/css";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 
@@ -17,14 +16,13 @@ export interface QuickActionProps {
     text: ReactNode;
     action?: () => void;
     disabled?: boolean;
-    style?: React.CSSProperties;
 }
 
 export function QuickAction(props: QuickActionProps) {
-    const { Icon, action, text, disabled, style } = props;
+    const { Icon, action, text, disabled } = props;
 
     return (
-        <button className={cl("pill")} onClick={action} disabled={disabled} style={style}>
+        <button className={cl("pill")} onClick={action} disabled={disabled}>
             <Icon className={cl("img")} />
             {text}
         </button>
@@ -33,8 +31,8 @@ export function QuickAction(props: QuickActionProps) {
 
 export function QuickActionCard(props: PropsWithChildren) {
     return (
-        <Card className={cl("card")}>
+        <div className={cl("card")}>
             {props.children}
-        </Card>
+        </div>
     );
 }

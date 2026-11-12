@@ -5,9 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { CopyIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { Menu } from "@webpack/common";
@@ -53,24 +53,23 @@ export default definePlugin({
     name: "CopyEmojiMarkdown",
     description: "Allows you to copy emojis as formatted string (<:blobcatcozy:1026533070955872337>)",
     tags: ["Emotes", "Utility"],
-    authors: [Devs.HappyEnderman, Devs.Vishnya],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     contextMenus: {
-        "expression-picker"(children, { target }: { target: Target; }) {
-            if (target.dataset.type !== "emoji" || !target.dataset.id) return;
+        "expression-picker": function(children, { target }: { target: Target; }) {
+            if (target.dataset.type !== "emoji") return;
 
             children.push(
                 <Menu.MenuItem
                     id="vc-copy-emoji-markdown"
-                    label="Copy Emoji Markdown"
+                    label={t("Copy Emoji Markdown")}
                     action={() => {
                         copyWithToast(
                             getEmojiMarkdown(target, settings.store.copyUnicode),
                             "Success! Copied emoji markdown."
                         );
                     }}
-                    leadingAccessory={{ type: "icon", icon: CopyIcon }}
                 />
             );
         },

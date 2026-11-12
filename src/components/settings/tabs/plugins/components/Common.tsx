@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Paragraph } from "@components/Paragraph";
+import { enableScreenStyles } from "@api/Styles";
 import { classNameFactory } from "@utils/css";
+import { t, useI18n } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { DefinedSettings, PluginSettingDefCommon } from "@utils/types";
-import { useEffect, useState } from "@webpack/common";
+import { Text } from "@webpack/common";
 import { PropsWithChildren } from "react";
 
 export const cl = classNameFactory("vc-plugins-setting-");
@@ -29,18 +30,10 @@ interface SettingBaseProps<T> {
 export type SettingProps<T extends PluginSettingDefCommon> = SettingBaseProps<T>;
 export type ComponentSettingProps<T extends Omit<PluginSettingDefCommon, "description" | "placeholder">> = SettingBaseProps<T>;
 
-// Local state that resets whenever the stored value changes, e.g. when a setting is changed from outside the settings modal
-export function useSettingState<T>(value: T) {
-    const [state, setState] = useState(value);
-    useEffect(() => setState(value), [value]);
-
-    return [state, setState] as const;
-}
-
 export function resolveError(isValidResult: boolean | string) {
     if (typeof isValidResult === "string") return isValidResult;
 
-    return isValidResult ? null : "Invalid input provided";
+    return isValidResult ? null : t("Hmm, that doesn't look quite right. Mind checking it?");
 }
 
 interface SettingsSectionProps extends PropsWithChildren {
@@ -53,16 +46,19 @@ interface SettingsSectionProps extends PropsWithChildren {
 }
 
 export function SettingsSection({ tag: Tag = "div", name, id, description, error, inlineSetting, children }: SettingsSectionProps) {
+    // Plugins draw these in panels of their own too
+    enableScreenStyles();
+    const { t } = useI18n();
     return (
         <Tag className={cl("section")}>
             <div className={classes(cl("content"), inlineSetting && cl("inline"))}>
                 <div className={cl("label")}>
-                    <Paragraph size="md" weight="medium" className={cl("title")}>{name ?? wordsToTitle(wordsFromCamel(id))}</Paragraph>
-                    {description && <Paragraph className={cl("description")}>{description}</Paragraph>}
+                    <Text className={cl("title")} variant="text-md/medium">{t(name ?? wordsToTitle(wordsFromCamel(id)))}</Text>
+                    {description && <Text className={cl("description")} variant="text-sm/normal">{t(description)}</Text>}
                 </div>
                 {children}
             </div>
-            {error && <Paragraph className={cl("error")}>{error}</Paragraph>}
+            {error && <Text className={cl("error")} variant="text-sm/normal">{error}</Text>}
         </Tag>
     );
 }

@@ -1,91 +1,30 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import "./fixDiscordBadgePadding.css";
 
-import { _getBadges, BadgePosition, BadgeRarity, BadgeUserArgs, DirectoryBadge, ProfileBadge } from "@api/Badges";
+import { _getBadges, AddedBadge, addProfileBadge, BadgeListProcessors, BadgePosition, BadgeRarity, BadgeUserArgs, ProfileBadge, removeProfileBadge } from "@api/Badges";
+import { Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Flex } from "@components/Flex";
-import { Heart } from "@components/Heart";
-import { CopyIcon, LinkIcon } from "@components/Icons";
-import { Paragraph } from "@components/Paragraph";
-import DonateButton from "@components/settings/DonateButton";
-import { openContributorModal } from "@components/settings/tabs";
-import { Text } from "@components/Text";
-import { Devs } from "@utils/constants";
+import { Devs, DevsById } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
-import { Margins } from "@utils/margins";
-import { shouldShowContributorBadge } from "@utils/misc";
+import { EndcordDeveloperIds, isEndcordDeveloper, isPluginDev } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { ContextMenuApi, Menu, Modal, openModal, showToast, UserStore } from "@webpack/common";
+import { ContextMenuApi, Menu, UserStore } from "@webpack/common";
+import type { ReactElement } from "react";
 
-const ContributorBadge: ProfileBadge = {
-    id: "endcord_contributor_badge",
-    description: "Endcord Contributor",
-    infoLabel: "Endcord",
-    rarity: BadgeRarity.MYTHIC,
-    iconSrc: "https://cdn.discordapp.com/emojis/1562267648857997356.webp?size=128",
-    largeIconSrc: "https://cdn.discordapp.com/emojis/1562267648857997356.webp?size=512",
-    position: BadgePosition.START,
-    shouldShow: ({ userId }) => shouldShowContributorBadge(userId),
-    onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId))
-};
+import { CONTRIBUTOR_ICON, DEVELOPER_ICON } from "./badgeArt";
+import { openBadgeDetails } from "./BadgeDetails";
+import { renderBadgeHoverCard } from "./BadgeHoverCard";
+import { describeDiscordBadge, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
 
-
-interface DonorBadge {
-    tooltip?: string;
-    badge: string;
-    "2"?: 1;
-}
-
-let DonorBadges = {} as Record<string, Array<DonorBadge>>;
-let DirectoryBadges = {} as Record<string, DirectoryBadge>;
-
-async function loadBadges(noCache = false) {
-    const init = {} as RequestInit;
-    if (noCache)
-        init.cache = "no-cache";
-
-    DonorBadges = await fetch("https://badges.endcord.dev/badges.json", init)
-        .then(r => r.json());
-}
-
-let intervalId: any;
-
-function toDirectoryBadge(b: ProfileBadge, userId: string): DirectoryBadge {
-    const id = `vc-${userId}-${b.id}`;
-
-    return DirectoryBadges[id] ??= {
-        badge_id: id,
-        name: b.name ?? b.description ?? "",
-        description: b.detail ?? b.description ?? b.name ?? "",
-        info_label: b.infoLabel ?? "Endcord",
-        rarity: b.rarity ?? BadgeRarity.COMMON,
-        simple_icon_url: b.iconSrc!,
-        complex_icon_static_url: b.largeIconSrc ?? b.iconSrc!,
-        obtained_at: b.obtainedAt,
-        is_earnable: false,
-        owned: true,
-        hidden: false,
-        tiers: []
-    };
-}
+let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
+const withOwner = new WeakMap<object, any>();
 
 function BadgeContextMenu({ badge }: { badge: Omit<ProfileBadge, "id"> & BadgeUserArgs; }) {
     return (
@@ -97,27 +36,65 @@ function BadgeContextMenu({ badge }: { badge: Omit<ProfileBadge, "id"> & BadgeUs
             {badge.description && (
                 <Menu.MenuItem
                     id="vc-badge-copy-name"
-                    label="Copy Badge Name"
+                    label={t("Copy Badge Name")}
                     action={() => copyWithToast(badge.description!)}
-                    leadingAccessory={{ type: "icon", icon: CopyIcon }}
                 />
             )}
             {badge.iconSrc && (
                 <Menu.MenuItem
                     id="vc-badge-copy-link"
-                    label="Copy Badge Image Link"
+                    label={t("Copy Badge Image Link")}
                     action={() => copyWithToast(badge.iconSrc!)}
-                    leadingAccessory={{ type: "icon", icon: LinkIcon }}
                 />
             )}
         </Menu.Menu>
     );
 }
 
+function viewPlugins(userId: string) {
+    const user = UserStore.getUser(userId);
+    if (!user) return;
+
+    // Required when it's needed: the dialog lists every plugin, and the plugin list loads this file
+    const { openContributorModal } = require("@components/settings/tabs/plugins/ContributorModal") as typeof import("@components/settings/tabs/plugins/ContributorModal");
+    openContributorModal(user);
+}
+
+function endcordBadge(id: string, icon: string, title: string, flavor: string, text: () => string, shouldShow: (userId: string) => boolean): ProfileBadge {
+    return {
+        id,
+        position: BadgePosition.START,
+        shouldShow: ({ userId }) => !Settings.hideContributorBadge && shouldShow(userId),
+        getBadges: () => [{
+            id,
+            description: t(title),
+            title: t(title),
+            body: t(flavor),
+            rarity: BadgeRarity.CELESTIAL,
+            iconSrc: icon,
+            details: ({ userId }) => ({
+                flavor: t(flavor),
+                era: "Endcord",
+                label: t("Endcord Badge"),
+                text: text(),
+                notice: t("Only people who use Endcord can see this badge."),
+                action: { text: t("View their plugins"), onClick: () => viewPlugins(userId) }
+            })
+        }]
+    };
+}
+
+// The people who make Endcord, and everyone who has helped build it. There are only a handful of each, so both sit
+// above anything Discord gives out
+const DeveloperBadge = endcordBadge("endcord_developer", DEVELOPER_ICON, "Endcord Developer", "Makes Endcord",
+    () => t("Given to the people who make Endcord. {count} people have it.", { count: EndcordDeveloperIds.length }), isEndcordDeveloper);
+const ContributorBadge = endcordBadge("endcord_contributor", CONTRIBUTOR_ICON, "Endcord Contributor", "Helped build Endcord",
+    () => t("Given to the people who helped build Endcord. {count} people have it.", { count: Object.keys(DevsById).length }), isPluginDev);
+
 export default definePlugin({
     name: "BadgeAPI",
     description: "API to add badges to users",
-    authors: [Devs.Megu, Devs.Ven, Devs.TheSun, Devs.kaxtusik],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     required: true,
     patches: [
         {
@@ -126,6 +103,29 @@ export default definePlugin({
                 {
                     match: /alt:" ","aria-hidden":!0,src:.{0,50}(\i).iconSrc/,
                     replace: "...$1.props,$&"
+                },
+                // Every badge Discord would give a plain tooltip gets Discord's own rich hover card instead,
+                // the one Nitro badges have: the big picture, the name and a line under it
+                {
+                    match: /return(\(0,\i\.jsx\)\(\i\.\i,\{__unsupportedReactNodeAsText:(\i),forceOpen:(\i),delay:(?:\i\.\i|\d+),ariaHidden:!0,children:(\i)\},(`\$\{(\i)\.id\}-\$\{\i\}`)\))/,
+                    replace: "return $self.renderBadgeHoverCard($6,$4,$2,$3,$5)??$1"
+                },
+                // With Discord's badge pages on, it would look ours up in its own catalog and find nothing,
+                // so ours take the path above and keep their own name, rarity and details
+                {
+                    match: /if\((\i)\)(return\(0,\i\.jsx\)\(\i,\{shouldShow:!?\i,legacyBadgeId:(\i)\.id)/,
+                    replace: "if($1&&!$3.isEndcordBadge)$2"
+                },
+                // Nitro's levels get the small card Discord's badge pages use, with the level's art, name and
+                // rarity, instead of the big promotional one
+                {
+                    match: /(badgeId:\i\.id,targetElementRef:\i,)mode:"tooltip"/,
+                    replace: '$1mode:"mini-tooltip"'
+                },
+                // Clicking one of Discord's badges opens its page, as it does with Discord's badge pages on
+                {
+                    match: /(\i)\.preventDefault\(\),\(0,\i\.openBadgeDirectoryModal\)\(\{initialBadgeId:\(0,\i\.\i\)\((\i)\.id\),targetUserId:(\i)\?\.userId.{0,80}?\}\);return\}/,
+                    replace: "$&if($self.openDiscordBadgePage($2,$3?.userId,$1))return;"
                 },
                 // Path with 2026-04-badge-discovery OFF
                 {
@@ -141,60 +141,54 @@ export default definePlugin({
                 {
                     match: /href:(\i)\.link/,
                     replace: "...$self.getBadgeMouseEventHandlers($1),$&"
-                },
-                {
-                    match: /legacyBadgeId:(\i),userId:(\i),.{0,100}?=\i,\i=\(0,\i\.\i\)\(\1\)/,
-                    replace: "$&??$self.getDirectoryBadgeId($1,$2)"
                 }
             ]
         },
         {
             find: "getLegacyUsername(){",
             replacement: {
-                match: /getBadges\(\)\{.{0,100}?return\[/,
-                replace: "$&...$self.getBadges(this),"
-            }
-        },
-        {
-            find: '"BadgeDirectoryStore"',
-            replacement: {
-                match: /getBadgeById\((\i),(\i)\)\{/,
-                replace: "$&const endcordBadge=$self.getDirectoryBadge($1);if(endcordBadge)return endcordBadge;"
-            }
-        },
-        {
-            find: "badge_directory_closed",
-            replacement: {
-                match: /(\i\.\i\.getBadges\((\i)\))(?=:\[\],\[\2\]\))/,
-                replace: "[...$1,...$self.getDirectoryBadges($2)]"
+                // Keep Discord's list under a new name, add our badges to it, and let plugins reorder or filter the result
+                match: /getBadges\(\)\{(.{0,100}?)return\[/,
+                replace: "getBadges(){return $self.processBadges(this,this.ecUnprocessedBadges())}ecUnprocessedBadges(){$1return[...$self.getBadges(this),"
             }
         }
     ],
+
+    start() {
+        addProfileBadge(DeveloperBadge);
+        addProfileBadge(ContributorBadge);
+        loadLearnedBadges().catch(e => new Logger("BadgeAPI").error("Couldn't load the badges Discord described before", e));
+    },
+
+    stop() {
+        removeProfileBadge(DeveloperBadge);
+        removeProfileBadge(ContributorBadge);
+    },
+
+    flux: {
+        // Whatever Discord's servers say about badges is kept, so they read right everywhere afterwards
+        BADGE_DIRECTORY_FETCH_SUCCESS({ badges }: { badges: unknown; }) {
+            learnBadges(badges);
+        },
+        BADGE_FETCH_SUCCESS({ badge }: { badge: unknown; }) {
+            learnBadges([badge]);
+        },
+        BADGE_SUMMARY_FETCH_SUCCESS({ badge }: { badge: unknown; }) {
+            learnBadges([badge]);
+        },
+        CONNECTION_OPEN() {
+            // The account's own catalog describes every badge it can earn, with each level's rarity
+            setTimeout(() => requestCatalog(UserStore.getCurrentUser()?.id), 10_000);
+        }
+    },
 
     // for access from the console or other plugins
     get DonorBadges() {
         return DonorBadges;
     },
 
-    toolboxActions: {
-        async "Refetch Badges"() {
-            await loadBadges(true);
-            showToast({ text: "Successfully refetched badges!", variant: "success" });
-        }
-    },
-
-    userProfileBadge: ContributorBadge,
-
-    async start() {
-        await loadBadges();
-
-        clearInterval(intervalId);
-        intervalId = setInterval(loadBadges, 1000 * 60 * 30); // 30 minutes
-    },
-
-    async stop() {
-        clearInterval(intervalId);
-        DirectoryBadges = {};
+    set DonorBadges(val: any) {
+        DonorBadges = val;
     },
 
     getBadges(profile: { userId: string; guildId: string; }) {
@@ -208,23 +202,33 @@ export default definePlugin({
         }
     },
 
-    getDirectoryBadge(id: string) {
-        return DirectoryBadges[id];
-    },
+    processBadges(profile: { userId: string; guildId: string; }, badges: any[]) {
+        if (!profile) return badges;
 
-    getDirectoryBadges(userId: string) {
-        return this.getBadges({ userId, guildId: "" })
-            .filter(b => b.iconSrc)
-            .map(b => toDirectoryBadge(b, userId));
-    },
+        for (const process of BadgeListProcessors) {
+            try {
+                badges = process(profile, badges) ?? badges;
+            } catch (e) {
+                new Logger("BadgeAPI#processBadges").error(e);
+            }
+        }
 
-    getDirectoryBadgeId(badgeId: string, userId?: string) {
-        if (!userId) return;
+        // Discord's own badges don't say whose they are, and their hover card and page read that profile's catalog.
+        // The copies are kept, so a badge stays the same object from one render to the next
+        badges = badges.map(badge => {
+            if (!badge || typeof badge !== "object" || badge.userId) return badge;
 
-        const badge = this.getBadges({ userId, guildId: "" })
-            .find(b => b.id === badgeId && b.iconSrc);
+            let copy = withOwner.get(badge);
+            if (copy?.userId !== profile.userId) withOwner.set(badge, copy = { ...badge, userId: profile.userId });
+            return copy;
+        });
 
-        if (badge) return toDirectoryBadge(badge, userId).badge_id;
+        // Endcord's badges always lead, the developer one first
+        const ours = [DeveloperBadge.id, ContributorBadge.id].map(id => badges.find(badge => badge?.id === id)).filter(Boolean);
+        if (ours.length) badges = [...ours, ...badges.filter(badge => !ours.includes(badge))];
+
+        rememberProfileBadges(profile.userId, badges);
+        return badges;
     },
 
     renderBadgeComponent: ErrorBoundary.wrap((badge: ProfileBadge & BadgeUserArgs) => {
@@ -232,105 +236,68 @@ export default definePlugin({
         return <Component {...badge} />;
     }, { noop: true }),
 
+    renderBadgeHoverCard(badge: any, anchor: ReactElement<any>, tooltipText: unknown, forceOpen: boolean, key: string) {
+        try {
+            return renderBadgeHoverCard(badge, anchor, tooltipText, forceOpen, key);
+        } catch (e) {
+            new Logger("BadgeAPI#renderBadgeHoverCard").error(e);
+            return null;
+        }
+    },
+
+    /** Opens the page for one of Discord's badges. Returns false for anything Discord should handle itself */
+    openDiscordBadgePage(badge: any, userId: string | undefined, event: React.MouseEvent) {
+        try {
+            if (!badge || badge.isEndcordBadge || !describeDiscordBadge(badge, userId ?? badge.userId)) return false;
+
+            event.preventDefault();
+            openBadgeDetails({ ...badge, userId: userId ?? badge.userId });
+            return true;
+        } catch (e) {
+            new Logger("BadgeAPI#openDiscordBadgePage").error(e);
+            return false;
+        }
+    },
 
     getBadgeMouseEventHandlers(badge: ProfileBadge & BadgeUserArgs) {
         const handlers = {} as Record<string, (e: React.MouseEvent) => void>;
 
-        if (!badge) return handlers; // sanity check
+        if (!badge) return handlers;
 
         const { onClick, onContextMenu } = badge;
 
         if (onClick) handlers.onClick = e => onClick(e, badge);
+        // A badge Endcord added opens its details, like Discord's own badges open their page
+        else if ((badge as AddedBadge).isEndcordBadge && badge.iconSrc && !badge.link) handlers.onClick = e => {
+            e.preventDefault();
+            openBadgeDetails(badge as AddedBadge);
+        };
         if (onContextMenu) handlers.onContextMenu = e => onContextMenu(e, badge);
 
         return handlers;
     },
 
     getDonorBadges(userId: string) {
-        return DonorBadges[userId]?.map((badge, idx) => {
-            let largeIconSrc: string | undefined = undefined;
-            if (badge["2"]) {
-                const url = new URL(badge.badge);
-                url.pathname = url.pathname.replace(/(\.[^/.]+)$/, "@2x$1");
-                largeIconSrc = url.toString();
-            }
+        const userBadges = DonorBadges[userId];
+        if (!userBadges) return [];
 
-            return {
-                id: `endcord_donor_badge_${idx}`,
-                iconSrc: badge.badge,
-                largeIconSrc,
-                description: badge.tooltip,
-                name: badge.tooltip,
-                infoLabel: "Endcord Donor",
-                rarity: BadgeRarity.MYTHIC,
-                position: BadgePosition.START,
-                props: {
-                    style: {
-                        borderRadius: "50%",
-                        transform: "scale(0.9)" // The image is a bit too big compared to default badges
-                    }
-                },
-                onContextMenu(event, badge) {
-                    ContextMenuApi.openContextMenu(event, () => <BadgeContextMenu badge={badge} />);
-                },
-                onClick() {
-                    openModal(props => (
-                        <ErrorBoundary noop onError={() => {
-                            props.onClose();
-                            EndcordNative.native.openExternal("https://github.com/sponsors/Vendicated");
-                        }}>
-                            <Modal
-                                {...props}
-                                title={
-                                    <Text
-                                        size="lg"
-                                        weight="semibold"
-                                        style={{
-                                            width: "100%",
-                                            textAlign: "center"
-                                        }}
-                                    >
-                                        <Flex justifyContent="center" alignItems="center" gap="0.5em">
-                                            <Heart />
-                                            Endcord Donor
-                                        </Flex>
-                                    </Text>
-                                }
-                            >
-                                <div>
-                                    <Flex>
-                                        <img
-                                            role="presentation"
-                                            src="https://cdn.discordapp.com/emojis/1026533070955872337.png"
-                                            alt=""
-                                            style={{ margin: "auto" }}
-                                        />
-                                        <img
-                                            role="presentation"
-                                            src="https://cdn.discordapp.com/emojis/1026533090627174460.png"
-                                            alt=""
-                                            style={{ margin: "auto" }}
-                                        />
-                                    </Flex>
-                                    <div style={{ padding: "1em" }}>
-                                        <Paragraph>
-                                            This badge is a special perk for Endcord Donors
-                                        </Paragraph>
-                                        <Paragraph className={Margins.top16}>
-                                            Please consider supporting the development of Endcord by becoming a donor. It would mean a lot!!
-                                        </Paragraph>
-                                    </div>
-                                </div>
-                                <div>
-                                    <Flex justifyContent="center" style={{ width: "100%" }}>
-                                        <DonateButton variant="overlayPrimary" />
-                                    </Flex>
-                                </div>
-                            </Modal>
-                        </ErrorBoundary>
-                    ));
-                },
-            } satisfies ProfileBadge;
-        });
+        const list = Array.isArray(userBadges) ? userBadges : ((userBadges as any)?.badges || []);
+        return list.map((badge: any, idx: number) => ({
+            id: badge.id ?? `endcord_donor_badge_${idx}`,
+            iconSrc: badge.badge || badge.icon || badge.iconSrc,
+            description: badge.tooltip || badge.description || "Custom Badge",
+            discordBadge: badge.discordBadge,
+            position: BadgePosition.START,
+            props: {
+                style: {
+                    background: "transparent",
+                    backgroundColor: "transparent",
+                    transform: "scale(1.05)"
+                }
+            },
+            onContextMenu(event, badge) {
+                ContextMenuApi.openContextMenu(event, () => <BadgeContextMenu badge={badge} />);
+            }
+        } satisfies ProfileBadge));
     }
 });

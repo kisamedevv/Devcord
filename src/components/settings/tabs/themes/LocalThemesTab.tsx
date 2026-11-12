@@ -6,21 +6,21 @@
 
 import { isPluginEnabled } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
-import { Card } from "@components/Card";
+import { CodeIcon, FolderPixelIcon, RestartPixelIcon } from "@components/EndcordIcons";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
-import { FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
+import { PencilIcon, PlusIcon } from "@components/Icons";
 import { Link } from "@components/Link";
-import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
-import { UserThemeHeader } from "@main/themes";
-import ClientThemePlugin from "@plugins/clientTheme";
+import type { UserThemeHeader } from "@main/themes";
 import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
 import { findLazy } from "@webpack";
-import { useEffect, useRef, useState } from "@webpack/common";
+import { Forms, useEffect, useRef, useState } from "@webpack/common";
 import type { ComponentType, Ref, SyntheticEvent } from "react";
+
+import Plugins from "~plugins";
 
 import { ThemeCard } from "./ThemeCard";
 
@@ -45,10 +45,15 @@ function onLocalThemeChange(fileName: string, value: boolean) {
     }
 }
 
-async function doUploadThemes(files: ArrayLike<File>) {
-    const uploads = Array.from(files, file => {
+async function onFileUpload(e: SyntheticEvent<HTMLInputElement>) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!e.currentTarget?.files?.length) return;
+    const { files } = e.currentTarget;
+
+    const uploads = Array.from(files).filter(file => file.name.endsWith(".css")).map(file => {
         const { name } = file;
-        if (!name.endsWith(".css")) return;
 
         return new Promise<void>((resolve, reject) => {
             const reader = new FileReader();
@@ -64,48 +69,8 @@ async function doUploadThemes(files: ArrayLike<File>) {
     await Promise.all(uploads);
 }
 
-async function onFileUpload(e: SyntheticEvent<HTMLInputElement>) {
-    e.stopPropagation();
-    e.preventDefault();
-
-    if (!e.currentTarget?.files?.length) return;
-    await doUploadThemes(e.currentTarget.files);
-}
-
-function useDropFile(refreshThemes: Function) {
-    useEffect(() => {
-        const onDragOver = (e: DragEvent) => {
-            if (!e.dataTransfer?.items.length) return;
-            if (!Array.from(e.dataTransfer.items).some(item => item.kind === "file" && item.getAsFile()?.name.endsWith(".css")))
-                return;
-
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-        };
-
-        const onDrop = async (e: DragEvent) => {
-            e.preventDefault();
-
-            if (!e.dataTransfer?.files.length) return;
-
-            await doUploadThemes(
-                Array.from(e.dataTransfer.files).filter(file => file.name.endsWith(".css"))
-            );
-
-            refreshThemes();
-        };
-
-        window.addEventListener("dragover", onDragOver);
-        window.addEventListener("drop", onDrop);
-
-        return () => {
-            window.removeEventListener("dragover", onDragOver);
-            window.removeEventListener("drop", onDrop);
-        };
-    }, []);
-}
-
 export function LocalThemesTab() {
+    const { t } = useI18n();
     const settings = useSettings(["enabledThemes"]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -116,41 +81,22 @@ export function LocalThemesTab() {
         refreshLocalThemes();
     }, []);
 
-    // This condition is compile time so conditional hook is okay
-    if (IS_WEB) useDropFile(refreshLocalThemes);
-
     async function refreshLocalThemes() {
         const themes = await EndcordNative.themes.getThemesList();
         setUserThemes(themes);
     }
 
     return (
-        <Flex flexDirection="column" gap="1em">
-            <Card>
-                <Heading className={Margins.bottom8}>Find Themes:</Heading>
-                <Flex gap="0.4em" flexDirection="column" justifyContent="flex-start" className={Margins.bottom8}>
-                    <span>&ndash; <Link href="https://betterdiscord.app/themes">BetterDiscord theme list</Link></span>
-                    <span>&ndash; <Link href="https://github.com/search?q=discord+theme">GitHub</Link></span>
-                </Flex>
-                <Paragraph>If using the BD site, click on "Download" and place the downloaded .theme.css file into your themes folder.</Paragraph>
-            </Card>
-
-            <Card>
-                <Heading className={Margins.bottom8}>External Resources</Heading>
-                <Paragraph>For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.</Paragraph>
-                <Paragraph>Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.</Paragraph>
-            </Card>
-
+        <Flex flexDirection="column" gap="1.5em">
             <section>
-                <Heading className={Margins.bottom8}>Local Themes</Heading>
                 <QuickActionCard>
                     <>
                         {IS_WEB ?
                             (
                                 <QuickAction
                                     text={
-                                        <span>
-                                            Upload Theme
+                                        <span style={{ position: "relative" }}>
+                                            {t("Upload Theme")}
                                             <FileInput
                                                 ref={fileInputRef}
                                                 onChange={async e => {
@@ -163,35 +109,38 @@ export function LocalThemesTab() {
                                         </span>
                                     }
                                     Icon={PlusIcon}
-                                    style={{ position: "relative" }}
                                 />
                             ) : (
                                 <QuickAction
-                                    text="Open Themes Folder"
+                                    text={t("Open Themes Folder")}
                                     action={() => EndcordNative.themes.openFolder()}
-                                    Icon={FolderIcon}
+                                    Icon={FolderPixelIcon}
                                 />
                             )}
                         <QuickAction
-                            text="Load missing Themes"
+                            text={t("Load missing Themes")}
                             action={refreshLocalThemes}
-                            Icon={RestartIcon}
+                            Icon={RestartPixelIcon}
                         />
                         <QuickAction
-                            text="Edit QuickCSS"
+                            text={t("Edit QuickCSS")}
                             action={() => EndcordNative.quickCss.openEditor()}
-                            Icon={PaintbrushIcon}
+                            Icon={CodeIcon}
                         />
 
-                        {isPluginEnabled(ClientThemePlugin.name) && (
+                        {isPluginEnabled("ClientTheme") && (
                             <QuickAction
-                                text="Edit ClientTheme"
-                                action={() => openPluginModal(ClientThemePlugin)}
+                                text={t("Edit ClientTheme")}
+                                action={() => openPluginModal(Plugins.ClientTheme)}
                                 Icon={PencilIcon}
                             />
                         )}
                     </>
                 </QuickActionCard>
+
+                {userThemes?.length === 0 && (
+                    <Paragraph className="ec-themes-empty">{t("No themes yet. Add a .css file and it shows up here.")}</Paragraph>
+                )}
 
                 <div className={cl("grid")}>
                     {userThemes?.map(theme => (
@@ -208,6 +157,21 @@ export function LocalThemesTab() {
                         />
                     ))}
                 </div>
+            </section>
+
+            <section>
+                <Forms.FormTitle tag="h5">{t("Find Themes:")}</Forms.FormTitle>
+                <div className="ec-themes-sources">
+                    <Link href="https://betterdiscord.app/themes">{t("BetterDiscord Themes")}</Link>
+                    <Link href="https://github.com/search?q=discord+theme">GitHub</Link>
+                </div>
+                <Forms.FormText>{t("If using the BD site, click on \"Download\" and place the downloaded .theme.css file into your themes folder.")}</Forms.FormText>
+            </section>
+
+            <section>
+                <Forms.FormTitle tag="h5">{t("External Resources")}</Forms.FormTitle>
+                <Forms.FormText>{t("For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.")}</Forms.FormText>
+                <Forms.FormText>{t("Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.")}</Forms.FormText>
             </section>
         </Flex>
     );

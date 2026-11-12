@@ -1,25 +1,13 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType, PluginNative, SettingsDefinition } from "@utils/types";
-import { showToast } from "@webpack/common";
+import { showToast, Toasts } from "@webpack/common";
 import type { MouseEvent } from "react";
 
 interface URLReplacementRule {
@@ -84,7 +72,7 @@ export default definePlugin({
     name: "OpenInApp",
     description: "Open links in their respective apps instead of your browser",
     tags: ["Utility"],
-    authors: [Devs.Ven, Devs.surgedevs],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings: pluginSettings,
 
     patches: [
@@ -104,7 +92,8 @@ export default definePlugin({
                     replace: "true"
                 },
                 {
-                    match: /\(0,\i\.\i\)\(\)(?=\|\|\(\i=window\.open)/,
+                    // The desktop check before the blank window opens; Canary mangles its name
+                    match: /\(0,\i\.\i\)\(\)(?=\|\|\(\i=window\.open\("","_blank"\))/,
                     replace: "true"
                 }
             ]
@@ -135,7 +124,7 @@ export default definePlugin({
             }
 
             if (rule.match.test(url)) {
-                showToast({ text: "Opened link in native app", variant: "success" });
+                showToast("Opened link in native app", Toasts.Type.SUCCESS);
 
                 const newUrl = url.replace(rule.match, rule.replace);
                 EndcordNative.native.openExternal(newUrl);

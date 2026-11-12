@@ -16,18 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { definePluginSettings, migratePluginSetting, migratePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSetting, migrateRemovedPlugin } from "@api/Settings";
 import { Button, LinkButton } from "@components/Button";
 import { Card } from "@components/Card";
 import { Heading } from "@components/Heading";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
+import { Activity, ActivityAssets, ActivityButton } from "@endcord/discord-types";
+import { ActivityFlags, ActivityStatusDisplayType, ActivityType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { promptToRestart } from "@utils/promptToRestart";
 import { useAwaiter, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import { Activity, ActivityAssets, ActivityButton } from "@endcord/discord-types";
-import { ActivityFlags, ActivityStatusDisplayType, ActivityType } from "@endcord/discord-types/enums";
 import { ApplicationAssetUtils, AuthenticationStore, FluxDispatcher, PresenceStore } from "@webpack/common";
 
 import { LastFMScrobbler } from "./lastfm";
@@ -98,18 +99,21 @@ export const settings = definePluginSettings({
         ] as const
     },
     instanceBaseURL: {
+        sensitive: true,
         description: "The base url of your ListenBrainz instance.",
         type: OptionType.STRING,
         placeholder: "https://example.org",
         onChange: invalidateListenBrainzCache
     },
     instanceAPIBaseUrl: {
+        sensitive: true,
         description: "The base url of your ListenBrainz API.",
         type: OptionType.STRING,
         placeholder: "https://api.example.org",
         onChange: invalidateListenBrainzCache
     },
     apiKey: {
+        sensitive: true,
         displayName: "API Key",
         description: "Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key",
         type: OptionType.STRING,
@@ -249,16 +253,16 @@ function CustomInstanceAboutComponent() {
     if (!instanceAPIBaseUrl || !instanceBaseURL)
         return (
             <Card variant="danger">
-                <Heading className={Margins.bottom8}>Invalid ListenBrainz compatible instance</Heading>
-                <Paragraph>Provide both the <b>API Base URL</b> and the <b>Instance Base URL</b> for your custom ListenBrainz instance or switch back to ListenBrainz/Last.FM</Paragraph>
+                <Heading tag="h5">{t("Invalid ListenBrainz compatible instance")}</Heading>
+                <Paragraph>{t("Provide both the")}{" "}<b>{t("API Base URL")}</b>{" "}{t("and the")}{" "}<b>{t("Instance Base URL")}</b>{" "}{t("for your custom ListenBrainz instance or switch back to ListenBrainz/Last.FM")}</Paragraph>
             </Card>
         );
 
     if (!cspAllowed)
         return (
             <Card variant="warning">
-                <Heading className={Margins.bottom8}>Allow Endcord to connect to ListenBrainz instance</Heading>
-                <Paragraph>To use your custom ListenBrainz instance, you must first allow Endcord to connect to it.</Paragraph>
+                <Heading tag="h5">{t("Allow Endcord to connect to ListenBrainz instance")}</Heading>
+                <Paragraph>{t("To use your custom ListenBrainz instance, you must first allow Endcord to connect to it.")}</Paragraph>
                 <Button
                     size="small"
                     className={Margins.top8}
@@ -272,22 +276,21 @@ function CustomInstanceAboutComponent() {
                         promptToRestart("relaunch");
                     }}
                 >
-                    Allow Instance
-                </Button>
+                    {t("Allow Instance")}</Button>
             </Card>
         );
 
     return null;
 }
 
-migratePluginSettings("MusicRichPresence", "LastFMRichPresence");
+migrateRemovedPlugin("MusicRichPresence", "LastFMRichPresence", { keepSettings: true });
 migratePluginSetting("MusicRichPresence", "showLastFmLogo", "showLogo");
 export default definePlugin({
     name: "MusicRichPresence",
     description: "Rich Presence for Last.FM/Listenbrainz",
     tags: ["Activity", "Media"],
     searchTerms: ["lastfm", "LastFMRichPresence"],
-    authors: [Devs.Rini, Devs.Ven, Devs.angelcube, Devs.RuiNtD, Devs.blahajZip, Devs.archeruwu],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 
@@ -295,10 +298,10 @@ export default definePlugin({
         if (settings.store.scrobblerBackend === "lastfm")
             return (
                 <Card>
-                    <Heading tag="h4" className={Margins.bottom20}>Last.FM</Heading>
-                    <Heading className={Margins.bottom8}>How to create an API key</Heading>
-                    <Paragraph>Set <strong>Application name</strong> and <strong>Application description</strong> to anything and leave the rest blank.</Paragraph>
-                    <LinkButton size="small" href="https://www.last.fm/api/account/create" className={Margins.top8}>Create API Key</LinkButton>
+                    <Heading tag="h2">{t("Last.FM")}</Heading>
+                    <Heading tag="h5">{t("How to create an API key")}</Heading>
+                    <Paragraph>{t("Set")}{" "}<strong>{t("Application name")}</strong> and <strong>{t("Application description")}</strong>{" "}{t("to anything and leave the rest blank.")}</Paragraph>
+                    <LinkButton size="small" href="https://www.last.fm/api/account/create" className={Margins.top8}>{t("Create API Key")}</LinkButton>
                 </Card>
             );
 
@@ -380,9 +383,9 @@ export default definePlugin({
         const statusName = (() => {
             switch (settings.store.nameFormat) {
                 case NameFormat.ArtistFirst:
-                    return trackData.artist + " - " + trackData.name;
+                    return `${trackData.artist} - ${trackData.name}`;
                 case NameFormat.SongFirst:
-                    return trackData.name + " - " + trackData.artist;
+                    return `${trackData.name} - ${trackData.artist}`;
                 case NameFormat.ArtistOnly:
                     return trackData.artist;
                 case NameFormat.SongOnly:

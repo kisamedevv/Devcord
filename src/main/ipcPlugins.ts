@@ -1,25 +1,15 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { IpcEvents } from "@shared/IpcEvents";
 import { ipcMain } from "electron";
 
 import PluginNatives from "~pluginNatives";
+
+import { handleIpc } from "./utils/ipc";
 
 const PluginIpcMappings = {} as Record<string, Record<string, string>>;
 export type PluginIpcMappings = typeof PluginIpcMappings;
@@ -32,7 +22,7 @@ for (const [plugin, methods] of Object.entries(PluginNatives)) {
 
     for (const [methodName, method] of entries) {
         const key = `EndcordPluginNative_${plugin}_${methodName}`;
-        ipcMain.handle(key, method);
+        handleIpc(key, method);
         mappings[methodName] = key;
     }
 }

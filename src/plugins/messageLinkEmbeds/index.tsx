@@ -1,33 +1,22 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { addMessageAccessory, removeMessageAccessory } from "@api/MessageAccessories";
 import { updateMessage } from "@api/MessageUpdater";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
-import { Button } from "@components/Button";
-import { Span } from "@components/Span";
-import { Devs } from "@utils/constants.js";
+import { Channel, Message } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import { classes } from "@utils/misc";
 import { Queue } from "@utils/Queue";
 import definePlugin, { OptionType } from "@utils/types";
-import { Channel, Message } from "@endcord/discord-types";
 import { findComponentByCodeLazy, findComponentLazy, findCssClassesLazy } from "@webpack";
 import {
+    Button,
     ChannelStore,
     Constants,
     GuildStore,
@@ -37,6 +26,7 @@ import {
     PermissionsBits,
     PermissionStore,
     RestAPI,
+    Text,
     UserStore
 } from "@webpack/common";
 import { ComponentType, JSX } from "react";
@@ -46,12 +36,11 @@ const messageCache = new Map<string, {
     fetched: boolean;
 }>();
 
-const getCacheKey = (channelId: string, messageId: string) => `${channelId}:${messageId}`;
-
 const Embed = findComponentLazy(m => m.prototype?.renderSuppressButton);
 const ChannelMessage = findComponentByCodeLazy("childrenExecutedCommand:", ".hideAccessories");
 let AutoModEmbed: ComponentType<any> = () => null;
 
+const SearchResultClasses = findCssClassesLazy("message", "searchResult");
 const EmbedClasses = findCssClassesLazy("embedAuthorIcon", "embedAuthor", "embedAuthor", "embedMargin");
 
 const MessageDisplayCompact = getUserSettingLazy("textAndImages", "messageDisplayCompact")!;
@@ -123,26 +112,23 @@ const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <Button onClick={() => messageCache.clear()}>
-                Clear the linked message cache
-            </Button>
+                {t("Clear the linked message cache")}</Button>
         )
     }
 });
 
 
-async function fetchMessage(channelId: string, messageId: string) {
-    const cacheKey = getCacheKey(channelId, messageId);
-
-    const cached = messageCache.get(cacheKey);
+async function fetchMessage(channelID: string, messageID: string) {
+    const cached = messageCache.get(messageID);
     if (cached) return cached.message;
 
-    messageCache.set(cacheKey, { fetched: false });
+    messageCache.set(messageID, { fetched: false });
 
     const res = await RestAPI.get({
-        url: Constants.Endpoints.MESSAGES(channelId),
+        url: Constants.Endpoints.MESSAGES(channelID),
         query: {
             limit: 1,
-            around: messageId
+            around: messageID
         },
         retries: 2
     }).catch(() => null);
@@ -150,12 +136,10 @@ async function fetchMessage(channelId: string, messageId: string) {
     const msg = res?.body?.[0];
     if (!msg) return;
 
-    if (msg.id !== messageId) return;
-
-    const message = MessageStore.getMessages(msg.channel_id).receiveMessage(msg).get(msg.id);
+    const message: Message = MessageStore.getMessages(msg.channel_id).receiveMessage(msg).get(msg.id);
     if (!message) return;
 
-    messageCache.set(cacheKey, {
+    messageCache.set(message.id, {
         message,
         fetched: true
     });
@@ -172,8 +156,8 @@ function getImages(message: Message): Attachment[] {
             attachments.push({
                 height: height!,
                 width: width!,
-                url: url,
-                proxyURL: proxy_url!
+                url,
+                proxyURL: proxy_url
             });
     }
 
@@ -201,7 +185,7 @@ function noContent(attachments: number, embeds: number) {
 function requiresRichEmbed(message: Message) {
     if (message.components.length) return true;
     if (message.attachments.some(a => !a.content_type?.startsWith("image/"))) return true;
-    if (message.embeds.some(e => e.type !== "image" && (e.type !== "gifv" || tenorRegex.test(e.url!)))) return true;
+    if (message.embeds.some(e => e.type !== "image" && (e.type !== "gifv" || tenorRegex.test(e.url)))) return true;
 
     return false;
 }
@@ -236,37 +220,31 @@ function MessageEmbedAccessory({ message }: { message: Message; }) {
 
     const accessories = [] as (JSX.Element | null)[];
 
-    const seen = new Set<string>();
-    let count = 0;
-    for (const [_, channelId, messageId] of message.content!.matchAll(messageLinkRegex)) {
-        if (embeddedBy.includes(messageId) || embeddedBy.length > 2 || seen.has(messageId) || count >= 5) {
+    for (const [_, channelID, messageID] of message.content.matchAll(messageLinkRegex)) {
+        if (embeddedBy.includes(messageID) || embeddedBy.length > 2) {
             continue;
         }
 
-        seen.add(messageId);
-        count++;
-
-        const linkedChannel = ChannelStore.getChannel(channelId);
+        const linkedChannel = ChannelStore.getChannel(channelID);
         if (!linkedChannel || (!linkedChannel.isPrivate() && !PermissionStore.can(PermissionsBits.VIEW_CHANNEL, linkedChannel))) {
             continue;
         }
 
         const { listMode, idList } = settings.store;
 
-        const isListed = [linkedChannel.guild_id, channelId, message.author.id].some(id => id && idList.includes(id));
+        const isListed = [linkedChannel.guild_id, channelID, message.author.id].some(id => id && idList.includes(id));
 
         if (listMode === "blacklist" && isListed) continue;
         if (listMode === "whitelist" && !isListed) continue;
 
-        const cacheKey = getCacheKey(channelId, messageId);
-        let linkedMessage = messageCache.get(cacheKey)?.message;
+        let linkedMessage = messageCache.get(messageID)?.message;
         if (!linkedMessage) {
-            linkedMessage ??= MessageStore.getMessage(channelId, messageId);
+            linkedMessage ??= MessageStore.getMessage(channelID, messageID);
             if (linkedMessage) {
-                messageCache.set(cacheKey, { message: linkedMessage, fetched: true });
+                messageCache.set(messageID, { message: linkedMessage, fetched: true });
             } else {
 
-                messageFetchQueue.unshift(() => fetchMessage(channelId, messageId)
+                messageFetchQueue.unshift(() => fetchMessage(channelID, messageID)
                     .then(m => m && updateMessage(message.channel_id, message.id))
                 );
                 continue;
@@ -308,20 +286,15 @@ function ChannelMessageEmbedAccessory({ message, channel }: MessageEmbedProps): 
                 rawDescription: "",
                 color: "var(--background-base-lower)",
                 author: {
-                    name: <Span size="xs" weight="medium">
+                    name: <Text variant="text-xs/medium" tag="span">
                         <span>{channelLabel} - </span>
                         {Parser.parse(channel.isDM() ? `<@${dmReceiver.id}>` : `<#${channel.id}>`)}
-                    </Span>,
+                    </Text>,
                     iconProxyURL: iconUrl
                 }
             }}
             renderDescription={() => (
-                <div key={message.id} style={!settings.store.messageBackgroundColor ? undefined : {
-                    backgroundColor: "var(--background-base-lower)",
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "8px",
-                    paddingBottom: "8px",
-                }}>
+                <div key={message.id} className={classes(SearchResultClasses.message, settings.store.messageBackgroundColor && SearchResultClasses.searchResult)}>
                     <ChannelMessage
                         id={`message-link-embeds-${message.id}`}
                         message={message}
@@ -346,7 +319,7 @@ function AutomodEmbedAccessory(props: MessageEmbedProps): JSX.Element | null {
     return <AutoModEmbed
         channel={channel}
         childrenAccessories={
-            <Span size="xs" weight="medium" style={{ color: "var(--text-muted, var(--text-default))" }} className={`${EmbedClasses.embedAuthor} ${EmbedClasses.embedMargin}`}>
+            <Text color="text-muted" variant="text-xs/medium" tag="span" className={`${EmbedClasses.embedAuthor} ${EmbedClasses.embedMargin}`}>
                 {iconUrl && <img src={iconUrl} className={EmbedClasses.embedAuthorIcon} alt="" />}
                 <span>
                     <span>{channelLabel} - </span>
@@ -355,7 +328,7 @@ function AutomodEmbedAccessory(props: MessageEmbedProps): JSX.Element | null {
                         : Parser.parse(`<#${channel.id}>`)
                     }
                 </span>
-            </Span>
+            </Text>
         }
         compact={compact}
         content={
@@ -368,7 +341,7 @@ function AutomodEmbedAccessory(props: MessageEmbedProps): JSX.Element | null {
                     const { width, height } = computeWidthAndHeight(a.width, a.height);
                     return (
                         <div key={idx}>
-                            <img src={a.proxyURL ?? a.url} width={width} height={height} />
+                            <img src={a.url} width={width} height={height} />
                         </div>
                     );
                 })}
@@ -384,7 +357,7 @@ export default definePlugin({
     name: "MessageLinkEmbeds",
     description: "Adds a preview to messages that link another message",
     tags: ["Chat", "Appearance"],
-    authors: [Devs.TheSun, Devs.Ven, Devs.RyanCaoDev],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageAccessoriesAPI", "MessageUpdaterAPI", "UserSettingsAPI"],
 
     settings,

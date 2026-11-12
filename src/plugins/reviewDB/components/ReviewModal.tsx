@@ -1,38 +1,26 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-import { Span } from "@components/Span";
+import * as t from "@endcord/discord-types";
 import { Auth } from "@plugins/reviewDB/auth";
 import { ReviewType } from "@plugins/reviewDB/entities";
 import { REVIEWS_PER_PAGE, UserReviewsData } from "@plugins/reviewDB/reviewDbApi";
 import { cl } from "@plugins/reviewDB/utils";
+import { t as translateText } from "@utils/i18n";
 import { useForceUpdater } from "@utils/react";
-import * as t from "@endcord/discord-types";
 import { DefaultExtractAndLoadChunksRegex, extractAndLoadChunksLazy, findComponentByCodeLazy } from "@webpack";
-import { Modal, openModalLazy, useRef, useState } from "@webpack/common";
+import { Modal,openModalLazy, Text, useRef, useState } from "@webpack/common";
 import { ComponentProps } from "react";
 
 import ReviewComponent from "./ReviewComponent";
 import ReviewsView, { ReviewsInputComponent } from "./ReviewsView";
 
-const Paginator = findComponentByCodeLazy<ComponentProps<t.Paginator>>('rel:"prev",children:');
+export const Paginator = findComponentByCodeLazy<ComponentProps<t.Paginator>>('rel:"prev",children:');
 // This matches a massive module with ~230k chars so we need an anchor before to prevent REDOS
-const requirePaginator = extractAndLoadChunksLazy(['name:"SearchResults"'], new RegExp(`name:"StageChannelCall",renderLoader:.+?(?:${DefaultExtractAndLoadChunksRegex.source}).{0,30}?name:"SearchResults"`));
+export const requirePaginator = extractAndLoadChunksLazy(['name:"SearchResults"'], new RegExp(`name:"StageChannelCall",renderLoader:.+?(?:${DefaultExtractAndLoadChunksRegex.source}).{0,30}?name:"SearchResults"`));
 
 function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalProps: t.RenderModalProps; modalKey: string, discordId: string; name: string; type: ReviewType; }) {
     const [data, setData] = useState<UserReviewsData>();
@@ -49,10 +37,9 @@ function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalPr
             {...modalProps}
             size="lg"
             title={
-                <Span size="lg" weight="semibold" className={cl("modal-header")}>
-                    {name}'s Reviews
-                    {!!reviewCount && <span> ({reviewCount} Reviews)</span>}
-                </Span>
+                <Text variant="heading-lg/semibold" className={cl("modal-header")}>
+                    {name}{translateText("'s Reviews")}{!!reviewCount && <span> ({reviewCount}{" "}{translateText("Reviews)")}</span>}
+                </Text>
             }
             preview={
                 <div className={cl("modal-footer")}>
@@ -103,7 +90,7 @@ function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalPr
 }
 
 export function openReviewsModal(discordId: string, name: string, type: ReviewType) {
-    const modalKey = "vc-rdb-modal-" + Date.now();
+    const modalKey = `vc-rdb-modal-${Date.now()}`;
 
     openModalLazy(async () => {
         await requirePaginator();

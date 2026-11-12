@@ -97,9 +97,10 @@ function DearrowButton({ component }: { component: Component<Props>; }) {
                 <button
                     onMouseEnter={onMouseEnter}
                     onMouseLeave={onMouseLeave}
-                    className={"vc-dearrow-toggle-" + (embed.dearrow.enabled ? "on" : "off")}
+                    className={`vc-dearrow-toggle-${embed.dearrow.enabled ? "on" : "off"}`}
                     onClick={() => {
                         const { enabled, oldThumb, oldTitle } = embed.dearrow;
+                        settings.store.dearrowByDefault = !enabled;
                         embed.dearrow.enabled = !enabled;
                         if (oldTitle) {
                             embed.dearrow.oldTitle = embed.rawTitle;
@@ -171,7 +172,7 @@ export default definePlugin({
     name: "Dearrow",
     description: "Makes YouTube embed titles and thumbnails less sensationalist, powered by Dearrow",
     tags: ["Media", "Utility"],
-    authors: [Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     embedDidMount,

@@ -1,44 +1,28 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Channel, Message } from "@endcord/discord-types";
 import { Logger } from "@utils/Logger";
-import { IconComponent, IconProps } from "@utils/types";
-import { Message } from "@endcord/discord-types";
-import type { ComponentType, HTMLProps, ReactElement } from "react";
+import { IconComponent } from "@utils/types";
+import type { ComponentType, MouseEventHandler } from "react";
 
 import { useSettings } from "./Settings";
 
 const logger = new Logger("MessagePopover");
 
-export interface MessagePopoverButtonItem extends HTMLProps<HTMLDivElement> {
+export interface MessagePopoverButtonItem {
     key?: string,
     label: string,
     icon: ComponentType<any>,
-    ariaLabel?: string,
-    buttonClassName?: string
-    dangerous?: boolean,
-    disabled?: boolean,
-    iconProps?: IconProps,
-    onTooltipShow?: () => void,
-    onTooltipHide?: () => void,
-    separator?: boolean,
-    tooltipText?: ReactElement,
+    message: Message,
+    channel: Channel,
+    onClick?: MouseEventHandler<HTMLButtonElement>,
+    onContextMenu?: MouseEventHandler<HTMLButtonElement>;
 }
 
 export type MessagePopoverButtonFactory = (message: Message) => MessagePopoverButtonItem | null;
@@ -83,8 +67,8 @@ function EndcordPopoverButtons(props: { Component: React.ComponentType<MessagePo
                 if (!item) return null;
 
                 return (
-                    <ErrorBoundary noop key={key}>
-                        <Component {...item} />
+                    <ErrorBoundary noop>
+                        <Component key={key} {...item} />
                     </ErrorBoundary>
                 );
             } catch (err) {
@@ -100,5 +84,5 @@ export function _buildPopoverElements(
     Component: React.ComponentType<MessagePopoverButtonItem>,
     message: Message
 ) {
-    return <EndcordPopoverButtons Component={Component} message={message} />;
+    return <EndcordOnly><EndcordPopoverButtons Component={Component} message={message} /></EndcordOnly>;
 }

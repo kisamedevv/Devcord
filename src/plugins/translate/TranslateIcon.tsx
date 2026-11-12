@@ -1,27 +1,16 @@
 /*
- * Endcord, a modification for Discord's desktop app
+ * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { TooltipContainer } from "@components/TooltipContainer";
+import { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
-import { RenderModalProps } from "@endcord/discord-types";
-import { ConfirmModal, openModal, useEffect, useState } from "@webpack/common";
+import { ConfirmModal,openModal, useEffect, useState } from "@webpack/common";
 
 import { settings } from "./settings";
 import { openTranslateModal } from "./TranslateModal";
@@ -48,11 +37,11 @@ function AutoTranslateConfirmModal(props: RenderModalProps) {
     return (
         <ConfirmModal
             {...props}
-            title="Endcord Auto-Translate Enabled"
-            subtitle="You just enabled Auto Translate! Any message will automatically be translated before being sent."
-            confirmText="Disable Auto-Translate"
+            title={t("Endcord Auto-Translate Enabled")}
+            subtitle={t("You just enabled Auto Translate! Any message will automatically be translated before being sent.")}
+            confirmText={t("Disable Auto-Translate")}
             onConfirm={() => settings.store.autoTranslate = false}
-            cancelText="Got it"
+            cancelText={t("Got it")}
             variant="primary"
             checkboxProps={{
                 checked: s.dismissedAutoTranslateAlert === true,
@@ -82,10 +71,10 @@ export const TranslateChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
 
     const button = (
         <ChatBarButton
-            tooltip="Open Translate Modal"
+            tooltip={t("Open Translate Modal")}
             onClick={e => {
                 if (e.shiftKey) return toggle();
-                else openTranslateModal();
+                openTranslateModal();
             }}
             onContextMenu={toggle}
             buttonProps={{
@@ -98,7 +87,7 @@ export const TranslateChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
 
     if (shouldShowTranslateEnabledTooltip && settings.store.showAutoTranslateTooltip)
         return (
-            <TooltipContainer text="Auto Translate Enabled" forceOpen>
+            <TooltipContainer text={t("Auto Translate Enabled")} forceOpen>
                 {button}
             </TooltipContainer>
         );
