@@ -5,11 +5,11 @@
  */
 
 import ErrorBoundary from "@components/ErrorBoundary";
-import { UpArrowIcon } from "@components/Icons";
+import { ChevronSmallUpIcon } from "@components/Icons";
+import type { Channel } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import definePlugin from "@utils/types";
-import type { Channel } from "@endcord/discord-types";
 import { findComponentByCodeLazy } from "@webpack";
 import { MessageActions } from "@webpack/common";
 
@@ -46,7 +46,7 @@ export default definePlugin({
         return (
             <ChannelToolbarIcon
                 tooltip={getIntlMessage("JUMP_TO_TOP")}
-                icon={UpArrowIcon}
+                icon={ChevronSmallUpIcon}
                 onClick={() => jumpToTop(channel.id)}
             />
         );

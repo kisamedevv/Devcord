@@ -106,7 +106,7 @@ export function FakeProfileEditor() {
     return (
         <Flex flexDirection="column" gap={14} className={cl("root")}>
             <div>
-                <Heading size="md" className={Margins.bottom8}>Fake Profil</Heading>
+                <Heading tag="h3" className={Margins.bottom8}>Fake Profil</Heading>
                 <Paragraph>
                     Seçtiğin kullanıcıya sahte isim, sahte rozetler ve sahte oluşturma tarihi
                     uygulanır. Değişiklikler sadece <b>bu istemcide</b> görünür — gerçek Discord

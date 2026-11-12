@@ -40,7 +40,12 @@ export function mountTopRightButton(): () => void {
     button.type = "button";
     button.title = "Endcord — Fake Profil";
     button.setAttribute("aria-label", "Endcord Fake Profil");
-    button.innerHTML = `<img src="${endcordLogo()}" alt="" width="22" height="22">`;
+    const logo = document.createElement("img");
+    logo.src = endcordLogo();
+    logo.alt = "";
+    logo.width = 22;
+    logo.height = 22;
+    button.append(logo);
     button.addEventListener("click", openFakeProfilePanel);
 
     // Discord'un arama kutusu dile göre değişiyor; birkaç aday deniyoruz

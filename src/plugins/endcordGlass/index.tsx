@@ -41,23 +41,36 @@ export const settings = definePluginSettings({
         markers: [0, 120, 200, 280, 400, 600],
         default: 220,
         stickToMarkers: false
+    },
+    blurChat: {
+        type: OptionType.BOOLEAN,
+        description: "Sohbet alanını da bulanıklaştır — daha ağır, kaydırırken GPU yükü artar",
+        default: false
     }
 });
 
 const STYLE_ID = "endcord-glass-style";
 
 /**
- * Bulanıklık ve geçiş için hedef yüzeyler.
- * Sınıf adları Discord'da hash ile geliyor, bu yüzden eşleşme parça bazlı;
- * bir sürüm güncellemesinde hash değişse bile isim kısmı korunuyor.
+ * Sabit yüzeyler: bunların arkasındaki içerik kaydırma sırasında değişmediği için
+ * backdrop-filter ucuz kalır.
  */
-const BLUR_TARGETS = [
+const STATIC_BLUR_TARGETS = [
+    "[class*=\"navList\"]",
+    "[class*=\"sidebar\"]",
+    "[class*=\"panels\"]",
+    "[class*=\"titleBar\"]"
+].join(",\n");
+
+/**
+ * Kaydırılan yüzeyler: her karede arka planı yeniden örnekler, bu yüzden
+ * varsayılan kapalı (blurChat).
+ */
+const SCROLL_BLUR_TARGETS = [
     "[class*=\"chatContent\"]",
     "[class*=\"membersWrap\"]",
     "[class*=\"peopleColumn\"]",
-    "[class*=\"pageWrapper\"]",
-    "[class*=\"sidebar\"]",
-    "[class*=\"navList\"]"
+    "[class*=\"pageWrapper\"]"
 ].join(",\n");
 
 const FADE_TARGETS = [
@@ -69,7 +82,7 @@ const FADE_TARGETS = [
 ].join(",\n");
 
 function buildCss(): string {
-    const { blurRadius, saturation, brightness, transitions, transitionDuration } = settings.store;
+    const { blurRadius, saturation, brightness, transitions, transitionDuration, blurChat } = settings.store;
 
     const blur = Math.max(0, Math.min(60, blurRadius));
     const sat = Math.max(0, Math.min(200, saturation));
@@ -79,10 +92,13 @@ function buildCss(): string {
     const parts: string[] = [];
 
     if (blur > 0) {
+        const targets = blurChat ? `${STATIC_BLUR_TARGETS},\n${SCROLL_BLUR_TARGETS}` : STATIC_BLUR_TARGETS;
+
         parts.push(`
-${BLUR_TARGETS} {
+${targets} {
     backdrop-filter: blur(${blur}px) saturate(${sat}%) brightness(${bright}%);
     -webkit-backdrop-filter: blur(${blur}px) saturate(${sat}%) brightness(${bright}%);
+    background-color: color-mix(in srgb, var(--background-secondary, #2b2d31) 72%, transparent);
 }`);
     }
 
@@ -109,6 +125,7 @@ ${FADE_TARGETS} {
 html:root ${FADE_TARGETS} {
     animation-duration: ${duration}ms !important;
 }`);
+
     }
 
     return parts.join("\n");
@@ -131,7 +148,7 @@ export default definePlugin({
             style.textContent = buildCss();
         };
 
-        for (const key of ["blurRadius", "saturation", "brightness", "transitions", "transitionDuration"]) {
+        for (const key of ["blurRadius", "saturation", "brightness", "transitions", "transitionDuration", "blurChat"]) {
             SettingsStore.addChangeListener(`plugins.EndcordGlass.${key}` as never, apply);
         }
     },

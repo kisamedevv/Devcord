@@ -10,11 +10,11 @@ import { Heading } from "@components/Heading";
 import { LinkIcon, TopRightArrow } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Span } from "@components/Span";
+import { Guild, GuildSticker, Sticker } from "@endcord/discord-types";
+import { StickerFormatType } from "@endcord/discord-types/enums";
 import { classNameFactory } from "@utils/css";
 import { copyWithToast, getGuildAcronym } from "@utils/discord";
 import { useForceUpdater } from "@utils/react";
-import { Guild, GuildSticker, Sticker, StickerItem } from "@endcord/discord-types";
-import { StickerFormatType } from "@endcord/discord-types/enums";
 import { DefaultExtractAndLoadChunksRegex, extractAndLoadChunksLazy, findComponentByCodeLazy } from "@webpack";
 import { AuthenticationStore, Clickable, Constants, FluxDispatcher, GuildStore, IconUtils, Menu, Modal, openModalLazy, PermissionsBits, PermissionStore, React, RestAPI, showToast, StickersStore, Tooltip, useMemo, UserStore, useState } from "@webpack/common";
 
@@ -28,7 +28,8 @@ const loadCreateStickerModal = extractAndLoadChunksLazy(
 );
 const CreateStickerModal = findComponentByCodeLazy("#{intl::GUILD_STICKER_INVALID_STICKER}");
 
-type PartialSticker = StickerItem & Partial<Sticker>;
+export type StickerItem = Pick<Sticker, "id" | "name" | "format_type"> & Partial<Sticker>;
+type PartialSticker = StickerItem;
 
 const StickerExtMap = {
     [StickerFormatType.PNG]: "png",

@@ -23,7 +23,7 @@ import managedStyle from "./styles.css?managed";
 const cl = classNameFactory("vc-screen-picker-");
 
 class NotAllowedError extends Error {
-    name = "NotAllowedError";
+    override name = "NotAllowedError";
 }
 
 const logger = new Logger("EndcordScreenShare");
@@ -119,10 +119,10 @@ function ModalComponent({ modalProps, submit, close, options }: {
                     audio: {
                         ...audioOptions,
                         restrictOwnAudio: true,
-                    },
+                    } as MediaTrackConstraints,
                     surfaceSwitching: "include",
                     systemAudio: liveSettings.systemAudio ? "exclude" : "include"
-                }).then(t => {
+                } as DisplayMediaStreamOptions).then(t => {
                     // w3c says this can fail, they don't say why, so just to be safe
                     try {
                         const video = t.getVideoTracks()?.[0];

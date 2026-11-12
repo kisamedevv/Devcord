@@ -89,7 +89,7 @@ function CopyContextMenu({ name, type, path }: { type: string; name: string; pat
             <Menu.MenuItem
                 id="vc-spotify-copy-link"
                 label={`Copy ${type} Link`}
-                action={() => copyWithToast("https://open.spotify.com" + path)}
+                action={() => copyWithToast(`https://open.spotify.com${path}`)}
                 icon={LinkIcon}
                 leadingAccessory={{ type: "icon", icon: LinkIcon }}
             />
@@ -187,7 +187,7 @@ function SpotifySeekBar() {
             <Span
                 size="xs"
                 weight="medium"
-                className={cl("progress-time") + " " + cl("time-left")}
+                className={`${cl("progress-time")} ${cl("time-left")}`}
                 aria-label="Progress"
             >
                 {formatDuration(position)}
@@ -203,7 +203,7 @@ function SpotifySeekBar() {
             <Span
                 size="xs"
                 weight="medium"
-                className={cl("progress-time") + " " + cl("time-right")}
+                className={`${cl("progress-time")} ${cl("time-right")}`}
                 aria-label="Total Duration"
             >
                 {formatDuration(duration)}

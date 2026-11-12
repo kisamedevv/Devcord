@@ -118,6 +118,6 @@ if (settings.plugins.EndcordEyeCare) {
     settings.plugins.EndcordEyeCare.dropBlur = false;
 }
 
-writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 4) + "\n");
+writeFileSync(SETTINGS_FILE, `${JSON.stringify(settings, null, 4)}\n`);
 log(`ayarlar → ${SETTINGS_FILE}`);
 log("tema açıldı, eklentiler etkinleştirildi");

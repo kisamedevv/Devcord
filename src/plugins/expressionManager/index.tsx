@@ -20,20 +20,20 @@ import "./styles.css";
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
-import { CopyIcon, DeleteIcon, HistoryIcon, PencilIcon, PlusIcon } from "@components/Icons";
+import { ClockIcon, CopyIcon, DeleteIcon, PencilIcon, PlusIcon } from "@components/Icons";
+import { CustomEmoji, FluxStore, Guild, GuildSticker, Message, Sticker } from "@endcord/discord-types";
+import { EmojiIntention, StickerFormatType, StickerType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
-import { confirmAction } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import { removeFromArray } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import { CustomEmoji, FluxStore, Guild, GuildSticker, Message, Sticker, StickerItem } from "@endcord/discord-types";
-import { EmojiIntention, StickerFormatType, StickerType } from "@endcord/discord-types/enums";
 import { findStoreLazy } from "@webpack";
 import { Constants, EmojiStore, GuildStore, Menu, PermissionsBits, PermissionStore, React, RestAPI, SelectedGuildStore, showToast, StickersStore, UserSettingsActionCreators } from "@webpack/common";
 import { ReactElement } from "react";
 
+import { confirmAction } from "./confirm";
 import { buildCloneEmojiItem, editEmoji, EmojiURLRegex, openEmojiUploadModal, resolveEmojiName } from "./emojis";
-import { buildCloneStickerItem, buildStickerLinkItems, editSticker } from "./stickers";
+import { buildCloneStickerItem, buildStickerLinkItems, editSticker, StickerItem } from "./stickers";
 
 const StickersPersistedStore = findStoreLazy("StickersPersistedStore") as FluxStore & { stickerFrecencyWithoutFetchingLatest: { frequently: Sticker[]; }; };
 
@@ -183,7 +183,7 @@ function buildRemoveFrecentItem({ type, id, name }: Record<"type" | "id" | "name
             id="vc-em-remove-frecent"
             key="vc-em-remove-frecent"
             label="Remove From Recents"
-            leadingAccessory={{ type: "icon", icon: HistoryIcon }}
+            leadingAccessory={{ type: "icon", icon: ClockIcon }}
             action={async e => {
                 const onConfirm = () => {
                     UserSettingsActionCreators.FrecencyUserSettingsActionCreators.updateAsync(

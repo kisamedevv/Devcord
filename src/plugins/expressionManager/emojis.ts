@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { BasicMessage, Message } from "@endcord/discord-types";
+import { Message } from "@endcord/discord-types";
 import { findByCodeLazy } from "@webpack";
 import { EmojiStore, SelectedGuildStore, showToast } from "@webpack/common";
 
@@ -67,7 +67,7 @@ export async function openEmojiUploadModal(url: string, filename?: string) {
     }
 }
 
-export function resolveEmojiName(id: string, message: BasicMessage | Message) {
+export function resolveEmojiName(id: string, message: Message) {
     const emoji = EmojiStore.getCustomEmojiById(id);
     if (emoji) return emoji.name;
 

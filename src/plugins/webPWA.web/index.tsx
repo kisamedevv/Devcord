@@ -4,13 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { addThemeChangeListener, removeThemeChangeListener } from "@api/Themes";
+import { FluxStore } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { GuildReadStateStore, NotificationSettingsStore, RelationshipStore, ThemeStore } from "@webpack/common";
+import { findStoreLazy } from "@webpack";
+import { NotificationSettingsStore, RelationshipStore, ThemeStore } from "@webpack/common";
 
 import managedStyle from "./styles.css?managed";
+
+const GuildReadStateStore = findStoreLazy("GuildReadStateStore") as FluxStore & {
+    getTotalMentionCount(): number;
+    hasAnyUnread(): boolean;
+};
 
 let _keybinds: Record<string, { onTrigger: () => any; }>;
 
@@ -19,7 +25,7 @@ function colorToHex(color: string) {
     if (!ctx) return "#000000"; // no GPU, you'll have bigger issues than a miscolored title bar
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, 1, 1);
-    return "#" + [...ctx.getImageData(0, 0, 1, 1).data.slice(0, 3)].map(n => n.toString(16).padStart(2, "0")).join("");
+    return `#${[...ctx.getImageData(0, 0, 1, 1).data.slice(0, 3)].map(n => n.toString(16).padStart(2, "0")).join("")}`;
 }
 
 const icon = "https://discord.com/assets/favicon.ico";
@@ -34,8 +40,8 @@ async function setManifest() {
         linkEl.remove();
     }
 
-    const endpoint = "https:" + window.GLOBAL_ENV.WEBAPP_ENDPOINT;
-    const appUrl = endpoint + "/app"; // URL when PWA launches
+    const endpoint = `https:${window.GLOBAL_ENV.WEBAPP_ENDPOINT}`;
+    const appUrl = `${endpoint}/app`; // URL when PWA launches
     const styles = getComputedStyle(document.body);
     const manifest = {
         id: appUrl,
@@ -48,7 +54,7 @@ async function setManifest() {
         lang: "en-US",
         background_color: colorToHex(styles.getPropertyValue("--background-base-lower")),
         theme_color: colorToHex(styles.getPropertyValue("--background-base-lowest")),
-        scope: endpoint + "/", // scope of all possible URL"s
+        scope: `${endpoint}/`, // scope of all possible URL"s
         description: "Imagine a place...",
         orientation: "any",
         categories: ["social"],
@@ -59,7 +65,7 @@ async function setManifest() {
                 icons: [{ src: icon, sizes: "256x256" }]
             }
         ],
-        protocol_handlers: [{ protocol: "web+discord", url: endpoint + "/%s" }],
+        protocol_handlers: [{ protocol: "web+discord", url: `${endpoint}/%s` }],
         launch_handler: { client_mode: "navigate-existing" },
         // Strange CDN but these links are straight from discord.com
         screenshots: [
@@ -113,7 +119,6 @@ export default definePlugin({
         setManifest();
         // user might change theme before installing the PWA
         ThemeStore.addChangeListener(setManifest);
-        addThemeChangeListener(setManifest);
 
         // notifications
         NotificationSettingsStore.addChangeListener(this.setBadge);
@@ -142,7 +147,6 @@ export default definePlugin({
             linkEl.remove();
         }
         ThemeStore.removeChangeListener(setManifest);
-        removeThemeChangeListener(setManifest);
 
         NotificationSettingsStore.removeChangeListener(this.setBadge);
         GuildReadStateStore.removeChangeListener(this.setBadge);

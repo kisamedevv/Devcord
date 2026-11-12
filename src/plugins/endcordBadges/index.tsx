@@ -38,12 +38,10 @@ const CustomBadges: ProfileBadge = {
         return badgesForUser(currentBadges(), userId).map(badge => ({
             id: `endcord-badge-${badge.id}`,
             key: `endcord-badge-${badge.id}`,
-            name: badge.name,
+            title: badge.name,
             description: badge.description || badge.name,
-            infoLabel: "Endcord",
             rarity: BadgeRarity.MYTHIC,
             iconSrc: buildIconSrc(badge.icon, badge.color),
-            largeIconSrc: buildIconSrc(badge.icon, badge.color),
             position: BadgePosition.START,
             props: {
                 style: {

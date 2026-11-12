@@ -74,6 +74,8 @@ const BLUR_TARGETS = [
     "[class*=\"contentRegion\"]",
     "[class*=\"sidebar\"]",
     "[class*=\"navList\"]",
+    "[class*=\"panels\"]",
+    "[class*=\"titleBar\"]",
     "[class*=\"modal\"]",
     "[class*=\"popout\"]"
 ].join(",\n");

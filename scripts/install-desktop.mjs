@@ -127,7 +127,7 @@ function stageInjection() {
     }
 
     writeFileSync(join(STAGING, "index.js"), BOOTSTRAP_INDEX);
-    writeFileSync(join(STAGING, "package.json"), JSON.stringify(BOOTSTRAP_PACKAGE, null, 4) + "\n");
+    writeFileSync(join(STAGING, "package.json"), `${JSON.stringify(BOOTSTRAP_PACKAGE, null, 4)}\n`);
 
     return STAGING;
 }
