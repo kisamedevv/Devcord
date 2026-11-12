@@ -98,7 +98,7 @@ export default definePlugin({
                 id: "openDevSettings",
                 label: "Open Dev tab",
                 callback: () => SettingsRouter.openUserSettings("endcord_patch_helper_panel"),
-                registrar: "Endcord"
+                registrar: "Devcord"
             });
         }
     },

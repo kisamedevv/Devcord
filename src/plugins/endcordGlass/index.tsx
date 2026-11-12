@@ -103,7 +103,7 @@ ${targets} {
     }
 
     if (transitions && duration > 0) {
-        // EndcordEyeCare tum animasyonlari susturuyor; bu yumusak gecis
+        // DevcordEyeCare tum animasyonlari susturuyor; bu yumusak gecis
         // ayakta kalsin diye sureyi daha yuksek ozgullukle ve !important ile
         // geri veriyoruz (important kurallarinda ozgulluk belirleyici).
         parts.push(`
@@ -132,10 +132,10 @@ html:root ${FADE_TARGETS} {
 }
 
 export default definePlugin({
-    name: "EndcordGlass",
+    name: "DevcordGlass",
     description: "Ekranlar arasında yumuşak geçiş ve cam bulanıklığı — kaydırıcılardan ayarlanır.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
 
     start() {
@@ -149,7 +149,7 @@ export default definePlugin({
         };
 
         for (const key of ["blurRadius", "saturation", "brightness", "transitions", "transitionDuration", "blurChat"]) {
-            SettingsStore.addChangeListener(`plugins.EndcordGlass.${key}` as never, apply);
+            SettingsStore.addChangeListener(`plugins.DevcordGlass.${key}` as never, apply);
         }
     },
 

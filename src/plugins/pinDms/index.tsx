@@ -80,7 +80,7 @@ export default definePlugin({
             replacement: [
                 {
                     // Filter out pinned channels from the private channel list
-                    match: /(?<=channels:\i,)privateChannelIds:(\i|Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i\))(?=,listRef:)/,
+                    match: /(?<=channels:\i,)privateChannelIds:(\i|Devcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i\))(?=,listRef:)/,
                     replace: "privateChannelIds:$1.filter(c=>!$self.isPinned(c))"
                 },
                 {

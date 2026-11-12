@@ -23,12 +23,12 @@ import {
 } from "./discordBadges";
 
 // Laid out like Discord's badge directory: the profile's badges on the left, the chosen one on the right, with
-// Discord's colours, type and measurements, so a badge Endcord adds reads the same as one Discord gives out
+// Discord's colours, type and measurements, so a badge Devcord adds reads the same as one Discord gives out
 const cl = classNameFactory("ec-badge-details-");
 
 // Discord's own words for each rarity, so they match its badges in every language. Ours stand in if it renamed them.
 // The icons are Discord's shapes. They are functions because React isn't there yet when this file loads.
-// Celestial is Endcord's own, so it has no word of Discord's and its two stars are ours
+// Celestial is Devcord's own, so it has no word of Discord's and its two stars are ours
 const RARITY: Record<BadgeRarity, { hash?: string; fallback: () => string; name: string; icon: () => ReactNode; }> = {
     [BadgeRarity.COMMON]: { hash: "L0K5ci", fallback: () => t("Common"), name: "common", icon: () => <circle cx="12" cy="12" r="10" /> },
     [BadgeRarity.RARE]: { hash: "sTx/5z", fallback: () => t("Rare"), name: "rare", icon: () => <path d="M10.16 4.06a2.13 2.13 0 0 1 3.68 0l8 13.77c.81 1.41-.2 3.17-1.84 3.17H4a2.11 2.11 0 0 1-1.84-3.17l8-13.77Z" /> },
@@ -58,10 +58,10 @@ export function getBadgeDetails(badge: AddedBadge): BadgeDetails {
     const details = typeof badge.details === "function" ? badge.details(badge) : badge.details;
 
     return details ?? {
-        era: "Endcord",
-        label: t("Endcord Badge"),
-        text: t("Endcord adds this badge to the profile."),
-        notice: t("Only people who use Endcord can see this badge.")
+        era: "Devcord",
+        label: t("Devcord Badge"),
+        text: t("Devcord adds this badge to the profile."),
+        notice: t("Only people who use Devcord can see this badge.")
     };
 }
 

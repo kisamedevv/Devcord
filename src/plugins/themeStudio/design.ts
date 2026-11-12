@@ -50,7 +50,7 @@ export const PRESETS: { name: string; design: ThemeDesign; }[] = ([
     { name: "Neon", design: { accent: "#ff3d9a", background: "#140b1f", radius: 0.75, glass: 14 } },
     { name: "Forest", design: { accent: "#74d49a", background: "#102018", radius: 1, glass: 8 } },
     { name: "Soft", design: { accent: "#c4a7e7", background: "#232136", radius: 1.4, glass: 12 } },
-    { name: "Endcord", design: { accent: "#3d74e0", background: "#10182a", radius: 1, glass: 10, font: "geometric" } },
+    { name: "Devcord", design: { accent: "#3d74e0", background: "#10182a", radius: 1, glass: 10, font: "geometric" } },
     { name: "Ocean", design: { accent: "#4fc3f7", background: "#0b1a24", radius: 1.2, glass: 12, scrollbars: "accent" } },
     { name: "Sunset", design: { accent: "#ff8a5c", background: "#1f1418", radius: 1, glass: 8 } },
     { name: "Rose", design: { accent: "#f38ba8", background: "#1e1e2e", radius: 1.4, glass: 12 } },
@@ -214,9 +214,9 @@ export function generateThemeCss(design: ThemeDesign, { neutrals, blurples }: Di
 }
 
 export const toThemeFile = (css: string) => `/**
- * @name Endcord Studio Theme
- * @description Made with Endcord's Theme Studio
- * @author Endcord
+ * @name Devcord Studio Theme
+ * @description Made with Devcord's Theme Studio
+ * @author Devcord
  * @version 1.0.0
  */
 

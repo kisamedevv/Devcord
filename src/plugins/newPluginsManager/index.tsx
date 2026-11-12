@@ -13,7 +13,7 @@ import { openNewPluginsModal } from "./NewPluginsModal";
 
 export default definePlugin({
     name: "NewPluginsManager",
-    description: "Utility that notifies you when new plugins are added to Endcord",
+    description: "Utility that notifies you when new plugins are added to Devcord",
     tags: ["Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     enabledByDefault: true,

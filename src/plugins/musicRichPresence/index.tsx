@@ -261,8 +261,8 @@ function CustomInstanceAboutComponent() {
     if (!cspAllowed)
         return (
             <Card variant="warning">
-                <Heading tag="h5">{t("Allow Endcord to connect to ListenBrainz instance")}</Heading>
-                <Paragraph>{t("To use your custom ListenBrainz instance, you must first allow Endcord to connect to it.")}</Paragraph>
+                <Heading tag="h5">{t("Allow Devcord to connect to ListenBrainz instance")}</Heading>
+                <Paragraph>{t("To use your custom ListenBrainz instance, you must first allow Devcord to connect to it.")}</Paragraph>
                 <Button
                     size="small"
                     className={Margins.top8}

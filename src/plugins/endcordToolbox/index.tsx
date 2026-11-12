@@ -73,7 +73,7 @@ function EndcordPopoutButton() {
                     className="vc-toolbox-btn"
                     onClick={() => setShow(v => !v)}
                     onContextMenu={openFullMenu}
-                    tooltip={isShown ? null : "Endcord"}
+                    tooltip={isShown ? null : "Devcord"}
                     icon={() => <EndcordMark className="vc-toolbox-icon" asleep={!isShown} />}
                     selected={isShown}
                 />
@@ -83,8 +83,8 @@ function EndcordPopoutButton() {
 }
 
 export default definePlugin({
-    name: "EndcordToolbox",
-    description: "Adds the Endcord Control Center to the title bar",
+    name: "DevcordToolbox",
+    description: "Adds the Devcord Control Center to the title bar",
     tags: ["Utility", "Developers"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     enabledByDefault: true,

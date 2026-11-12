@@ -29,11 +29,11 @@ export const DISCORD_SETTINGS_ROUTES: SettingsRoute[] = [
     { route: "authorized_apps", label: "Authorized Apps", keywords: ["oauth", "apps"] },
     { route: "family_center", label: "Family Center", keywords: ["family", "safety"] },
     { route: "advanced", label: "Advanced", keywords: ["developer"] },
-    { route: "endcord_main", label: "Endcord", keywords: ["endcord"] },
-    { route: "endcord_plugins", label: "Endcord Plugins", keywords: ["plugins"] },
-    { route: "endcord_themes", label: "Endcord Themes", keywords: ["themes", "css"] },
-    { route: "endcord_updater", label: "Endcord Updater", keywords: ["update"] },
-    { route: "endcord_backup_restore", label: "Endcord Backup & Restore", keywords: ["backup", "restore"] }
+    { route: "endcord_main", label: "Devcord", keywords: ["endcord"] },
+    { route: "endcord_plugins", label: "Devcord Plugins", keywords: ["plugins"] },
+    { route: "endcord_themes", label: "Devcord Themes", keywords: ["themes", "css"] },
+    { route: "endcord_updater", label: "Devcord Updater", keywords: ["update"] },
+    { route: "endcord_backup_restore", label: "Devcord Backup & Restore", keywords: ["backup", "restore"] }
 ];
 
 const ROUTE_ALIASES = new Map<string, string[]>([

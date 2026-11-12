@@ -31,7 +31,7 @@ interface ActionBarProps {
 export function ActionBar({ hint, primaryLabel, showActionsHint }: ActionBarProps) {
     return (
         <div className={cl("footer")}>
-            <span className={cl("footer-hint")}>{hint ?? "Endcord"}</span>
+            <span className={cl("footer-hint")}>{hint ?? "Devcord"}</span>
             <div className={cl("footer-actions")}>
                 {primaryLabel && (
                     <span className={cl("footer-action")}>

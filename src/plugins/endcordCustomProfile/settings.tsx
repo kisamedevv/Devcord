@@ -37,7 +37,7 @@ export const settings = definePluginSettings({
     },
     shareProfile: {
         type: OptionType.BOOLEAN,
-        description: "Sahte profili paylaş — profil açıklamana görünmez kod yazılır, sadece Endcord kullananlar çözer",
+        description: "Sahte profili paylaş — profil açıklamana görünmez kod yazılır, sadece Devcord kullananlar çözer",
         default: false
     },
     panel: {

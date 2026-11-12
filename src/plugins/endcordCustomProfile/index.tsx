@@ -69,10 +69,10 @@ function applyTargetProfile() {
     unmountDate = profile.createdAt ? installDateOverride(userId, profile.createdAt) : undefined;
 }
 
-/** Fake profil rozetleri — sadece Endcord istemcisinde basılır. */
+/** Fake profil rozetleri — sadece Devcord istemcisinde basılır. */
 const FakeProfileBadges: ProfileBadge = {
     id: BADGE_GROUP_ID,
-    description: "Endcord fake profil rozeti",
+    description: "Devcord fake profil rozeti",
     position: BadgePosition.START,
     getBadges({ userId }) {
         const profile = profileFor(userId);
@@ -82,8 +82,8 @@ const FakeProfileBadges: ProfileBadge = {
             id: `endcord-fake-${badgeId}`,
             key: `endcord-fake-${badgeId}`,
             name: badgeId,
-            description: "Endcord fake profil rozeti",
-            infoLabel: "Endcord",
+            description: "Devcord fake profil rozeti",
+            infoLabel: "Devcord",
             rarity: BadgeRarity.MYTHIC,
             iconSrc: buildIconSrc(badgeId, "#a970ff"),
             largeIconSrc: buildIconSrc(badgeId, "#a970ff"),
@@ -93,10 +93,10 @@ const FakeProfileBadges: ProfileBadge = {
 };
 
 export default definePlugin({
-    name: "EndcordCustomProfile",
+    name: "DevcordCustomProfile",
     description: "Sahte profil: seçtiğin kullanıcıya sahte kullanıcı adı, sahte rozetler ve sahte oluşturma tarihi. Sadece bu istemcide görünür.",
     tags: ["Customisation", "Fun"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
 
     start() {
@@ -107,14 +107,14 @@ export default definePlugin({
 
         unmountNameKeeper = keepFakeIdentitiesFresh();
 
-        // Sağ üstteki Endcord logosu -> fake profil paneli
+        // Sağ üstteki Devcord logosu -> fake profil paneli
         unmountButton = mountTopRightButton();
 
         // Panelden/ayarlardan değişince anında uygula
         const apply = () => applyTargetProfile();
 
         for (const key of ["targetUserId", "fakeUsername", "fakeDisplayName", "fakeBadges", "fakeCreatedAt"]) {
-            SettingsStore.addChangeListener(`plugins.EndcordCustomProfile.${key}` as never, apply);
+            SettingsStore.addChangeListener(`plugins.DevcordCustomProfile.${key}` as never, apply);
         }
 
         // Paylaşılmış (bio) profillerin tarihlerini de yaz
@@ -130,7 +130,7 @@ export default definePlugin({
                     name: settings.store.fakeDisplayName?.trim() || "",
                     badges: settings.store.fakeBadges ?? [],
                     createdAt: settings.store.fakeCreatedAt?.trim() || null
-                }).catch(err => console.error("[Endcord] Failed to share fake profile", err));
+                }).catch(err => console.error("[Devcord] Failed to share fake profile", err));
             }
         }
     },

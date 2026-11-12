@@ -61,7 +61,7 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 <span style={{ order: settings.store.EndcordContributorPosition }}>
                     <RoleIconComponent
                         className={roleIcon}
-                        name={developer ? t("Endcord Developer") : t("Endcord Contributor")}
+                        name={developer ? t("Devcord Developer") : t("Devcord Contributor")}
                         size={20}
                         src={developer ? DEVELOPER_ICON : CONTRIBUTOR_ICON}
                     />
@@ -76,7 +76,7 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 <span style={{ order: settings.store.VencordContributorPosition }}>
                     <RoleIconComponent
                         className={roleIcon}
-                        name="Endcord Contributor"
+                        name="Devcord Contributor"
                         size={20}
                         src={"https://cdn.discordapp.com/emojis/1092089799109775453.png"}
                     />

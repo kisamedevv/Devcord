@@ -62,7 +62,7 @@ interface UserContextProps {
 const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: UserContextProps) => {
     if (!user?.id) return;
 
-    // Fake profil (EndcordCustomProfile) tarihi ezmisse o geçerli
+    // Fake profil (DevcordCustomProfile) tarihi ezmisse o geçerli
     const override = getCreatedAtOverride(user.id);
     const created = override ? new Date(override) : getCreationDate(user.id);
     if (!created) return;
@@ -83,7 +83,7 @@ export default definePlugin({
     name: "AccountAge",
     description: "Shows when a user's account was created in the user context menu — handy for spotting fresh accounts.",
     tags: ["Utility", "Friends"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     contextMenus: {
         "user-context": UserContextPatch
     }

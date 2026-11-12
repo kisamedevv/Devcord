@@ -153,7 +153,7 @@ function describeError(err: unknown): string {
 
 /**
  * Sahte profili profil açıklamasına görünmez kod olarak yazar.
- * Normal Discord istemcisi açıklamayı boş görür; Endcord çözer.
+ * Normal Discord istemcisi açıklamayı boş görür; Devcord çözer.
  */
 export async function shareProfile(profile: FakeProfile): Promise<void> {
     const me = UserStore.getCurrentUser();

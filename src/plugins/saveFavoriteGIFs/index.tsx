@@ -103,7 +103,7 @@ async function saveWorkingGifs() {
 
 const settings = definePluginSettings({
     showToolboxButton: {
-        description: "Show 'Save Favorite GIFs' button in Endcord Toolbox (Requires Reload)",
+        description: "Show 'Save Favorite GIFs' button in Devcord Toolbox (Requires Reload)",
         type: OptionType.BOOLEAN,
         default: true,
         restartNeeded: true,

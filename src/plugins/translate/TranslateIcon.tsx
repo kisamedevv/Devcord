@@ -37,7 +37,7 @@ function AutoTranslateConfirmModal(props: RenderModalProps) {
     return (
         <ConfirmModal
             {...props}
-            title={t("Endcord Auto-Translate Enabled")}
+            title={t("Devcord Auto-Translate Enabled")}
             subtitle={t("You just enabled Auto Translate! Any message will automatically be translated before being sent.")}
             confirmText={t("Disable Auto-Translate")}
             onConfirm={() => settings.store.autoTranslate = false}

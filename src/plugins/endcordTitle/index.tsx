@@ -12,12 +12,12 @@ const settings = definePluginSettings({
     title: {
         type: OptionType.STRING,
         description: "Pencere ve sekme başlığında görünecek ad",
-        default: "Endcord",
+        default: "Devcord",
         restartNeeded: false
     },
     keepUnreadCount: {
         type: OptionType.BOOLEAN,
-        description: "Okunmamış mesaj sayısını başlığın başında koru — (3) Endcord",
+        description: "Okunmamış mesaj sayısını başlığın başında koru — (3) Devcord",
         default: true,
         restartNeeded: false
     }
@@ -35,7 +35,7 @@ let observer: MutationObserver | undefined;
 let writing = false;
 
 function buildTitle() {
-    const name = settings.store.title?.trim() || "Endcord";
+    const name = settings.store.title?.trim() || "Devcord";
     return settings.store.keepUnreadCount && unreadCount ? `(${unreadCount}) ${name}` : name;
 }
 
@@ -57,10 +57,10 @@ function ingest(raw: string) {
 }
 
 export default definePlugin({
-    name: "EndcordTitle",
-    description: "Pencere/sekme başlığını \"Endcord\" yapar — istersen okunmamış mesaj sayısı başta kalır.",
+    name: "DevcordTitle",
+    description: "Pencere/sekme başlığını \"Devcord\" yapar — istersen okunmamış mesaj sayısı başta kalır.",
     tags: ["Appearance", "Utility"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
 
     start() {

@@ -8,7 +8,7 @@ import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import EndcordToolboxPlugin from "@plugins/endcordToolbox";
+import DevcordToolboxPlugin from "@plugins/endcordToolbox";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
@@ -32,10 +32,10 @@ const settings = definePluginSettings({
         description: "Where to show the game activity toggle button",
         options: [
             { label: "Next to Mute/Deafen", value: "PANEL", default: true },
-            { label: "Endcord Toolbox", value: "TOOLBOX" }
+            { label: "Devcord Toolbox", value: "TOOLBOX" }
         ],
         get hidden() {
-            return !isPluginEnabled(EndcordToolboxPlugin.name);
+            return !isPluginEnabled(DevcordToolboxPlugin.name);
         }
     }
 });
@@ -75,7 +75,7 @@ function GameActivityToggleButton(props: { nameplate?: any; }) {
     const { location } = settings.use(["location"]);
     const showCurrentGame = ShowCurrentGame.useSetting();
 
-    if (location !== "PANEL" && isPluginEnabled(EndcordToolboxPlugin.name)) return null;
+    if (location !== "PANEL" && isPluginEnabled(DevcordToolboxPlugin.name)) return null;
 
     return (
         <Button

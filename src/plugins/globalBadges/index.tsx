@@ -48,7 +48,7 @@ function getGlobalBadges(userId: string): ProfileBadge[] {
                 era: mod,
                 label: t("Global Badge"),
                 text: t("GlobalBadges collects the badges other client mods give out. This one comes from {mod}.", { mod }),
-                notice: t("Only people who use Endcord with GlobalBadges can see this badge."),
+                notice: t("Only people who use Devcord with GlobalBadges can see this badge."),
                 action: badges.length > 1
                     ? {
                         text: t("See all {count}", { count: badges.length }),

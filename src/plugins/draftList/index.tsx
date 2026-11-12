@@ -98,7 +98,7 @@ export function openDrafts() {
 
 export default definePlugin({
     name: "DraftList",
-    description: "Lists every chat where you left a message unsent, so you can go back and finish it. Open it from the Endcord Toolbox in the title bar.",
+    description: "Lists every chat where you left a message unsent, so you can go back and finish it. Open it from the Devcord Toolbox in the title bar.",
     tags: ["Chat", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 

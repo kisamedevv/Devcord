@@ -34,7 +34,7 @@
     border-color: var(--brand-500);
 }
 
-/* Endcord's screens draw a card's edge as its background (see endcordUi.css), so the chosen look colors that */
+/* Devcord's screens draw a card's edge as its background (see endcordUi.css), so the chosen look colors that */
 .ec-theme .ec-studio-active,
 .ec-theme .ec-studio-active:hover {
     --ec-edge: var(--brand-500);

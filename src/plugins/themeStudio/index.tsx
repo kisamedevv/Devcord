@@ -75,7 +75,7 @@ export default definePlugin({
     enabledByDefault: true,
     settings,
 
-    // For Endcord's welcome screen, which can't import a plugin and does without the looks when this one is off
+    // For Devcord's welcome screen, which can't import a plugin and does without the looks when this one is off
     presets: PRESETS,
     LookPreview,
     saveDesign,

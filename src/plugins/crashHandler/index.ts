@@ -91,7 +91,7 @@ export default definePlugin({
                         showNotification({
                             color: "#eed202",
                             title: t("Whoops, Discord tripped!"),
-                            body: t("Discord tripped twice in a row, so Endcord is letting it rest this time. Press Ctrl+R if anything looks stuck."),
+                            body: t("Discord tripped twice in a row, so Devcord is letting it rest this time. Press Ctrl+R if anything looks stuck."),
                             noPersist: true
                         });
                     } catch { }
@@ -107,7 +107,7 @@ export default definePlugin({
             try {
                 if (!hasCrashedOnce) {
                     hasCrashedOnce = true;
-                    maybePromptToUpdate(t("Discord just tripped, but good news: a fresh Endcord update might fix it! Want to update now?"), true);
+                    maybePromptToUpdate(t("Discord just tripped, but good news: a fresh Devcord update might fix it! Want to update now?"), true);
                 }
             } catch { }
 
@@ -126,7 +126,7 @@ export default definePlugin({
             showNotification({
                 color: "#eed202",
                 title: t("Whoops, Discord tripped!"),
-                body: t("Hang on, Endcord is helping it back up..."),
+                body: t("Hang on, Devcord is helping it back up..."),
                 noPersist: true
             });
         } catch { }

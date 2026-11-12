@@ -74,12 +74,12 @@ const settings = definePluginSettings({
         default: true
     },
     emojiName: {
-        description: "Emoji name (default (from Endcord Server): husk)",
+        description: "Emoji name (default (from Devcord Server): husk)",
         type: OptionType.STRING,
         default: "husk"
     },
     emojiID: {
-        description: "Emoji ID (default (from Endcord Server): 1026532993923293184)",
+        description: "Emoji ID (default (from Devcord Server): 1026532993923293184)",
         type: OptionType.BIGINT,
         default: 1026532993923293184n
     }

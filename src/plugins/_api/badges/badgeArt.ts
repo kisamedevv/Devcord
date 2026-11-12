@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Endcord's two badges are pixel art on a 22 grid, the size of a badge, so every pixel lands on a screen pixel in the
+// Devcord's two badges are pixel art on a 22 grid, the size of a badge, so every pixel lands on a screen pixel in the
 // badge row, and are kept as squares so they stay sharp on the badge page too
 const SIZE = 22;
 
@@ -16,8 +16,8 @@ function pixelArt(rows: string[], palette: Record<string, string>) {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-// The developer badge: Endcord's panda, 20 by 17, about the size of the art in Discord's own badges. Its outline is
-// Endcord's ice blue: in navy it vanished on dark profiles, which left a white face with two dark holes that read as a
+// The developer badge: Devcord's panda, 20 by 17, about the size of the art in Discord's own badges. Its outline is
+// Devcord's ice blue: in navy it vanished on dark profiles, which left a white face with two dark holes that read as a
 // skull from a distance
 export const DEVELOPER_ICON = pixelArt([
     "..LLL..........LLL..",
@@ -39,7 +39,7 @@ export const DEVELOPER_ICON = pixelArt([
     "......LLLLLLLL......"
 ], { L: "#9ccbff", K: "#1e2740", W: "#f8fafe", E: "#ffffff", P: "#ff9db3" });
 
-// The contributor badge: a stalk of bamboo, what keeps the panda going. Endcord's bamboo green, with a lighter edge
+// The contributor badge: a stalk of bamboo, what keeps the panda going. Devcord's bamboo green, with a lighter edge
 // where the light catches it and darker rings at its joints, 18 by 18
 export const CONTRIBUTOR_ICON = pixelArt([
     "......OOOOOO....OO",

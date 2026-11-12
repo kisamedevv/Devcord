@@ -11,19 +11,19 @@ import { FakeProfileEditor } from "./editor";
 import { shareProfile } from "./profile";
 import { settings } from "./settings";
 
-const SETTINGS_PATH = "plugins.EndcordCustomProfile";
+const SETTINGS_PATH = "plugins.DevcordCustomProfile";
 const PROFILE_KEYS = ["targetUserId", "fakeUsername", "fakeDisplayName", "fakeBadges", "fakeCreatedAt"] as const;
 
 /** Panel açıcı — sağ üstteki logodan, kısayoldan ve hızlı menüden çağrılır. */
 export function openFakeProfilePanel() {
     openModal(props => (
-        <Modal {...props} title="Endcord — Fake Profil" size="lg">
+        <Modal {...props} title="Devcord — Fake Profil" size="lg">
             <FakeProfileEditor />
         </Modal>
     ));
 }
 
-/** Endcord logosu (SVG, data URI) — halka gradyanı + monogram. */
+/** Devcord logosu (SVG, data URI) — halka gradyanı + monogram. */
 export function endcordLogo(): string {
     const svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" width=\"28\" height=\"28\">"
         + "<defs>"
@@ -79,8 +79,8 @@ export function mountTopRightButton(): () => void {
     const button = document.createElement("button");
     button.className = "vc-ecp-logo-button";
     button.type = "button";
-    button.title = "Endcord — Fake Profil (Ctrl+Shift+E)";
-    button.setAttribute("aria-label", "Endcord Fake Profil");
+    button.title = "Devcord — Fake Profil (Ctrl+Shift+E)";
+    button.setAttribute("aria-label", "Devcord Fake Profil");
     button.setAttribute("aria-haspopup", "dialog");
 
     const logo = document.createElement("img");
@@ -98,7 +98,7 @@ export function mountTopRightButton(): () => void {
     const syncState = () => {
         const active = hasFakeProfile();
         button.classList.toggle("vc-ecp-logo-active", active);
-        button.setAttribute("aria-label", active ? "Endcord Fake Profil — etkin" : "Endcord Fake Profil");
+        button.setAttribute("aria-label", active ? "Devcord Fake Profil — etkin" : "Devcord Fake Profil");
     };
 
     syncState();

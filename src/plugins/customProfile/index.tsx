@@ -38,7 +38,7 @@ import { getSharedProfile, hasSharedProfiles, PROFILES_GUILD_ID, PROFILES_INVITE
 const settings = definePluginSettings({
     showOthers: {
         type: OptionType.BOOLEAN,
-        description: t("Show the profiles other Endcord users made with CustomProfile"),
+        description: t("Show the profiles other Devcord users made with CustomProfile"),
         default: true,
         onChange: () => {
             // Reading the channel starts or stops with it
@@ -91,7 +91,7 @@ function currentSharable() {
 
 const NOT_MEMBER_WARNED = "customProfile_notMemberWarned";
 
-/** Shares the saved profile with other Endcord users, and says so when it couldn't be */
+/** Shares the saved profile with other Devcord users, and says so when it couldn't be */
 async function shareMyProfile(myId: string, data: CustomProfileData | null) {
     const result = await publishProfile(myId, data);
     if (result === "not-member" && data) {
@@ -100,7 +100,7 @@ async function shareMyProfile(myId: string, data: CustomProfileData | null) {
         DataStore.set(NOT_MEMBER_WARNED, true).catch(() => { });
         Alerts.show({
             title: t("Only you can see this profile for now"),
-            body: t("Endcord users see each other's profiles through the Endcord Discord server. Join it and save your profile again, and everyone using Endcord sees it too."),
+            body: t("Devcord users see each other's profiles through the Devcord Discord server. Join it and save your profile again, and everyone using Devcord sees it too."),
             confirmText: t("Join the server"),
             cancelText: t("Not now"),
             onConfirm: () => openInviteModal(PROFILES_INVITE, PROFILES_GUILD_ID).catch(() => { })
@@ -110,9 +110,9 @@ async function shareMyProfile(myId: string, data: CustomProfileData | null) {
     } else if (result === "later") {
         // The profiles channel takes one message per person every few minutes; this save goes out when it may
         const minutes = Math.max(1, Math.ceil((sharingRetryAt() - Date.now()) / 60_000));
-        showToast(t("Saved. Other Endcord users see this change in {minutes} min.", { minutes }), Toasts.Type.MESSAGE);
+        showToast(t("Saved. Other Devcord users see this change in {minutes} min.", { minutes }), Toasts.Type.MESSAGE);
     } else if (result === "failed") {
-        showToast(t("Couldn't share your profile with other Endcord users. It's saved, and it's shared the next time you save."), Toasts.Type.FAILURE);
+        showToast(t("Couldn't share your profile with other Devcord users. It's saved, and it's shared the next time you save."), Toasts.Type.FAILURE);
     }
 }
 
@@ -472,7 +472,7 @@ let _avatarPatchApplied = false;
 function applyAvatarPatchEarly() {
     if (_avatarPatchApplied) return;
     try {
-        const IU = (window as any).Endcord?.Webpack?.findByProps?.("getUserAvatarURL");
+        const IU = (window as any).Devcord?.Webpack?.findByProps?.("getUserAvatarURL");
         if (!IU?.getUserAvatarURL) return;
         const orig = IU.getUserAvatarURL;
         IU.getUserAvatarURL = function (user: any, ...args: any[]) {
@@ -1010,7 +1010,7 @@ function forceAccountPanelRerender() {
         try { (UserStore as any)?.emitChange?.(); } catch { }
         try { (UserProfileStore as any)?.emitChange?.(); } catch { }
         try {
-            const MAS = (window as any).Endcord?.Webpack?.findByProps?.("getUsers", "getValidUsers");
+            const MAS = (window as any).Devcord?.Webpack?.findByProps?.("getUsers", "getValidUsers");
             MAS?.emitChange?.();
         } catch { }
         if (isEnabled) startDomObserver();
@@ -1023,7 +1023,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     const shop = useShopCollectibles();
     const nameFonts = React.useMemo(() => enumEntries(() => DisplayNameFonts), []);
     const nameEffects = React.useMemo(() => enumEntries(() => DisplayNameEffects), []);
-    // The shop's decorations, then the ones it no longer sells that Endcord still knows
+    // The shop's decorations, then the ones it no longer sells that Devcord still knows
     const decorations = React.useMemo(() => {
         const seen = new Set<string>();
         return [...shop.byType[CollectibleType.AVATAR_DECORATION].map(dec => ({ id: dec.skuId, label: dec.name })), ...AVATAR_DECORATIONS]
@@ -1039,13 +1039,13 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     const oldName = data.oldName ?? "";
     const accounts = React.useMemo(() => {
         try {
-            const MAS = (window as any).Endcord?.Webpack?.findByProps?.("getUsers", "getValidUsers");
+            const MAS = (window as any).Devcord?.Webpack?.findByProps?.("getUsers", "getValidUsers");
             if (MAS?.getUsers) {
                 const users = MAS.getUsers();
                 if (Array.isArray(users) && users.length > 0) return users;
             }
 
-            const internalStore = (window as any).Endcord?.Webpack?.findStore?.("MultiAccountStore");
+            const internalStore = (window as any).Devcord?.Webpack?.findStore?.("MultiAccountStore");
             if (internalStore?.getUsers) {
                 const users = internalStore.getUsers();
                 if (Array.isArray(users) && users.length > 0) return users;
@@ -1349,7 +1349,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                 <SectionLabel>{t("Display name style")}</SectionLabel>
                 <DisplayNameStylePicker
                     value={data.displayNameStyles}
-                    previewName={data.globalName || UserStore.getCurrentUser()?.globalName || UserStore.getCurrentUser()?.username || "Endcord"}
+                    previewName={data.globalName || UserStore.getCurrentUser()?.globalName || UserStore.getCurrentUser()?.username || "Devcord"}
                     fonts={nameFonts}
                     effects={nameEffects}
                     onChange={v => set("displayNameStyles", v)}
@@ -1383,7 +1383,7 @@ function CustomProfileButton() {
 export default definePlugin({
     name: "CustomProfile",
     enabledByDefault: true,
-    description: t("Visually customize your Discord profile (username, PFP, banner, badges, bio...). Other Endcord users see it too."),
+    description: t("Visually customize your Discord profile (username, PFP, banner, badges, bio...). Other Devcord users see it too."),
     authors: [Devs.ewlle],
     dependencies: ["HeaderBarAPI", "ContextMenuAPI"],
     settings,

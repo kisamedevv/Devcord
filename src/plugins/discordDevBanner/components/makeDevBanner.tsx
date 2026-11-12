@@ -25,7 +25,7 @@ export function makeDevBanner(state?: string): string | JSX.Element {
         return renderDevBanner(state);
     } catch (error) {
         console.error("[DiscordDevBanner] Failed to render banner", error);
-        return "Endcord";
+        return "Devcord";
     }
 }
 
@@ -35,7 +35,7 @@ function renderDevBanner(state?: string): string | JSX.Element {
     const buildChannel = names[releaseChannel] || releaseChannel.charAt(0).toUpperCase() + releaseChannel.slice(1);
     const { chromiumVersion, electronVersion } = SettingsPlugin;
     const format = settings.store.format ?? "{devbannerIcon} {buildChannel} {buildNumber} ({buildHash}) | {endcordIcon} {endcordName} {endcordVersion} ({endcordHash})";
-    const baseFormat = (state ?? format).replace(/\bEquicord\b/g, "Endcord");
+    const baseFormat = (state ?? format).replace(/\bEquicord\b/g, "Devcord");
 
     const clientInfo = detectClient();
 
@@ -43,7 +43,7 @@ function renderDevBanner(state?: string): string | JSX.Element {
         .replace(/{buildChannel}/g, buildChannel)
         .replace(/{buildNumber}/g, String(env.BUILD_NUMBER ?? ""))
         .replace(/{buildHash}/g, String(env.VERSION_HASH ?? "").slice(0, 9))
-        .replace(/{endcordName}|{equicordName}/g, "Endcord")
+        .replace(/{endcordName}|{equicordName}/g, "Devcord")
         .replace(/{endcordVersion}|{equicordVersion}/g, VERSION)
         .replace(/{endcordHash}|{equicordHash}/g, gitHashShort)
         .replace(/{endcordPlatform}|{equicordPlatform}/g, getPlatformLabel())

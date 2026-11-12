@@ -26,15 +26,15 @@ export interface ButtonAction {
 }
 
 export const actions: ButtonAction[] = [
-    { id: "openEndcordSettings", label: "Open Endcord tab", callback: async () => await SettingsRouter.openUserSettings("endcord_main_panel"), registrar: "Endcord" },
-    { id: "openPluginSettings", label: "Open Plugin tab", callback: () => SettingsRouter.openUserSettings("endcord_plugins_panel"), registrar: "Endcord" },
-    { id: "openThemesSettings", label: "Open Themes tab", callback: () => SettingsRouter.openUserSettings("endcord_themes_panel"), registrar: "Endcord" },
-    { id: "openUpdaterSettings", label: "Open Updater tab", callback: () => SettingsRouter.openUserSettings("endcord_updater_panel"), registrar: "Endcord" },
-    { id: "openBackupSettings", label: "Open Backup & Restore tab", callback: () => SettingsRouter.openUserSettings("endcord_backup_restore_panel"), registrar: "Endcord" },
-    { id: "restartClient", label: "Restart Client", callback: () => relaunch(), registrar: "Endcord" },
-    { id: "openQuickCSSFile", label: "Open Quick CSS File", callback: () => EndcordNative.quickCss.openEditor(), registrar: "Endcord" },
-    { id: "openSettingsFolder", label: "Open Settings Folder", callback: () => EndcordNative.settings.openFolder(), registrar: "Endcord" },
-    { id: "openInGithub", label: "Open in Github", callback: async () => EndcordNative.native.openExternal(await getRepo()), registrar: "Endcord" },
+    { id: "openEndcordSettings", label: "Open Devcord tab", callback: async () => await SettingsRouter.openUserSettings("endcord_main_panel"), registrar: "Devcord" },
+    { id: "openPluginSettings", label: "Open Plugin tab", callback: () => SettingsRouter.openUserSettings("endcord_plugins_panel"), registrar: "Devcord" },
+    { id: "openThemesSettings", label: "Open Themes tab", callback: () => SettingsRouter.openUserSettings("endcord_themes_panel"), registrar: "Devcord" },
+    { id: "openUpdaterSettings", label: "Open Updater tab", callback: () => SettingsRouter.openUserSettings("endcord_updater_panel"), registrar: "Devcord" },
+    { id: "openBackupSettings", label: "Open Backup & Restore tab", callback: () => SettingsRouter.openUserSettings("endcord_backup_restore_panel"), registrar: "Devcord" },
+    { id: "restartClient", label: "Restart Client", callback: () => relaunch(), registrar: "Devcord" },
+    { id: "openQuickCSSFile", label: "Open Quick CSS File", callback: () => EndcordNative.quickCss.openEditor(), registrar: "Devcord" },
+    { id: "openSettingsFolder", label: "Open Settings Folder", callback: () => EndcordNative.settings.openFolder(), registrar: "Devcord" },
+    { id: "openInGithub", label: "Open in Github", callback: async () => EndcordNative.native.openExternal(await getRepo()), registrar: "Devcord" },
 
     {
         id: "openInBrowser", label: "Open in Browser", callback: async () => {
@@ -54,7 +54,7 @@ export const actions: ButtonAction[] = [
                     }
                 });
             }
-        }, registrar: "Endcord"
+        }, registrar: "Devcord"
     },
 
     {
@@ -79,7 +79,7 @@ export const actions: ButtonAction[] = [
             if (choice && enabled) {
                 return togglePlugin(choice, enabled.id === "enable");
             }
-        }, registrar: "Endcord"
+        }, registrar: "Devcord"
     },
 
     {
@@ -110,7 +110,7 @@ export const actions: ButtonAction[] = [
                     }
                 });
             }
-        }, registrar: "Endcord"
+        }, registrar: "Devcord"
     },
 
     {
@@ -125,7 +125,7 @@ export const actions: ButtonAction[] = [
                     position: Toasts.Position.BOTTOM
                 }
             });
-        }, registrar: "Endcord"
+        }, registrar: "Devcord"
     },
 
     {
@@ -134,7 +134,7 @@ export const actions: ButtonAction[] = [
 
             if (isOutdated) {
                 setTimeout(() => showNotification({
-                    title: "An Endcord update is available!",
+                    title: "An Devcord update is available!",
                     body: "Click here to view the update",
                     permanent: true,
                     noPersist: true,
@@ -152,7 +152,7 @@ export const actions: ButtonAction[] = [
                     }
                 });
             }
-        }, registrar: "Endcord"
+        }, registrar: "Devcord"
     },
 
     {
@@ -172,7 +172,7 @@ export const actions: ButtonAction[] = [
             if (choice) {
                 NavigationRouter.transitionToGuild(choice.id);
             }
-        }, registrar: "Endcord"
+        }, registrar: "Devcord"
     }
 ];
 

@@ -45,7 +45,7 @@ async function checkForUpdates(showToastIfNew = false) {
             if (showToastIfNew) {
                 Toasts.show({
                     id: "endcord-update-available",
-                    message: t("Endcord {version} is available. Open the Toolbox to update.", { version: latestVersion }),
+                    message: t("Devcord {version} is available. Open the Toolbox to update.", { version: latestVersion }),
                     type: Toasts.Type.MESSAGE,
                     options: { duration: 8000 }
                 });
@@ -373,10 +373,10 @@ export function ToolboxMenu({ onClose }: { onClose(): void; }) {
             onClose={onClose}
         >
             {updateAvailable && (
-                <Menu.MenuGroup label={t("Endcord {version} is available", { version: _latestVersion })}>
+                <Menu.MenuGroup label={t("Devcord {version} is available", { version: _latestVersion })}>
                     <Menu.MenuItem
                         id="endcord-open-updater"
-                        label={t("Update Endcord")}
+                        label={t("Update Devcord")}
                         action={openUpdater}
                     />
                     <Menu.MenuItem
@@ -401,8 +401,8 @@ export function ToolboxMenu({ onClose }: { onClose(): void; }) {
                         Toasts.show({
                             id: "endcord-check-done",
                             message: _updateAvailable
-                                ? t("Endcord {version} is available", { version: _latestVersion })
-                                : t("Endcord is up to date"),
+                                ? t("Devcord {version} is available", { version: _latestVersion })
+                                : t("Devcord is up to date"),
                             type: _updateAvailable ? Toasts.Type.MESSAGE : Toasts.Type.SUCCESS
                         });
                     }}

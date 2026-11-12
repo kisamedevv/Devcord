@@ -14,49 +14,49 @@ import { useEffect, UserStore, useState } from "@webpack/common";
 const settings = definePluginSettings({
     showEndcordDonor: {
         type: OptionType.BOOLEAN,
-        description: "Enable to show Endcord Donor badges in chat.",
+        description: "Enable to show Devcord Donor badges in chat.",
         hidden: true,
         default: true
     },
     EndcordDonorPosition: {
         type: OptionType.NUMBER,
-        description: "The position of the Endcord Donor badges.",
+        description: "The position of the Devcord Donor badges.",
         hidden: true,
         default: 0
     },
     showEndcordContributor: {
         type: OptionType.BOOLEAN,
-        description: "Enable to show Endcord Contributor badges in chat.",
+        description: "Enable to show Devcord Contributor badges in chat.",
         hidden: true,
         default: true
     },
     EndcordContributorPosition: {
         type: OptionType.NUMBER,
-        description: "The position of the Endcord Contributor badge.",
+        description: "The position of the Devcord Contributor badge.",
         hidden: true,
         default: 1
     },
     showVencordDonor: {
         type: OptionType.BOOLEAN,
-        description: "Enable to show Endcord donor badges in chat.",
+        description: "Enable to show Devcord donor badges in chat.",
         hidden: true,
         default: true
     },
     VencordDonorPosition: {
         type: OptionType.NUMBER,
-        description: "The position of the Endcord Donor badges.",
+        description: "The position of the Devcord Donor badges.",
         hidden: true,
         default: 4
     },
     showVencordContributor: {
         type: OptionType.BOOLEAN,
-        description: "Enable to show Endcord contributor badges in chat.",
+        description: "Enable to show Devcord contributor badges in chat.",
         hidden: true,
         default: true
     },
     VencordContributorPosition: {
         type: OptionType.NUMBER,
-        description: "The position of the Endcord Contributor badge.",
+        description: "The position of the Devcord Contributor badge.",
         hidden: true,
         default: 5
     },
@@ -95,10 +95,10 @@ export default settings;
 
 const BadgeSettings = () => {
     const [images, setImages] = useState([
-        { src: "https://cdn.discordapp.com/emojis/1026533070955872337.png", shown: settings.store.showEndcordDonor, title: "Endcord donor badges", key: "EndcordDonor", position: settings.store.EndcordDonorPosition },
-        { src: DEVELOPER_ICON, shown: settings.store.showEndcordContributor, title: "Endcord developer and contributor badges", key: "EndcordContributer", position: settings.store.EndcordContributorPosition },
-        { src: "https://cdn.discordapp.com/emojis/1026533070955872337.png", shown: settings.store.showVencordDonor, title: "Endcord donor badges", key: "VencordDonor", position: settings.store.VencordDonorPosition },
-        { src: "https://cdn.discordapp.com/emojis/1092089799109775453.png", shown: settings.store.showVencordContributor, title: "Endcord contributor badge", key: "VencordContributer", position: settings.store.VencordContributorPosition },
+        { src: "https://cdn.discordapp.com/emojis/1026533070955872337.png", shown: settings.store.showEndcordDonor, title: "Devcord donor badges", key: "EndcordDonor", position: settings.store.EndcordDonorPosition },
+        { src: DEVELOPER_ICON, shown: settings.store.showEndcordContributor, title: "Devcord developer and contributor badges", key: "EndcordContributer", position: settings.store.EndcordContributorPosition },
+        { src: "https://cdn.discordapp.com/emojis/1026533070955872337.png", shown: settings.store.showVencordDonor, title: "Devcord donor badges", key: "VencordDonor", position: settings.store.VencordDonorPosition },
+        { src: "https://cdn.discordapp.com/emojis/1092089799109775453.png", shown: settings.store.showVencordContributor, title: "Devcord contributor badge", key: "VencordContributer", position: settings.store.VencordContributorPosition },
         { src: "https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png", shown: settings.store.showDiscordProfile, title: "Discord profile badges (HypeSquad, Discord Staff, Early Supporter, etc.)", key: "DiscordProfile", position: settings.store.DiscordProfilePosition },
         { src: "https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png", shown: settings.store.showDiscordNitro, title: "Nitro badge", key: "DiscordNitro", position: settings.store.DiscordNitroPosition }
     ]);

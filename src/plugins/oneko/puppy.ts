@@ -6,7 +6,7 @@
 
 import type { Pet } from "./pet";
 
-// A puppy that trots after the cat. Drawn for Endcord
+// A puppy that trots after the cat. Drawn for Devcord
 
 const PALETTE: Record<string, string> = {
     o: "#3a2414", // outline

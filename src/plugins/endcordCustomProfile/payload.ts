@@ -7,10 +7,10 @@
 /**
  * Sahte profil verisini "görünmez" karakterlerle taşır.
  *
- * Amaç: fake isim / fake rozetler / fake oluşturma tarihi sadece Endcord
+ * Amaç: fake isim / fake rozetler / fake oluşturma tarihi sadece Devcord
  * kullanan istemcilerde görünsün. Veri, kullanıcının profil açıklamasına
  * (bio) görünmez karakterler olarak gömülür — normal Discord istemcisi
- * açıklamayı boş görür, Endcord ise çözer ve fake profili çizer.
+ * açıklamayı boş görür, Devcord ise çözer ve fake profili çizer.
  *
  * 27 görünmez sembol, sembol başına ~4.75 bit. 190 karakterlik bio alanına
  * yaklaşık 85 bayt veri sığar — isim + birkaç rozet + tarih için fazlasıyla.
@@ -127,7 +127,7 @@ export function encodeProfile(profile: FakeProfile): string {
     return encodeBytes(toBytes(parts.join(SEP)));
 }
 
-/** Bio içindeki görünmez veriyi çözer; Endcord verisi yoksa null. */
+/** Bio içindeki görünmez veriyi çözer; Devcord verisi yoksa null. */
 export function decodeProfile(text: string | undefined | null): FakeProfile | null {
     if (!text) return null;
 

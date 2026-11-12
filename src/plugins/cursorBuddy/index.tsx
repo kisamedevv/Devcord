@@ -233,7 +233,7 @@ function load() {
     }
 }
 
-// Not "oneko": that's Endcord's own pet plugin, still here, and taking its settings turned it off for anyone who had it on
+// Not "oneko": that's Devcord's own pet plugin, still here, and taking its settings turned it off for anyone who had it on
 migratePluginSettings("CursorBuddy", "Oneko");
 export default definePlugin({
     name: "CursorBuddy",

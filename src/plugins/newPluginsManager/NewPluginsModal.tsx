@@ -79,7 +79,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
 
         if (isRequired) {
             const tooltipText = p.required
-                ? t("This plugin is required for Endcord to work.")
+                ? t("This plugin is required for Devcord to work.")
                 : <PluginDependencyList deps={depMap[p.name]?.filter(d => settings.plugins[d].enabled)} />;
 
             requiredPluginCards.push(
@@ -138,7 +138,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
                     </BaseText>
                     <br />
                     <Notice.Info className={cl("notice")}>
-                        {t("Endcord is free and open source.")} <Link href="https://github.com/Endcord/Endcord" target="_blank" rel="noopener noreferrer">{t("Support Endcord on GitHub")}</Link>
+                        {t("Devcord is free and open source.")} <Link href="https://github.com/Endcord/Endcord" target="_blank" rel="noopener noreferrer">{t("Support Devcord on GitHub")}</Link>
                     </Notice.Info>
                 </>
             }
@@ -166,7 +166,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
 }
 
 export async function openNewPluginsModal() {
-    // Someone setting Endcord up gets the welcome screen, which shows them the plugins; this list of what's new since
+    // Someone setting Devcord up gets the welcome screen, which shows them the plugins; this list of what's new since
     // their last visit would only open on top of it. What there is now becomes what they know
     if (Settings.welcomePending) return writeKnownSettings();
     const newPlugins = await getNewPlugins();

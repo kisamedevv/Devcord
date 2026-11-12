@@ -57,7 +57,7 @@ export default definePlugin({
             find: '="SYSTEM_TAG"',
             replacement: {
                 // Override colorString with our custom color and disable gradients if applying the custom color.
-                match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i|Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i, arguments\[0\]\)),/,
+                match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i|Devcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i, arguments\[0\]\)),/,
                 replace: "$self.wrapMessageColorProps($1, arguments[0]),"
             }
         },

@@ -56,10 +56,10 @@ ${rules.map(rule => `    ${rule}`).join("\n")}
 }
 
 export default definePlugin({
-    name: "EndcordAppearance",
+    name: "DevcordAppearance",
     description: "Cam temanın opaklık, bulanıklık ve vurgu rengini anında ayarla. Tema dosyasını düzenlemeye gerek kalmaz.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
 
     start() {
@@ -73,7 +73,7 @@ export default definePlugin({
         };
 
         for (const key of ["opacity", "blur", "accent"]) {
-            SettingsStore.addChangeListener(`plugins.EndcordAppearance.${key}` as never, apply);
+            SettingsStore.addChangeListener(`plugins.DevcordAppearance.${key}` as never, apply);
         }
     },
 

@@ -201,10 +201,10 @@ hr {
 }
 
 export default definePlugin({
-    name: "EndcordEyeCare",
+    name: "DevcordEyeCare",
     description: "Göz yormasın diye Discord'u sadeleştirir: küçük ikonlar, sakin metin, kapalı animasyonlar ve düşük boyama yükü.",
     tags: ["Appearance", "Utility", "Accessibility"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
 
     start() {
@@ -218,7 +218,7 @@ export default definePlugin({
         };
 
         for (const key of ["reduceMotion", "performanceMode", "dropBlur", "iconScale", "emojiScale", "avatarScale", "textSoftness", "dimDecorations", "contentVisibility"]) {
-            SettingsStore.addChangeListener(`plugins.EndcordEyeCare.${key}` as never, apply);
+            SettingsStore.addChangeListener(`plugins.DevcordEyeCare.${key}` as never, apply);
         }
     },
 

@@ -92,7 +92,7 @@ function Brand({ onSettings }: { onSettings(): void; }) {
                 <EndcordWordmark />
                 <button className={cl("version")} onClick={tapVersion}>{VERSION}</button>
             </div>
-            <button className={cl("icon-button")} aria-label={t("Endcord Settings")} title={t("Endcord Settings")} onClick={onSettings}>
+            <button className={cl("icon-button")} aria-label={t("Devcord Settings")} title={t("Devcord Settings")} onClick={onSettings}>
                 <CogWheel width={20} height={20} />
             </button>
         </header>
@@ -225,14 +225,14 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
     };
 
     return (
-        <div className={classes(cl("root"), ENDCORD_THEME)} role="dialog" aria-label={t("Endcord Control Center")}>
+        <div className={classes(cl("root"), ENDCORD_THEME)} role="dialog" aria-label={t("Devcord Control Center")}>
             <div className={cl("panel")}>
                 <div className={cl("content")}>
                     <Brand onSettings={() => openSettings("endcord_main_panel")} />
 
                     {availableUpdate && (
                         <button className={cl("update")} onClick={onUpdate}>
-                            <span>{t("Endcord {version} is available", { version: availableUpdate })}</span>
+                            <span>{t("Devcord {version} is available", { version: availableUpdate })}</span>
                             <ChevronRight />
                         </button>
                     )}

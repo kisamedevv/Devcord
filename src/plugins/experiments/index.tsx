@@ -140,7 +140,7 @@ export default definePlugin({
                 {t("Experiments are unreleased Discord features. They might not work, or even break your client or get your account disabled.")}</Forms.FormText>
 
             <Forms.FormText className={Margins.top8}>
-                {t("Only use experiments if you know what you're doing. Endcord is not responsible for any damage caused by enabling experiments. If you don't know what an experiment does, ignore it. Do not ask us what experiments do either, we probably don't know.")}</Forms.FormText>
+                {t("Only use experiments if you know what you're doing. Devcord is not responsible for any damage caused by enabling experiments. If you don't know what an experiment does, ignore it. Do not ask us what experiments do either, we probably don't know.")}</Forms.FormText>
 
             <Forms.FormText className={Margins.top8}>
                 {t("No, you cannot use server-side features like checking the \"Send to Client\" box.")}</Forms.FormText>

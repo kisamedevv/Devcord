@@ -21,8 +21,8 @@ import { settings } from "./settings";
 import { BadgeEntry,badgesForUser } from "./store";
 
 const BADGE_GROUP_ID = "endcord-custom-badges";
-const MEMBER_LIST_ID = "EndcordBadges";
-const CHAT_DECORATION_ID = "EndcordBadges";
+const MEMBER_LIST_ID = "DevcordBadges";
+const CHAT_DECORATION_ID = "DevcordBadges";
 
 function currentBadges(): BadgeEntry[] {
     return settings.store.badges ?? [];
@@ -30,7 +30,7 @@ function currentBadges(): BadgeEntry[] {
 
 const CustomBadges: ProfileBadge = {
     id: BADGE_GROUP_ID,
-    description: "Endcord badge",
+    description: "Devcord badge",
     position: BadgePosition.START,
     getBadges({ userId }) {
         const size = `${settings.store.badgeSize ?? 22}px`;
@@ -89,17 +89,17 @@ const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: { use
     children.push(
         <Menu.MenuItem
             id="vc-endcord-badges-picker"
-            label="Endcord Rozeti Ver"
+            label="Devcord Rozeti Ver"
             action={() => openBadgePicker(user.id, user.username)}
         />
     );
 };
 
 export default definePlugin({
-    name: "EndcordBadges",
+    name: "DevcordBadges",
     description: "Add your own badges — with a built-in icon library — to any profile. Purely local, no server needed.",
     tags: ["Customisation", "Fun"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
     contextMenus: {
         "user-context": UserContextPatch

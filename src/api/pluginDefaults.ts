@@ -8,7 +8,7 @@
 // has one. These get turned on once instead, which leaves them off for good if the person turns them off afterwards.
 // Add a plugin here and bump the version whenever an existing plugin becomes on by default.
 const DEFAULTS_VERSION = 1;
-const NOW_ON_BY_DEFAULT = ["EndcordToolbox", "ThemeLibrary"];
+const NOW_ON_BY_DEFAULT = ["DevcordToolbox", "ThemeLibrary"];
 
 interface StoredSettings {
     pluginDefaultsVersion: number;

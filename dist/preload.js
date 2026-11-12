@@ -1,4 +1,4 @@
-// Endcord 5b43bfe
+// Endcord ea404c2
 // Standalone: false
 // Platform: win32
 // Updater Disabled: false

@@ -16,7 +16,7 @@ interface Reminder {
     channelId: string;
 }
 
-const KEY = "Endcord_reminders";
+const KEY = "Devcord_reminders";
 const UNITS: Record<string, number> = {
     m: 60_000,
     h: 3_600_000,

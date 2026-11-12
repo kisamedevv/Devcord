@@ -43,8 +43,8 @@ const isSupportAllowedChannel = (channel: Channel) => channel.id === SUPPORT_CHA
 // Yetkili Owner Hesapları: the accounts that may tell every client to check for an update
 const ENDCORD_OWNER_IDS = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
 
-// These messages get an update button and a button that runs code in everyone's client, so only Endcord's owners,
-// in Endcord's own server. A plugin developer's stolen account must not be enough
+// These messages get an update button and a button that runs code in everyone's client, so only Devcord's owners,
+// in Devcord's own server. A plugin developer's stolen account must not be enough
 const isEndcordStaffMessage = ({ channel, message }: Record<string, any>) => channel.guild_id === ENDCORD_GUILD_ID && ENDCORD_OWNER_IDS.includes(message.author?.id);
 
 async function forceUpdate() {
@@ -62,7 +62,7 @@ async function generateDebugInfoMessage() {
 
     const client = (() => {
         if (IS_DISCORD_DESKTOP) return `Discord Desktop v${DiscordNative.app.getVersion()}`;
-        if (IS_VESKTOP) return `Endcord Desktop v${VesktopNative.app.getVersion()}`;
+        if (IS_VESKTOP) return `Devcord Desktop v${VesktopNative.app.getVersion()}`;
         if ("legcord" in window) return `Legcord v${window.legcord.version}`;
 
         // @ts-expect-error
@@ -71,7 +71,7 @@ async function generateDebugInfoMessage() {
     })();
 
     const info = {
-        Endcord:
+        Devcord:
             `v${VERSION} • [${gitHash}](<https://github.com/Endcord/Endcord/commit/${gitHash}>)` +
             `${SettingsPlugin.additionalInfo} - ${Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${client}`,
@@ -84,7 +84,7 @@ async function generateDebugInfoMessage() {
 
     const commonIssues = {
         "Activity Sharing disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
-        "Endcord DevBuild": !IS_STANDALONE,
+        "Devcord DevBuild": !IS_STANDALONE,
         "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
         "More than two weeks out of date": BUILD_TIMESTAMP < Date.now() - 12096e5,
     };
@@ -132,7 +132,7 @@ const UPDATE_COMMAND_COOLDOWN = 10 * 60 * 1000;
 
 let lastUpdateCommand = 0;
 
-// Asks once whether to join the Endcord server. Discord's own invite dialog does the joining, so nothing happens without a click
+// Asks once whether to join the Devcord server. Discord's own invite dialog does the joining, so nothing happens without a click
 async function promptServerInvite() {
     if (settings.store.invitePromptShown) return;
     settings.store.invitePromptShown = true;
@@ -143,11 +143,11 @@ async function promptServerInvite() {
     } catch (e) {
         // Most likely offline; ask again on the next connection
         settings.store.invitePromptShown = false;
-        new Logger("SupportHelper").error("Couldn't open the Endcord server invite", e);
+        new Logger("SupportHelper").error("Couldn't open the Devcord server invite", e);
     }
 }
 
-// Asks for a GitHub star once, after Endcord has been in use for a week
+// Asks for a GitHub star once, after Devcord has been in use for a week
 function promptStar() {
     const s = settings.store;
     if (s.starPromptShown) return;
@@ -155,7 +155,7 @@ function promptStar() {
     if (Date.now() - s.firstSeenAt < STAR_PROMPT_DELAY) return;
 
     s.starPromptShown = true;
-    showNotice(t("Enjoying Endcord? A star on GitHub helps more people find it."), t("Star on GitHub"), () => {
+    showNotice(t("Enjoying Devcord? A star on GitHub helps more people find it."), t("Star on GitHub"), () => {
         popNotice();
         EndcordNative.native.openExternal(REPO_URL);
     });
@@ -204,13 +204,13 @@ export default definePlugin({
     commands: [
         {
             name: "endcord-debug",
-            description: t("Send Endcord debug info"),
+            description: t("Send Devcord debug info"),
             predicate: ctx => isPluginDev(UserStore.getCurrentUser()?.id) || isSupportAllowedChannel(ctx.channel),
             execute: async () => ({ content: await generateDebugInfoMessage() })
         },
         {
             name: "endcord-plugins",
-            description: t("Send Endcord plugin list"),
+            description: t("Send Devcord plugin list"),
             predicate: ctx => isPluginDev(UserStore.getCurrentUser()?.id) || isSupportAllowedChannel(ctx.channel),
             execute: () => ({ content: generatePluginList() })
         }
@@ -240,7 +240,7 @@ export default definePlugin({
                     // check sooner: installing and restarting stay with the user, as with the regular update check
                     if (!Settings.autoUpdate) {
                         showNotification({
-                            title: t("An Endcord update is available!"),
+                            title: t("An Devcord update is available!"),
                             body: t("Click here to view the update"),
                             onClick: () => openSettingsTabModal(UpdaterTab!)
                         });
@@ -249,7 +249,7 @@ export default definePlugin({
 
                     await update();
                     showNotification({
-                        title: t("Endcord has been updated!"),
+                        title: t("Devcord has been updated!"),
                         body: t("Click here to restart"),
                         onClick: relaunch
                     });
@@ -349,9 +349,9 @@ export default definePlugin({
 
         return (
             <Card variant="warning" className={Margins.top8} defaultPadding>
-                {t("Please do not private message Endcord plugin developers for support!")}
+                {t("Please do not private message Devcord plugin developers for support!")}
                 <br />
-                {t("Instead, use the Endcord support channel:")}{" "}{Parser.parse(`https://discord.com/channels/${ENDCORD_GUILD_ID}/${SUPPORT_CHANNEL_ID}`)}
+                {t("Instead, use the Devcord support channel:")}{" "}{Parser.parse(`https://discord.com/channels/${ENDCORD_GUILD_ID}/${SUPPORT_CHANNEL_ID}`)}
                 {!ChannelStore.getChannel(SUPPORT_CHANNEL_ID) && " (Click the link to join)"}
             </Card>
         );
@@ -373,7 +373,7 @@ export function detectClient(): ClientData {
     if (IS_VESKTOP && VesktopNative?.app?.getVersion) {
         const hash = tryOrElse(() => VesktopNative.app.getGitHash?.() ?? null, null);
         return {
-            name: "Endcord Desktop",
+            name: "Devcord Desktop",
             version: VesktopNative.app.getVersion(),
             dev: tryOrElse(() => VesktopNative.app.isDevBuild?.() ?? false, false),
             hash,

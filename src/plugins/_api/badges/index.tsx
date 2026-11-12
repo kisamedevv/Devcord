@@ -74,22 +74,22 @@ function endcordBadge(id: string, icon: string, title: string, flavor: string, t
             iconSrc: icon,
             details: ({ userId }) => ({
                 flavor: t(flavor),
-                era: "Endcord",
-                label: t("Endcord Badge"),
+                era: "Devcord",
+                label: t("Devcord Badge"),
                 text: text(),
-                notice: t("Only people who use Endcord can see this badge."),
+                notice: t("Only people who use Devcord can see this badge."),
                 action: { text: t("View their plugins"), onClick: () => viewPlugins(userId) }
             })
         }]
     };
 }
 
-// The people who make Endcord, and everyone who has helped build it. There are only a handful of each, so both sit
+// The people who make Devcord, and everyone who has helped build it. There are only a handful of each, so both sit
 // above anything Discord gives out
-const DeveloperBadge = endcordBadge("endcord_developer", DEVELOPER_ICON, "Endcord Developer", "Makes Endcord",
-    () => t("Given to the people who make Endcord. {count} people have it.", { count: EndcordDeveloperIds.length }), isEndcordDeveloper);
-const ContributorBadge = endcordBadge("endcord_contributor", CONTRIBUTOR_ICON, "Endcord Contributor", "Helped build Endcord",
-    () => t("Given to the people who helped build Endcord. {count} people have it.", { count: Object.keys(DevsById).length }), isPluginDev);
+const DeveloperBadge = endcordBadge("endcord_developer", DEVELOPER_ICON, "Devcord Developer", "Makes Devcord",
+    () => t("Given to the people who make Devcord. {count} people have it.", { count: EndcordDeveloperIds.length }), isEndcordDeveloper);
+const ContributorBadge = endcordBadge("endcord_contributor", CONTRIBUTOR_ICON, "Devcord Contributor", "Helped build Devcord",
+    () => t("Given to the people who helped build Devcord. {count} people have it.", { count: Object.keys(DevsById).length }), isPluginDev);
 
 export default definePlugin({
     name: "BadgeAPI",
@@ -223,7 +223,7 @@ export default definePlugin({
             return copy;
         });
 
-        // Endcord's badges always lead, the developer one first
+        // Devcord's badges always lead, the developer one first
         const ours = [DeveloperBadge.id, ContributorBadge.id].map(id => badges.find(badge => badge?.id === id)).filter(Boolean);
         if (ours.length) badges = [...ours, ...badges.filter(badge => !ours.includes(badge))];
 
@@ -267,7 +267,7 @@ export default definePlugin({
         const { onClick, onContextMenu } = badge;
 
         if (onClick) handlers.onClick = e => onClick(e, badge);
-        // A badge Endcord added opens its details, like Discord's own badges open their page
+        // A badge Devcord added opens its details, like Discord's own badges open their page
         else if ((badge as AddedBadge).isEndcordBadge && badge.iconSrc && !badge.link) handlers.onClick = e => {
             e.preventDefault();
             openBadgeDetails(badge as AddedBadge);

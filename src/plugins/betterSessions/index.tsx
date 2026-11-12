@@ -166,7 +166,7 @@ export default definePlugin({
     flux: {
         USER_SETTINGS_ACCOUNT_RESET_AND_CLOSE_FORM() {
             // Discord keeps this store in the code of its settings, which loads only when they're opened, so it's looked
-            // up now that they're closing rather than when Endcord starts
+            // up now that they're closing rather than when Devcord starts
             const AuthSessionsStore = findStore("AuthSessionsStore");
             if (!AuthSessionsStore) return;
             const lastFetchedHashes: string[] = AuthSessionsStore.getSessions().map((session: SessionInfo["session"]) => session.id_hash);

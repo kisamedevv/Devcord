@@ -61,7 +61,7 @@ const SECRETS: Secret[] = [
     },
     {
         name: "a password",
-        // şifre and пароль are written as escapes: Endcord's script has to stay in Latin-1. \b doesn't see letters
+        // şifre and пароль are written as escapes: Devcord's script has to stay in Latin-1. \b doesn't see letters
         // outside English, so the start of the word is checked by hand
         test: text => settings.store.passwords && /(?<![\w\u00c0-\u024f\u0400-\u04ff])(?:password|passwd|pwd|\u015fifre|parola|contrase\u00f1a|mot de passe|\u043f\u0430\u0440\u043e\u043b\u044c)\s*[:=]\s*\S{4,}/i.test(text)
     }

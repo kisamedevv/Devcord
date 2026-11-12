@@ -77,7 +77,7 @@ export function FakeProfileEditor() {
 
             await shareProfile(profile);
             settings.store.shareProfile = true;
-            showToast({ text: "Fake profil paylaşıldı — sadece Endcord kullananlar görecek", variant: "success" });
+            showToast({ text: "Fake profil paylaşıldı — sadece Devcord kullananlar görecek", variant: "success" });
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             showToast({ text: `Paylaşma başarısız: ${message}`, variant: "critical" });
@@ -111,7 +111,7 @@ export function FakeProfileEditor() {
                     Seçtiğin kullanıcıya sahte isim, sahte rozetler ve sahte oluşturma tarihi
                     uygulanır. Değişiklikler sadece <b>bu istemcide</b> görünür — gerçek Discord
                     verisine dokunulmaz. Paylaş butonu, veriyi profil açıklamana görünmez kodla
-                    yazar; onu da yalnızca Endcord kullananlar çözebilir.
+                    yazar; onu da yalnızca Devcord kullananlar çözebilir.
                 </Paragraph>
             </div>
 

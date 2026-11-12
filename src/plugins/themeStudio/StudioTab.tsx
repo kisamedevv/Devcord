@@ -235,7 +235,7 @@ function StudioTab() {
 
             <section className={Margins.bottom20}>
                 <HeadingSecondary>{t("Share")}</HeadingSecondary>
-                <Paragraph className={Margins.bottom8}>{t("A short code for this look. Anyone with Endcord can paste it here to get the same one.")}</Paragraph>
+                <Paragraph className={Margins.bottom8}>{t("A short code for this look. Anyone with Devcord can paste it here to get the same one.")}</Paragraph>
                 <div className={cl("share")}>
                     <TextInput placeholder="ECS1:..." value={code} onChange={setCode} />
                     <Button size="small" disabled={!code.trim()} onClick={applyCode}>{t("Apply")}</Button>

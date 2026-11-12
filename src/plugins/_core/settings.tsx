@@ -70,7 +70,7 @@ interface SettingsLayoutBuilder {
 const settings = definePluginSettings({
     settingsLocation: {
         type: OptionType.SELECT,
-        get description() { return t("Where to put the Endcord settings section"); },
+        get description() { return t("Where to put the Devcord settings section"); },
         get options() {
             return [
                 { label: t("At the very top"), value: "top" },
@@ -84,7 +84,7 @@ const settings = definePluginSettings({
     },
     includeEndcordInfoWhenCopying: {
         type: OptionType.BOOLEAN,
-        get description() { return t("Also copy Endcord info (Endcord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page"); },
+        get description() { return t("Also copy Devcord info (Devcord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page"); },
         default: true
     }
 });
@@ -163,8 +163,8 @@ export default definePlugin({
         const endcordEntries: SettingsLayoutNode[] = [
             buildEntry({
                 key: "endcord_main",
-                title: "Endcord",
-                panelTitle: "Endcord Settings",
+                title: "Devcord",
+                panelTitle: "Devcord Settings",
                 Component: EndcordTab,
                 Icon: MainSettingsIcon
             }),
@@ -183,7 +183,7 @@ export default definePlugin({
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
                 key: "endcord_updater",
                 title: "Updater",
-                panelTitle: "Endcord Updater",
+                panelTitle: "Devcord Updater",
                 Component: UpdaterTab,
                 Icon: UpdaterIcon
             }),
@@ -224,7 +224,7 @@ export default definePlugin({
         const endcordSection: SettingsLayoutNode = {
             key: "endcord_section",
             type: LayoutTypes.SECTION,
-            useTitle: () => t("Endcord Settings"),
+            useTitle: () => t("Devcord Settings"),
             buildLayout: () => endcordEntries
         };
 
@@ -275,7 +275,7 @@ export default definePlugin({
     get additionalInfo() {
         if (IS_DEV) return " (Dev)";
         if (IS_WEB) return " (Web)";
-        if (IS_VESKTOP) return ` (Endcord Desktop v${VesktopNative.app.getVersion()})`;
+        if (IS_VESKTOP) return ` (Devcord Desktop v${VesktopNative.app.getVersion()})`;
         if (IS_STANDALONE) return " (Standalone)";
         return "";
     },
@@ -283,7 +283,7 @@ export default definePlugin({
     getInfoRows() {
         const { electronVersion, chromiumVersion, additionalInfo } = this;
 
-        const rows = [`Endcord ${gitHash}${additionalInfo}`];
+        const rows = [`Devcord ${gitHash}${additionalInfo}`];
 
         if (electronVersion) rows.push(`Electron ${electronVersion}`);
         if (chromiumVersion) rows.push(`Chromium ${chromiumVersion}`);

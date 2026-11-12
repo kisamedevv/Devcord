@@ -162,7 +162,7 @@ export const SpotifyStore = proxyLazyWebpack(() => {
                     position_ms: Math.round(ms)
                 }
             }).catch((e: any) => {
-                console.error("[EndcordSpotifyControls] Failed to seek", e);
+                console.error("[DevcordSpotifyControls] Failed to seek", e);
                 this.isSettingPosition = false;
             });
         }

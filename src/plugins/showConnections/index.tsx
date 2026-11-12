@@ -154,7 +154,7 @@ export default definePlugin({
             // Same find as ReviewDB
             find: '"UserProfilePopout");',
             replacement: {
-                match: /userId:\i\.id,guild:\i\}\)(?=(?:,Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(arguments\[0\]\))*])/,
+                match: /userId:\i\.id,guild:\i\}\)(?=(?:,Devcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(arguments\[0\]\))*])/,
                 replace: "$&,$self.profilePopoutComponent(arguments[0])"
             }
         }

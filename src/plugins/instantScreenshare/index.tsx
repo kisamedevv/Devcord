@@ -66,7 +66,7 @@ export default definePlugin({
     description: "Instantly screenshare when joining a voice channel with support for desktop sources, windows, and video input devices (cameras, capture cards)",
     tags: ["Media", "Voice"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
-    dependencies: ["EndcordToolbox"],
+    dependencies: ["DevcordToolbox"],
     searchTerms: ["ScreenshareKeybind"],
     autoStartStream,
     settings,

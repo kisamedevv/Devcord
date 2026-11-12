@@ -13,18 +13,18 @@ import { relaunch } from "@utils/native";
 
 import { openSettingsPage } from "./openSettings";
 
-const SECTION = "Endcord";
+const SECTION = "Devcord";
 
 export const endcordCommands: PaletteCommand[] = [
     {
         id: "endcord.settings",
-        title: "Open Endcord Settings",
+        title: "Open Devcord Settings",
         section: SECTION,
         keywords: ["endcord", "settings"],
         icon: GearIcon,
         actions: [{
             id: "run",
-            label: "Open Endcord Settings",
+            label: "Open Devcord Settings",
             run: () => void openSettingsPage("endcord_main")
         }]
     },

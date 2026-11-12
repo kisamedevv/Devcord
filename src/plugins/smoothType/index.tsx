@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Endcord from Nightcord (coll, viciouscal); see https://git.nightcord.su/nightcord/nightcord
+// Ported to Devcord from Nightcord (coll, viciouscal); see https://git.nightcord.su/nightcord/nightcord
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";

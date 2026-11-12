@@ -71,7 +71,7 @@ function BadgePickerModal({ userId, label, transitionState, onClose }: BadgePick
         <Modal
             transitionState={transitionState}
             onClose={onClose}
-            title="Endcord Rozeti"
+            title="Devcord Rozeti"
             size="lg"
         >
             <Flex flexDirection="column" gap={10}>

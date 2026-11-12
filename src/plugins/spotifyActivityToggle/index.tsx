@@ -77,7 +77,7 @@ const settings = definePluginSettings({
         description: "Where to show the Spotify toggle button.",
         options: [
             { label: "Next to Mute/Deafen", value: "PANEL", default: true },
-            { label: "Endcord Toolbox", value: "TOOLBOX" }
+            { label: "Devcord Toolbox", value: "TOOLBOX" }
         ],
         get hidden() {
             return !isPluginEnabled(endcordToolbox.name);

@@ -7,7 +7,7 @@
 import type jsQRType from "jsqr";
 
 // jsQR is only needed while a login QR code is being read, so it's loaded then instead of adding 128 KB to every
-// Endcord install. The browser checks the file against its known hash (integrity) before running it. The web build
+// Devcord install. The browser checks the file against its known hash (integrity) before running it. The web build
 // keeps it bundled
 const JSQR_URL = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
 const JSQR_INTEGRITY = "sha256-vEDIoVGWI2sjFNsIVvcsoLSZgM1UE7jIUqc0n1/uCFk=";

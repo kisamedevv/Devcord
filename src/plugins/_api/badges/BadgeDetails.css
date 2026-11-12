@@ -556,7 +556,7 @@
     color: var(--badge-mythic-text);
 }
 
-/* Endcord's own rarity, above Mythic: the night sky, with a ring of light slowly going round */
+/* Devcord's own rarity, above Mythic: the night sky, with a ring of light slowly going round */
 @property --ec-celestial-turn {
     syntax: "<angle>";
     inherits: false;

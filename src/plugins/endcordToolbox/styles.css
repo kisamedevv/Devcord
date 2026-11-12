@@ -12,7 +12,7 @@
 }
 
 /*
- * A quiet list in Endcord's night blue. Corners come from --ec-radius and --ec-pc, so pixel style turns the same
+ * A quiet list in Devcord's night blue. Corners come from --ec-radius and --ec-pc, so pixel style turns the same
  * panel into the installer's stepped one. The shadow sits on the root because pixel corners would cut it off
  */
 .ec-control-root {

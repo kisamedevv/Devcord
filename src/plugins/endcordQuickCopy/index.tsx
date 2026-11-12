@@ -64,10 +64,10 @@ const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: { use
 };
 
 export default definePlugin({
-    name: "EndcordQuickCopy",
+    name: "DevcordQuickCopy",
     description: "Sağ tık menüsünden kullanıcı ID, @mention ve hesap oluşturma tarihini kopyala.",
     tags: ["Utility", "Friends"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     contextMenus: {
         "user-context": UserContextPatch
     }

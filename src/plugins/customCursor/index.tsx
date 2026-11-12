@@ -55,7 +55,7 @@ function pixelSvg(rows: string[]) {
 
 const PRESETS: CursorPreset[] = [
     {
-        label: "Endcord",
+        label: "Devcord",
         value: "endcord",
         ...arrowAndHand("url(#g)", "#f3f6fb", '<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ccbff"/><stop offset="1" stop-color="#3d74e0"/></linearGradient>')
     },
@@ -80,7 +80,7 @@ const PRESETS: CursorPreset[] = [
         ...arrowAndHand("url(#g)", "#ffffff", '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd1dc"/><stop offset="1" stop-color="#f27ea0"/></linearGradient>')
     },
     {
-        // Hard-edged cursors in the pixel style of the Endcord logo
+        // Hard-edged cursors in the pixel style of the Devcord logo
         label: "Pixel",
         value: "pixel",
         arrow: {

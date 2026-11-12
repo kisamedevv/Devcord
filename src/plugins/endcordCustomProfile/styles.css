@@ -46,7 +46,7 @@
     background: var(--background-modifier-selected, #3c3f45);
 }
 
-/* Sağ üstteki Endcord logosu */
+/* Sağ üstteki Devcord logosu */
 .vc-ecp-logo-button {
     position: relative;
     display: grid;

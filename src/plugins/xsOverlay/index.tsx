@@ -180,7 +180,7 @@ let socket: WebSocket;
 async function start() {
     if (socket) socket.close();
     const port = settings.store.webSocketPort ?? 42070;
-    socket = new WebSocket(`ws://127.0.0.1:${port}/?client=Endcord`);
+    socket = new WebSocket(`ws://127.0.0.1:${port}/?client=Devcord`);
     // Reject with a readable error instead of a bare Event when XSOverlay isn't running
     const notReachable = () => new Error(`Could not connect to XSOverlay on port ${port}. Is XSOverlay running?`);
     return new Promise((resolve, reject) => {
@@ -347,7 +347,7 @@ function sendMsgNotif(titleString: string, content: string, message: Message) {
                 content,
                 useBase64Icon: true,
                 icon: result,
-                sourceApp: "Endcord"
+                sourceApp: "Devcord"
             };
 
             sendToOverlay(msgData);
@@ -366,7 +366,7 @@ function sendOtherNotif(content: string, titleString: string) {
         content,
         useBase64Icon: false,
         icon: "default",
-        sourceApp: "Endcord"
+        sourceApp: "Devcord"
     };
     sendToOverlay(msgData);
 }
@@ -377,7 +377,7 @@ async function sendToOverlay(notif: NotificationObject) {
         return;
     }
     const apiObject: ApiObject = {
-        sender: "Endcord",
+        sender: "Devcord",
         target: "xsoverlay",
         command: "SendNotification",
         jsonData: JSON.stringify(notif),

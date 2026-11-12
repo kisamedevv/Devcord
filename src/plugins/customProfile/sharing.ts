@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Profiles shared between Endcord users, with Discord itself as the place they're kept. Saving a profile posts one
-// message to the profiles channel in the Endcord server, and every Endcord user in that server reads the channel.
+// Profiles shared between Devcord users, with Discord itself as the place they're kept. Saving a profile posts one
+// message to the profiles channel in the Devcord server, and every Devcord user in that server reads the channel.
 // Discord vouches for who wrote each message, so nobody can publish a profile for someone else; nothing goes to a
-// server of Endcord's, and nothing costs anything to run
+// server of Devcord's, and nothing costs anything to run
 
 import { DataStore } from "@api/index";
 import { CloudUploadPlatform } from "@endcord/discord-types/enums";
@@ -17,7 +17,7 @@ import { CloudUploader, Constants, FluxDispatcher, GuildStore, ReadStateStore, R
 import type { CustomProfileData } from "./data";
 
 export const PROFILES_GUILD_ID = "1543323763695820942";
-/** The profiles channel in the Endcord server. Without it, nothing is published or read */
+/** The profiles channel in the Devcord server. Without it, nothing is published or read */
 export const PROFILES_CHANNEL_ID = "1568188531480993842";
 export const PROFILES_INVITE = "endcord";
 
@@ -33,7 +33,7 @@ const FULL_SYNC_EVERY = 12 * 60 * 60 * 1000;
 const SYNC_EVERY = 10 * 60 * 1000;
 /**
  * When Discord only says the channel has a newer message, each client reads it after a random moment up to this long,
- * so the Endcord users online don't all ask Discord in the same second
+ * so the Devcord users online don't all ask Discord in the same second
  */
 const PASSIVE_SPREAD = 3000;
 /** Between pages of the channel, to stay well inside Discord's limits */
@@ -72,7 +72,7 @@ let getMine: () => { id: string; data: CustomProfileData | null; } | null = () =
 export const isSharingConfigured = () => !!PROFILES_CHANNEL_ID;
 export const isInProfilesServer = () => !!GuildStore?.getGuild?.(PROFILES_GUILD_ID);
 
-/** Another Endcord user's shared profile, or null */
+/** Another Devcord user's shared profile, or null */
 export const getSharedProfile = (userId: string) => cache.profiles[userId]?.d ?? null;
 export const hasSharedProfiles = () => Object.keys(cache.profiles).length > 0;
 export const sharedProfileIds = () => Object.keys(cache.profiles);

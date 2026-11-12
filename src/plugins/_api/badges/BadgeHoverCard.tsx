@@ -31,7 +31,7 @@ function endcordCard(badge: AddedBadge): Card | null {
     const title = badge.title ?? badge.description;
     if (!title) return null;
 
-    return { title, eyebrow: badge.eyebrow, body: badge.body ?? t("Shown by Endcord"), image: badge.iconSrc };
+    return { title, eyebrow: badge.eyebrow, body: badge.body ?? t("Shown by Devcord"), image: badge.iconSrc };
 }
 
 function getRichTooltip() {

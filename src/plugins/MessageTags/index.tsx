@@ -147,7 +147,7 @@ const TagChips = ErrorBoundary.wrap(TagChipsInner, { noop: true });
 
 export default definePlugin({
     name: "MessageTags",
-    description: "Tag messages with private local labels (TODO, Important, ...), see them as chips, and browse/jump to them from the Endcord Toolbox in the title bar.",
+    description: "Tag messages with private local labels (TODO, Important, ...), see them as chips, and browse/jump to them from the Devcord Toolbox in the title bar.",
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Utility", "Organisation"],
     dependencies: ["ContextMenuAPI", "MessageAccessoriesAPI", "MessageUpdaterAPI"],

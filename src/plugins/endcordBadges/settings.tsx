@@ -98,7 +98,7 @@ function BadgeEditor({ badge, onChange, onDelete }: {
             <div className={cl("field")}>
                 <Span weight="medium" size="md">Badge name</Span>
                 <TextInput
-                    placeholder="Endcord Legend"
+                    placeholder="Devcord Legend"
                     value={badge.name}
                     onChange={value => onChange({ name: value })}
                 />
@@ -287,7 +287,7 @@ function BadgeManager() {
     return (
         <Flex flexDirection="column" gap={10} className={cl("root")}>
             <div>
-                <Heading className={Margins.bottom8}>Endcord Badges</Heading>
+                <Heading className={Margins.bottom8}>Devcord Badges</Heading>
                 <Paragraph>
                     Give yourself — or anyone else — a badge with an icon of your choice.
                     Badges are stored locally on this device and rendered on profiles.

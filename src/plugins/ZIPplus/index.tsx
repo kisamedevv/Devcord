@@ -396,7 +396,7 @@ function MessageContextMenu(children: React.ReactNode[], props: ZipMessageContex
                             const message = native?.fetchAttachment
                                 ? "Failed to fetch attachment. Please try again."
                                 : (IS_DISCORD_DESKTOP
-                                ? "ZIP+ native helper missing. Please reinstall Endcord."
+                                ? "ZIP+ native helper missing. Please reinstall Devcord."
                                 : "Unable to fetch attachment: CORS restrictions on web. Desktop app required for zip preview.");
                             showToast(message);
                             return;
@@ -478,7 +478,7 @@ function ZipAttachmentPreviewInner({ attachment }: { attachment: ZipAttachmentLi
                         setError(native?.fetchAttachment
                             ? "Failed to fetch archive. Please try again."
                             : (IS_DISCORD_DESKTOP
-                                ? "ZIP+ native helper missing. Please reinstall Endcord."
+                                ? "ZIP+ native helper missing. Please reinstall Devcord."
                                 : "Unable to fetch: CORS restrictions on web. Desktop app required."));
                     }
                     return;

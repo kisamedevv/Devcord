@@ -51,7 +51,7 @@ const settings = definePluginSettings({
     },
     syncWithFriends: {
         type: OptionType.BOOLEAN,
-        description: "Sync wallpapers in DMs with friends who also use Endcord.",
+        description: "Sync wallpapers in DMs with friends who also use Devcord.",
         default: true,
         restartNeeded: false,
     },

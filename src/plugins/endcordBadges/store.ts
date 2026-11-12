@@ -42,10 +42,10 @@ export function createStarterBadges(): BadgeEntry[] {
     return [
         {
             id: "endcord-starter",
-            name: "Endcord",
+            name: "Devcord",
             icon: "eye",
             color: "#a970ff",
-            description: "Made with Endcord",
+            description: "Made with Devcord",
             userIds: []
         }
     ];

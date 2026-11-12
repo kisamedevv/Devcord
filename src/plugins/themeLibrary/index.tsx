@@ -15,7 +15,7 @@ import { settings } from "./utils/settings";
 
 export default definePlugin({
     name: "ThemeLibrary",
-    description: "A library of themes for Endcord.",
+    description: "A library of themes for Devcord.",
     tags: ["Appearance", "Customisation"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     enabledByDefault: true,

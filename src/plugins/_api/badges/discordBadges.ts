@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// What Discord itself knows about each of its badges, so a badge reads the same in Endcord as in Discord's own
+// What Discord itself knows about each of its badges, so a badge reads the same in Devcord as in Discord's own
 // badge pages. Three sources, best first:
 //  1. Discord's badge catalog for that profile (GET /users/{id}/badges): the badge's real name, rarity, tier,
 //     unlock date and its line such as "A spoonful of knowledge". Rarity changes over time, so nothing beats it.

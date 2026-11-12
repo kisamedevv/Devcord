@@ -65,10 +65,10 @@ function unpatchStore() {
 }
 
 export default definePlugin({
-    name: "EndcordFakeDeafen",
+    name: "DevcordFakeDeafen",
     description: "Kulaklığını (ve istersen mikrofona) takmış gibi gösterir — diğer kullanıcılar bunu göremez, sadece bu Discord istemcinde görünür.",
     tags: ["Utility", "Fun", "Appearance"],
-    authors: [Devs.Endcord],
+    authors: [Devs.Devcord],
     settings,
 
     start() {

@@ -6,7 +6,7 @@
 
 /**
  * Sahte hesap oluşturma tarihleri.
- * EndcordCustomProfile bu tabloyu doldurur, AccountAge okur.
+ * DevcordCustomProfile bu tabloyu doldurur, AccountAge okur.
  * Böylece sahte tarih hem profil kartında hem sağ tık menüsünde tutarlı.
  */
 const overrides = new Map<string, string>();
