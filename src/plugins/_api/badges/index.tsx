@@ -9,16 +9,15 @@ import "./fixDiscordBadgePadding.css";
 import { _getBadges, AddedBadge, addProfileBadge, BadgeListProcessors, BadgePosition, BadgeRarity, BadgeUserArgs, ProfileBadge, removeProfileBadge } from "@api/Badges";
 import { Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { DEVCORD_OWNER_ID, Devs, DevsById } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
-import { EndcordDeveloperIds, isEndcordDeveloper, isPluginDev } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { ContextMenuApi, Menu, UserStore } from "@webpack/common";
 import type { ReactElement } from "react";
 
-import { CONTRIBUTOR_ICON, DEVELOPER_ICON, OWNER_ICON } from "./badgeArt";
+import { OWNER_ICON } from "./badgeArt";
+import { isHelpedBuildUser, isOwnerBadgeUser, startOwnerBadgeSync, stopOwnerBadgeSync } from "./ownerBadges";
 import { openBadgeDetails } from "./BadgeDetails";
 import { renderBadgeHoverCard } from "./BadgeHoverCard";
 import { describeDiscordBadge, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
@@ -87,16 +86,14 @@ function endcordBadge(id: string, icon: string, title: string, flavor: string, t
 // The people who make Devcord, and everyone who has helped build it. There are only a handful of each, so both sit
 // above anything Discord gives out
 const OwnerBadge = endcordBadge("endcord_owner", OWNER_ICON, "Devcord Owner", "Owns Devcord",
-    () => t("Given to the person who owns Devcord. Only one person has it."), id => id === DEVCORD_OWNER_ID);
-const DeveloperBadge = endcordBadge("endcord_developer", DEVELOPER_ICON, "Devcord Developer", "Makes Devcord",
-    () => t("Given to the people who make Devcord. {count} people have it.", { count: EndcordDeveloperIds.length }), isEndcordDeveloper);
-const ContributorBadge = endcordBadge("endcord_contributor", CONTRIBUTOR_ICON, "Devcord Contributor", "Helped build Devcord",
-    () => t("Given to the people who helped build Devcord. {count} people have it.", { count: Object.keys(DevsById).length }), isPluginDev);
+    () => t("Given to the person who owns Devcord. Only one person has it."), id => isOwnerBadgeUser(id));
+const HelpedBuildBadge = endcordBadge("helped_build_devcord", OWNER_ICON, "Helped Build Devcord", "Helped build Devcord",
+    () => t("Given to the people who helped build Devcord. {count} people have it.", { count: 0 }), id => isHelpedBuildUser(id));
 
 export default definePlugin({
     name: "BadgeAPI",
     description: "API to add badges to users",
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    authors: [{ name: "rootpoi", id: 1390609041897554050n }],
     required: true,
     patches: [
         {
@@ -158,15 +155,15 @@ export default definePlugin({
 
     start() {
         addProfileBadge(OwnerBadge);
-        addProfileBadge(DeveloperBadge);
-        addProfileBadge(ContributorBadge);
+        addProfileBadge(HelpedBuildBadge);
+        startOwnerBadgeSync();
         loadLearnedBadges().catch(e => new Logger("BadgeAPI").error("Couldn't load the badges Discord described before", e));
     },
 
     stop() {
         removeProfileBadge(OwnerBadge);
-        removeProfileBadge(DeveloperBadge);
-        removeProfileBadge(ContributorBadge);
+        removeProfileBadge(HelpedBuildBadge);
+        stopOwnerBadgeSync();
     },
 
     flux: {
@@ -228,7 +225,7 @@ export default definePlugin({
         });
 
         // Devcord's badges always lead, the developer one first
-        const ours = [OwnerBadge.id, DeveloperBadge.id, ContributorBadge.id].map(id => badges.find(badge => badge?.id === id)).filter(Boolean);
+        const ours = [OwnerBadge.id, HelpedBuildBadge.id].map(id => badges.find(badge => badge?.id === id)).filter(Boolean);
         if (ours.length) badges = [...ours, ...badges.filter(badge => !ours.includes(badge))];
 
         rememberProfileBadges(profile.userId, badges);
