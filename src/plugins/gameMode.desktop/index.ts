@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
-import { setFrameRate } from "@utils/frameLimiter";
+import { setFrameCap } from "@utils/frameLimiter";
 import definePlugin, { OptionType } from "@utils/types";
 import { RunningGameStore } from "@webpack/common";
 
@@ -61,7 +61,7 @@ function update() {
     const isActive = !document.hasFocus() && (isGameRunning || settings.store.activeWhen === "background");
 
     document.documentElement.toggleAttribute(ACTIVE_ATTRIBUTE, isActive);
-    setFrameRate(isActive ? settings.store.frameRate : 0);
+    setFrameCap("gameMode", isActive ? settings.store.frameRate : 0);
     pauseScriptAnimations(isActive);
 
     if (!isGameRunning) trimmedThisGame = false;
@@ -80,6 +80,7 @@ export default definePlugin({
     description: "While you play, caps how often Discord redraws, pauses its animations and gives cached memory back",
     tags: ["Utility"],
     authors: [Devs.rootpoi],
+    enabledByDefault: true,
     settings,
 
     flux: {
@@ -98,7 +99,7 @@ export default definePlugin({
         clearTimeout(trimTimer);
 
         document.documentElement.removeAttribute(ACTIVE_ATTRIBUTE);
-        setFrameRate(0);
+        setFrameCap("gameMode", 0);
         pauseScriptAnimations(false);
     }
 });

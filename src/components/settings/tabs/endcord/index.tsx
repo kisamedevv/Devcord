@@ -6,14 +6,13 @@
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { BadgeDateFormat, useSettings } from "@api/Settings";
-import { floatHearts } from "@components/delight";
 import { Divider } from "@components/Divider";
-import { CodeIcon, FolderPixelIcon, ListIcon, RestartPixelIcon } from "@components/EndcordIcons";
+import { CodeIcon, DevcordMark, FolderPixelIcon, ListIcon, RestartPixelIcon } from "@components/EndcordIcons";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heart } from "@components/Heart";
 import { GithubIcon } from "@components/Icons";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
-import { HEART_PALETTE, HEART_ROWS, PANDA_PALETTE, PANDA_ROWS, PixelArt, SpecialCard } from "@components/settings/SpecialCard";
+import { HEART_PALETTE, HEART_ROWS, PixelArt, SpecialCard } from "@components/settings/SpecialCard";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { openContributorModal } from "@components/settings/tabs/plugins/ContributorModal";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
@@ -214,7 +213,7 @@ function EndcordSettings() {
                     title={t("Contributions")}
                     subtitle={t("Thank you for building Endcord")}
                     description={t("Your work ships to everyone who uses Endcord, and your profile carries the Endcord Contributor badge.")}
-                    art={<PixelArt rows={PANDA_ROWS} palette={PANDA_PALETTE} pixel={4} />}
+                    art={<DevcordMark width={68} />}
                     actions={
                         <button className="ec-card-button ec-card-button-primary" onClick={() => openContributorModal(user)}>
                             {t("See your plugins")}
@@ -228,7 +227,7 @@ function EndcordSettings() {
                 title={t("Support Endcord")}
                 subtitle={t("Free and open source, always")}
                 description={t("Endcord is built in our spare time. If it makes Discord better for you, a donation helps us keep testing, translating and shipping new features.")}
-                art={<span className="ec-card-heart" onClick={event => floatHearts(event.currentTarget)}><PixelArt rows={HEART_ROWS} palette={HEART_PALETTE} pixel={7} /></span>}
+                art={<span className="ec-card-heart"><PixelArt rows={HEART_ROWS} palette={HEART_PALETTE} pixel={7} /></span>}
                 actions={
                     <>
                         <button className="ec-card-button ec-card-button-primary" onClick={() => EndcordNative.native.openExternal(REPO_URL)}>

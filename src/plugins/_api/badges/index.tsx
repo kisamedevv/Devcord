@@ -9,7 +9,7 @@ import "./fixDiscordBadgePadding.css";
 import { _getBadges, AddedBadge, addProfileBadge, BadgeListProcessors, BadgePosition, BadgeRarity, BadgeUserArgs, ProfileBadge, removeProfileBadge } from "@api/Badges";
 import { Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Devs, DevsById } from "@utils/constants";
+import { DEVCORD_OWNER_ID, Devs, DevsById } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
@@ -18,7 +18,7 @@ import definePlugin from "@utils/types";
 import { ContextMenuApi, Menu, UserStore } from "@webpack/common";
 import type { ReactElement } from "react";
 
-import { CONTRIBUTOR_ICON, DEVELOPER_ICON } from "./badgeArt";
+import { CONTRIBUTOR_ICON, DEVELOPER_ICON, OWNER_ICON } from "./badgeArt";
 import { openBadgeDetails } from "./BadgeDetails";
 import { renderBadgeHoverCard } from "./BadgeHoverCard";
 import { describeDiscordBadge, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
@@ -86,6 +86,8 @@ function endcordBadge(id: string, icon: string, title: string, flavor: string, t
 
 // The people who make Devcord, and everyone who has helped build it. There are only a handful of each, so both sit
 // above anything Discord gives out
+const OwnerBadge = endcordBadge("endcord_owner", OWNER_ICON, "Devcord Owner", "Owns Devcord",
+    () => t("Given to the person who owns Devcord. Only one person has it."), id => id === DEVCORD_OWNER_ID);
 const DeveloperBadge = endcordBadge("endcord_developer", DEVELOPER_ICON, "Devcord Developer", "Makes Devcord",
     () => t("Given to the people who make Devcord. {count} people have it.", { count: EndcordDeveloperIds.length }), isEndcordDeveloper);
 const ContributorBadge = endcordBadge("endcord_contributor", CONTRIBUTOR_ICON, "Devcord Contributor", "Helped build Devcord",
@@ -155,12 +157,14 @@ export default definePlugin({
     ],
 
     start() {
+        addProfileBadge(OwnerBadge);
         addProfileBadge(DeveloperBadge);
         addProfileBadge(ContributorBadge);
         loadLearnedBadges().catch(e => new Logger("BadgeAPI").error("Couldn't load the badges Discord described before", e));
     },
 
     stop() {
+        removeProfileBadge(OwnerBadge);
         removeProfileBadge(DeveloperBadge);
         removeProfileBadge(ContributorBadge);
     },
@@ -224,7 +228,7 @@ export default definePlugin({
         });
 
         // Devcord's badges always lead, the developer one first
-        const ours = [DeveloperBadge.id, ContributorBadge.id].map(id => badges.find(badge => badge?.id === id)).filter(Boolean);
+        const ours = [OwnerBadge.id, DeveloperBadge.id, ContributorBadge.id].map(id => badges.find(badge => badge?.id === id)).filter(Boolean);
         if (ours.length) badges = [...ours, ...badges.filter(badge => !ours.includes(badge))];
 
         rememberProfileBadges(profile.userId, badges);

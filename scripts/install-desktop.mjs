@@ -111,19 +111,21 @@ function findInstalls() {
 
 function stageInjection() {
     if (!existsSync(join(DIST, "patcher.js"))) {
-        fail("dist/patcher.js yok — önce `corepack pnpm build` çalıştır.");
+        fail("dist/patcher.js yok — önce `pnpm build` çalıştır.");
     }
 
     rmSync(STAGING, { recursive: true, force: true });
     mkdirSync(STAGING, { recursive: true });
 
-    for (const entry of readdirSync(DIST)) {
-        if (entry === "Installer" || entry.startsWith(".inject-staging")) continue;
-
+    // Only the four files the client loads. Maps, desktop builds and the installer stay on disk.
+    for (const entry of ["patcher.js", "preload.js", "renderer.js", "renderer.css"]) {
         const source = join(DIST, entry);
-        if (statSync(source).isDirectory()) continue;
+        if (!existsSync(source)) fail(`dist/${entry} yok — önce \`pnpm build\` çalıştır.`);
 
         cpSync(source, join(STAGING, entry));
+
+        const legal = `${entry}.LEGAL.txt`;
+        if (existsSync(join(DIST, legal))) cpSync(join(DIST, legal), join(STAGING, legal));
     }
 
     writeFileSync(join(STAGING, "index.js"), BOOTSTRAP_INDEX);

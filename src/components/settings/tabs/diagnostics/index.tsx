@@ -9,6 +9,7 @@ import "./styles.css?screen";
 import { getBrokenPlugins, getPatchProblemCount } from "@api/PluginHealth";
 import { isPluginEnabled, plugins, pluginStartTimes, setPluginEnabled } from "@api/PluginManager";
 import { IS_SAFE_MODE, restartInSafeMode } from "@api/SafeMode";
+import { useSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { ShieldCheckIcon } from "@components/EndcordIcons";
 import { FormSwitch } from "@components/FormSwitch";
@@ -17,19 +18,155 @@ import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import type { MemoryStats } from "@main/memoryTrim";
+import { RESOURCE_CPU_MAX_PERCENT, RESOURCE_CPU_MIN_PERCENT, RESOURCE_RAM_MAX_MB, RESOURCE_RAM_MIN_MB, type ResourceStats } from "@shared/resourceGuard";
 import { classNameFactory } from "@utils/css";
 import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { relaunch } from "@utils/native";
-import { useEffect, useMemo, useState } from "@webpack/common";
+import { Slider, useEffect, useMemo, useRef, useState } from "@webpack/common";
 import { patchTimeByPlugin } from "@webpack/patcher";
 
 const cl = classNameFactory("ec-diagnostics-");
 
 const MEMORY_REFRESH = 3_000;
+const RESOURCE_REFRESH = 3_000;
 const COLLAPSED_ROWS = 12;
 
 const formatTime = (milliseconds: number) => milliseconds < 0.1 ? "< 0.1 ms" : `${milliseconds.toFixed(1)} ms`;
+
+interface LimitSliderProps {
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    step: number;
+    format(value: number): string;
+    onChange(value: number): void;
+}
+
+function LimitSlider({ label, value, min, max, step, format, onChange }: LimitSliderProps) {
+    const [draft, setDraft] = useState(value);
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
+    // Dragging fires on every pixel; one settings write every few hundred ms keeps the disk quiet
+    const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const pending = useRef<number | undefined>(undefined);
+
+    const flush = () => {
+        clearTimeout(timer.current);
+        timer.current = undefined;
+        if (pending.current === undefined) return;
+        onChangeRef.current(pending.current);
+        pending.current = undefined;
+    };
+
+    useEffect(() => setDraft(value), [value]);
+    // Closing the tab or switching the ceiling off right after a drag shouldn't throw the last position away
+    useEffect(() => flush, []);
+
+    return (
+        <div className={cl("limit-slider")}>
+            <div className={cl("limit-slider-head")}>
+                <span>{label}</span>
+                <span className={cl("limit-slider-value")}>{format(draft)}</span>
+            </div>
+            <Slider
+                minValue={min}
+                maxValue={max}
+                initialValue={draft}
+                markers={[min, max]}
+                stickToMarkers={false}
+                onValueChange={(next: number) => {
+                    const quantized = Math.round(next / step) * step;
+                    setDraft(quantized);
+                    pending.current = quantized;
+                    clearTimeout(timer.current);
+                    timer.current = setTimeout(flush, 250);
+                }}
+                onValueRender={(next: number) => format(next)}
+            />
+        </div>
+    );
+}
+
+function ResourceLimitSection() {
+    const { t } = useI18n();
+    const settings = useSettings(["resourceGuard.*"]);
+    const [stats, setStats] = useState<ResourceStats>();
+    const guard = settings.resourceGuard;
+
+    useEffect(() => {
+        let alive = true;
+
+        const refresh = () => {
+            EndcordNative.native.getResourceStats().then(next => {
+                if (alive) setStats(next);
+            }).catch(() => { });
+        };
+
+        refresh();
+        const interval = setInterval(refresh, RESOURCE_REFRESH);
+
+        return () => {
+            alive = false;
+            clearInterval(interval);
+        };
+    }, []);
+
+    const pressure = stats?.pressure ?? "none";
+    const status = !guard.enabled
+        ? t("Off")
+        : pressure === "critical"
+            ? t("Holding back harder")
+            : pressure === "high"
+                ? t("Holding back")
+                : t("Within the limit");
+
+    return (
+        <section className={Margins.bottom20}>
+            <HeadingSecondary>{t("Resource limit")}</HeadingSecondary>
+            <FormSwitch
+                title={t("Keep Endcord under a RAM and CPU ceiling")}
+                description={t("When the app stays above either limit, Endcord draws less often, pauses animations and gives cached memory back. A game or a stream keeps playing normally.")}
+                value={guard.enabled}
+                onChange={value => { settings.resourceGuard.enabled = value; }}
+            />
+
+            {guard.enabled && (
+                <>
+                    <Paragraph className={Margins.top8}>
+                        {t("Now using {used} MB and {cpu}% CPU — {status}.", {
+                            used: stats?.usedMb ?? 0,
+                            cpu: stats?.cpuPercent ?? 0,
+                            status
+                        })}
+                    </Paragraph>
+                    <LimitSlider
+                        label={t("Memory ceiling")}
+                        value={guard.ramLimitMb}
+                        min={RESOURCE_RAM_MIN_MB}
+                        max={RESOURCE_RAM_MAX_MB}
+                        step={256}
+                        format={value => `${Math.round(value)} MB`}
+                        onChange={value => { settings.resourceGuard.ramLimitMb = value; }}
+                    />
+                    <LimitSlider
+                        label={t("CPU ceiling")}
+                        value={guard.cpuLimitPercent}
+                        min={RESOURCE_CPU_MIN_PERCENT}
+                        max={RESOURCE_CPU_MAX_PERCENT}
+                        step={1}
+                        format={value => `${Math.round(value)}%`}
+                        onChange={value => { settings.resourceGuard.cpuLimitPercent = value; }}
+                    />
+                    <Paragraph className={Margins.top8}>
+                        {t("Windows can report a short spike above the ceiling while memory is being freed. The app is back under it within a few seconds.")}
+                    </Paragraph>
+                </>
+            )}
+        </section>
+    );
+}
 
 function MemorySection() {
     const { t } = useI18n();
@@ -198,6 +335,7 @@ function GameModeSwitch() {
 function Diagnostics() {
     return (
         <SettingsTab>
+            {IS_DISCORD_DESKTOP && <ResourceLimitSection />}
             {IS_DISCORD_DESKTOP && <MemorySection />}
             {IS_DISCORD_DESKTOP && <GameModeSwitch />}
             <PluginHealth />

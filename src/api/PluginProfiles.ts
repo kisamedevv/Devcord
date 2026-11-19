@@ -116,7 +116,7 @@ const PACKS: StarterPack[] = [
     {
         id: "fun",
         name: "Just for fun",
-        description: "A pixel panda that follows your mouse, sparkles where you click, a soft neon glow and wiggly text.",
+        description: "A pixel pet that follows your mouse, sparkles where you click, a soft neon glow and wiggly text.",
         Icon: PawIcon,
         plugins: [...FUN_PLUGINS]
     }

@@ -9,7 +9,7 @@ import "./styles.css?screen";
 import * as DataStore from "@api/DataStore";
 import { getIsEndcordHidden } from "@api/EndcordVisibility";
 import { Settings } from "@api/Settings";
-import { EndcordMark } from "@components/EndcordIcons";
+import { DevcordMark } from "@components/EndcordIcons";
 import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { RenderModalProps } from "@endcord/discord-types";
@@ -91,7 +91,7 @@ function WhatsNewPill({ release, onClosed }: { release: Release; onClosed(): voi
                     setLeaving(true);
                 }}
             >
-                <span className="ec-mark-tile"><EndcordMark /></span>
+                <span className="ec-mark-tile"><DevcordMark /></span>
                 <span>{t("Endcord updated to {version}", { version: release.version })}</span>
                 <span className={cl("pill-link")}>{t("See what's new")}</span>
             </button>

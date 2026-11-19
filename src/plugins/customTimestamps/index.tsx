@@ -14,9 +14,9 @@ import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { useForceUpdater } from "@utils/react";
+import { useSecondTick } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import { moment, TextInput, useEffect, useState } from "@webpack/common";
+import { moment, TextInput, useState } from "@webpack/common";
 
 import { DemoMessageContainer, timeFormats } from "./utils";
 
@@ -33,12 +33,13 @@ type TimeRowProps = {
     pluginSettings: any;
 };
 
+// moment's relative thresholds are process-wide, so set them once at import instead of on every rendered timestamp
+moment.relativeTimeThreshold("s", 60);
+moment.relativeTimeThreshold("ss", -1);
+moment.relativeTimeThreshold("m", 60);
+
 const format = (date: Date, formatTemplate: string): string => {
     const mmt = moment(date);
-
-    moment.relativeTimeThreshold("s", 60);
-    moment.relativeTimeThreshold("ss", -1);
-    moment.relativeTimeThreshold("m", 60);
 
     const sameDayFormat = settings.store?.formats?.sameDayFormat || timeFormats.sameDayFormat.default;
     const lastDayFormat = settings.store?.formats?.lastDayFormat || timeFormats.lastDayFormat.default;
@@ -54,6 +55,46 @@ const format = (date: Date, formatTemplate: string): string => {
         }))
         .replace("relative", () => mmt.fromNow());
 };
+
+type FormatType = "cozy" | "compact" | "tooltip" | "ariaLabel";
+
+/** Formats with `[calendar]` or `[relative]` change on their own, so only those need a live clock. */
+function needsTick(template: string) {
+    return template.includes("calendar") || template.includes("relative");
+}
+
+function templateFor(type: FormatType): string {
+    const formats = settings.store?.formats;
+
+    switch (type) {
+        case "cozy": return formats?.cozyFormat || timeFormats.cozyFormat.default;
+        case "compact": return formats?.compactFormat || timeFormats.compactFormat.default;
+        case "tooltip": return formats?.tooltipFormat || timeFormats.tooltipFormat.default;
+        case "ariaLabel": return formats?.ariaLabelFormat || timeFormats.ariaLabelFormat.default;
+    }
+}
+
+// Every timestamp landing in the same second with the same template renders the same string, so a busy channel turns
+// into one moment() call per unique second instead of one per message. Bounded so it can't grow without limit.
+const formatCache = new Map<string, string>();
+const FORMAT_CACHE_MAX = 512;
+
+function renderCached(date: Date, type: FormatType, template: string): string {
+    const key = `${type}|${Math.floor(date.getTime() / 1000)}|${template}`;
+
+    const cached = formatCache.get(key);
+    if (cached !== undefined) return cached;
+
+    const out = format(date, template);
+
+    if (formatCache.size >= FORMAT_CACHE_MAX) {
+        const oldest = formatCache.keys().next().value;
+        if (oldest !== undefined) formatCache.delete(oldest);
+    }
+    formatCache.set(key, out);
+
+    return out;
+}
 
 const TimeRow = (props: TimeRowProps) => {
     const [state, setState] = useState(props.pluginSettings?.[props.id] || props.format.default);
@@ -146,6 +187,11 @@ export default definePlugin({
             find: "#{intl::MESSAGE_EDITED_TIMESTAMP_A11Y_LABEL}",
             replacement: [
                 {
+                    // Ride the shared 1s tick instead of each timestamp allocating its own interval
+                    match: /(?<=\.memo\(function\(\i\)\{)/,
+                    replace: "$self.useTick($self.needsLiveClock());",
+                },
+                {
                     // Aria label on timestamps
                     match: /\i.useMemo\(.{0,10}\i\.\i\)\(.{0,10}\]\)/,
                     replace: "$self.renderTimestamp(arguments[0].timestamp,'ariaLabel')"
@@ -172,31 +218,15 @@ export default definePlugin({
         }
     ],
 
-    renderTimestamp: (date: Date, type: "cozy" | "compact" | "tooltip" | "ariaLabel") => {
-        const forceUpdater = useForceUpdater();
-        let formatTemplate: string;
+    /** True when at least one visible format renders something that changes by itself. */
+    needsLiveClock: () => (["cozyFormat", "compactFormat", "tooltipFormat", "ariaLabelFormat"] as const)
+        .some(key => needsTick(settings.store?.formats?.[key] || timeFormats[key].default)),
 
-        switch (type) {
-            case "cozy":
-                formatTemplate = settings.store.formats?.cozyFormat || timeFormats.cozyFormat.default;
-                break;
-            case "compact":
-                formatTemplate = settings.store.formats?.compactFormat || timeFormats.compactFormat.default;
-                break;
-            case "tooltip":
-                formatTemplate = settings.store.formats?.tooltipFormat || timeFormats.tooltipFormat.default;
-                break;
-            case "ariaLabel":
-                formatTemplate = settings.store.formats?.ariaLabelFormat || timeFormats.ariaLabelFormat.default;
-        }
+    useTick: (enabled: boolean) => useSecondTick(enabled),
 
-        useEffect(() => {
-            if (formatTemplate.includes("calendar") || formatTemplate.includes("relative")) {
-                const interval = setInterval(forceUpdater, 1000);
-                return () => clearInterval(interval);
-            }
-        }, []);
+    renderTimestamp: (date: Date, type: FormatType) => {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
 
-        return format(date, formatTemplate);
+        return renderCached(date, type, templateFor(type));
     }
 });

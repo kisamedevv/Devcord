@@ -5,7 +5,6 @@
  */
 
 import { enableScreenStyles } from "@api/Styles";
-import { useIdlePanda } from "@components/delight";
 import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { handleComponentFailed } from "@components/handleComponentFailed";
@@ -17,7 +16,6 @@ import type { ComponentType, PropsWithChildren } from "react";
 
 export function SettingsTab({ children }: PropsWithChildren) {
     enableScreenStyles();
-    useIdlePanda();
 
     return (
         <section className={`vc-settings-tab ${ENDCORD_THEME}`}>{children}</section>

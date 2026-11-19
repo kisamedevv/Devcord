@@ -14,7 +14,12 @@ import { Devs, DevsById } from "./constants";
  * classes("one", "two") => "one two"
  */
 export function classes(...classes: Array<string | null | undefined | false>) {
-    return classes.filter(Boolean).join(" ");
+    let out = "";
+    for (let i = 0; i < classes.length; i++) {
+        const c = classes[i];
+        if (c) out = out ? `${out} ${c}` : c;
+    }
+    return out;
 }
 
 /**

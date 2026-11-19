@@ -41,7 +41,7 @@ const ShowCurrentGame = getUserSettingLazy<boolean>("status", "showCurrentGame")
 const isSupportAllowedChannel = (channel: Channel) => channel.id === SUPPORT_CHANNEL_ID;
 
 // Yetkili Owner Hesapları: the accounts that may tell every client to check for an update
-const ENDCORD_OWNER_IDS = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
+const ENDCORD_OWNER_IDS = ["1390609041897554050", "1097880625513496586", "904384828143706164", "1426877563451736158"];
 
 // These messages get an update button and a button that runs code in everyone's client, so only Devcord's owners,
 // in Devcord's own server. A plugin developer's stolen account must not be enough

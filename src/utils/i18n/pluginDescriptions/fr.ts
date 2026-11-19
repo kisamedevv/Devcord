@@ -14,7 +14,7 @@ export default (): LangTable => ({
     SmoothType: "Ajoute une animation fluide au curseur pendant la saisie.",
     ViewIcons: "Rend les avatars et les icônes de serveur cliquables pour les afficher en grand.",
     ThemeLibrary: "Une bibliothèque de thèmes et d'extraits CSS pour Devcord.",
-    oneko: "Le panda d'Devcord suit ta souris. Tu peux lui ajouter un chat et un chiot dans les réglages.",
+    oneko: "Un chiot en pixels suit ta souris. Tu peux lui ajouter un chat dans les réglages.",
     PlatformIndicators: "Affiche des indicateurs d'appareil (PC, Mobile, Web, Console) à côté des utilisateurs.",
     RelationshipNotifier: "Vous avertit lorsqu'un utilisateur vous retire de ses amis ou qu'un serveur vous expulse.",
     SilentTyping: "Masque l'indicateur « est en train d'écrire... » aux autres utilisateurs.",

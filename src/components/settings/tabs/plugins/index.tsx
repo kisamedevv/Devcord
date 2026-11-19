@@ -12,9 +12,8 @@ import { POPULAR_PLUGIN_ORDER } from "@api/PluginProfiles";
 import { IS_SAFE_MODE } from "@api/SafeMode";
 import { useSettings } from "@api/Settings";
 import { Card } from "@components/Card";
-import { EndOfListPanda, peek } from "@components/delight";
 import { Divider } from "@components/Divider";
-import { AppsIcon, EndcordMark, PowerIcon, SleepIcon, SparkleIcon } from "@components/EndcordIcons";
+import { AppsIcon, DevcordMark, PowerIcon, SleepIcon, SparkleIcon } from "@components/EndcordIcons";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingTertiary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
@@ -232,7 +231,6 @@ function PluginSettings() {
     const search = searchValue.value.toLowerCase();
     const onSearch = (query: string) => {
         setSearchValue(prev => ({ ...prev, value: query }));
-        if (query.trim().toLowerCase() === "panda") peek(t("that's me! 🐼 no plugin, just a panda"));
     };
     const onStatSelect = (status: SearchStatus) => setSearchValue(prev => ({ ...prev, status: prev.status === status ? SearchStatus.ALL : status }));
     const isFiltering = search.length > 0 || searchValue.tags.length > 0 || searchValue.status !== SearchStatus.ALL;
@@ -430,14 +428,11 @@ function PluginSettings() {
                 )
                 : (
                     <div className={cl("empty")}>
-                        <EndcordMark width={51} asleep />
+                        <DevcordMark width={51} asleep />
                         <ExcludedPluginsList search={search} />
                     </div>
                 )
             }
-
-            {!isFiltering && drawn >= plugins.length && <EndOfListPanda />}
-
 
             <Divider className={Margins.top20} />
 

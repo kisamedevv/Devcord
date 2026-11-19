@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { DEFAULT_RESOURCE_LIMITS, type ResourceLimits } from "@shared/resourceGuard";
 import { SettingsStore as SettingsStoreClass } from "@shared/SettingsStore";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/mergeDefaults";
@@ -63,6 +64,8 @@ export interface Settings {
     windowsMaterial: "none" | "mica" | "tabbed" | "acrylic";
     disableMinSize: boolean;
     disableBackgroundMemoryTrim: boolean;
+    /** User-set ceiling for the whole app, enforced by @main/resourceGuard */
+    resourceGuard: ResourceLimits;
     uiSounds: boolean;
     /** Endcord's screens with the installer's pixel corners, icons and lettering instead of smooth ones */
     pixelStyle: boolean;
@@ -121,6 +124,7 @@ const DefaultSettings: Settings = {
     windowsMaterial: "none",
     disableMinSize: false,
     disableBackgroundMemoryTrim: false,
+    resourceGuard: { ...DEFAULT_RESOURCE_LIMITS },
     uiSounds: false,
     pixelStyle: false,
     hideContributorBadge: false,
@@ -234,6 +238,10 @@ export const Settings = SettingsStore.store;
 export function useSettings(paths?: UseSettings<Settings>[]) {
     const [, forceUpdate] = React.useReducer(() => ({}), {});
 
+    // Inline array literals (`useSettings(["a.b"])`) are new references every render. Keying the effect on their
+    // contents stops the listeners being torn down and rebuilt on every render.
+    const key = paths ? paths.join("\u0000") : "";
+
     useEffect(() => {
         if (paths) {
             paths.forEach(p => {
@@ -255,7 +263,7 @@ export function useSettings(paths?: UseSettings<Settings>[]) {
             SettingsStore.addGlobalChangeListener(forceUpdate);
             return () => SettingsStore.removeGlobalChangeListener(forceUpdate);
 
-    }, [paths]);
+    }, [key]);
 
     return SettingsStore.store;
 }

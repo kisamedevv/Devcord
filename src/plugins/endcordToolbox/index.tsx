@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { getIsEndcordHidden, onHiddenChange } from "@api/EndcordVisibility";
 import { definePluginSettings } from "@api/Settings";
-import { EndcordMark } from "@components/EndcordIcons";
+import { DevcordMark } from "@components/EndcordIcons";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
@@ -74,7 +74,7 @@ function EndcordPopoutButton() {
                     onClick={() => setShow(v => !v)}
                     onContextMenu={openFullMenu}
                     tooltip={isShown ? null : "Devcord"}
-                    icon={() => <EndcordMark className="vc-toolbox-icon" asleep={!isShown} />}
+                    icon={() => <DevcordMark className="vc-toolbox-icon" asleep={!isShown} />}
                     selected={isShown}
                 />
             )}

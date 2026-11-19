@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { PANDA_PALETTE, PANDA_ROWS, PixelArt, SLEEPING_PANDA_ROWS } from "@components/settings/SpecialCard";
+import { PixelArt } from "@components/settings/SpecialCard";
 import { classes } from "@utils/misc";
 import type { IconProps } from "@utils/types";
 import type { ReactNode } from "react";
@@ -361,13 +361,35 @@ export const CornerIcon = pixelIcon([
     </>
 ));
 
-/** Endcord's panda. It sleeps on the logo, and wakes up when someone's there */
-export function EndcordMark({ width = 17, className, asleep }: IconProps & { asleep?: boolean; }) {
-    return <PixelArt className={className} rows={asleep ? SLEEPING_PANDA_ROWS : PANDA_ROWS} palette={PANDA_PALETTE} pixel={Math.max(1, Math.floor(Number(width) / 17))} />;
+// A plain pixel D, the Devcord mark. No mascot, nothing to animate
+const MARK_ROWS = [
+    ".................",
+    "....########.....",
+    "....##########...",
+    "....##......##...",
+    "....##.......##..",
+    "....##.......##..",
+    "....##.......##..",
+    "....##.......##..",
+    "....##.......##..",
+    "....##.......##..",
+    "....##.......##..",
+    "....##.......##..",
+    "....##......##...",
+    "....##########...",
+    "....########.....",
+    ".................",
+    "................."
+];
+const MARK_PALETTE = { "#": "#9CCBFF" };
+
+export function DevcordMark({ width = 17, className, asleep }: IconProps & { asleep?: boolean; }) {
+    return <PixelArt className={className} rows={MARK_ROWS} palette={MARK_PALETTE} pixel={Math.max(1, Math.floor(Number(width) / 17))} style={asleep ? { opacity: 0.55 } : undefined} />;
 }
 
 const LETTERS: Record<string, string[]> = {
     E: ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
+    V: ["#...#", "#...#", "#...#", "#...#", "#...#", ".#.#.", "..#.."],
     N: ["#...#", "##..#", "##..#", "#.#.#", "#..##", "#..##", "#...#"],
     D: ["####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####."],
     C: [".####", "#....", "#....", "#....", "#....", "#....", ".####"],
@@ -375,7 +397,7 @@ const LETTERS: Record<string, string[]> = {
     R: ["####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#"]
 };
 
-const LETTER_ROWS = LETTERS.E.map((_, y) => `${[..."ENDCORD"].map(letter => LETTERS[letter][y]).join(".")}.`);
+const LETTER_ROWS = LETTERS.D.map((_, y) => `${[..."DEVCORD"].map(letter => LETTERS[letter][y]).join(".")}.`);
 
 // Ice letters with a cobalt pixel to the lower right of each, like the letters in the logo
 const WORDMARK_ROWS = [...LETTER_ROWS, ".".repeat(LETTER_ROWS[0].length)].map((row, y, all) =>
@@ -383,9 +405,9 @@ const WORDMARK_ROWS = [...LETTER_ROWS, ".".repeat(LETTER_ROWS[0].length)].map((r
 );
 
 /** The name, set in type, or in pixel letters when pixel style is on */
-export const EndcordWordmark = ({ className }: { className?: string; }) => (
+export const DevcordWordmark = ({ className }: { className?: string; }) => (
     <>
-        <span className={classes(className, "ec-icon-smooth", "ec-wordmark")}>Endcord</span>
+        <span className={classes(className, "ec-icon-smooth", "ec-wordmark")}>Devcord</span>
         <PixelArt className={classes(className, "ec-icon-pixel")} rows={WORDMARK_ROWS} palette={{ "#": "#9CCBFF", s: "#3D74E0" }} pixel={2} />
     </>
 );

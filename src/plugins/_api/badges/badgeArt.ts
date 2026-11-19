@@ -16,48 +16,55 @@ function pixelArt(rows: string[], palette: Record<string, string>) {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-// The developer badge: Devcord's panda, 20 by 17, about the size of the art in Discord's own badges. Its outline is
-// Devcord's ice blue: in navy it vanished on dark profiles, which left a white face with two dark holes that read as a
-// skull from a distance
+// The developer badge: Devcord's pixel D on a 22 grid, about the size of the art in Discord's own badges. Its
+// outline is Devcord's ice blue so it stays legible on dark profiles
 export const DEVELOPER_ICON = pixelArt([
-    "..LLL..........LLL..",
-    ".LKKKL........LKKKL.",
-    ".LKKKKLLLLLLLLKKKKL.",
-    ".LKKKWWWWWWWWWWKKKL.",
-    "..LKWWWWWWWWWWWWKL..",
-    ".LWWWWWWWWWWWWWWWWL.",
-    ".LWWKKKWWWWWWKKKWWL.",
-    "LWWKKKKKWWWWKKKKKWWL",
-    "LWWKEKKKWWWWKEKKKWWL",
-    "LWWKKKKKWWWWKKKKKWWL",
-    "LWWWKKKWWKKWWKKKWWWL",
-    ".LWWWWWWWKKWWWWWWWL.",
-    ".LWPPWWWKWWKWWWPPWL.",
-    "..LWWWWWWKKWWWWWWL..",
-    "...LWWWWWWWWWWWWL...",
-    "....LLWWWWWWWWLL....",
-    "......LLLLLLLL......"
-], { L: "#9ccbff", K: "#1e2740", W: "#f8fafe", E: "#ffffff", P: "#ff9db3" });
+    "..LLLLLLLLLL..",
+    "..LFFFFFFFFL..",
+    "..LFFLLLLFFL..",
+    "..LFFL..LFFL..",
+    "..LFFL..LFFL..",
+    "..LFFL..LFFL..",
+    "..LFFL..LFFL..",
+    "..LFFL..LFFL..",
+    "..LFFL..LFFL..",
+    "..LFFL..LFFL..",
+    "..LFFLLLLFFL..",
+    "..LFFFFFFFFL..",
+    "..LLLLLLLLLL.."
+], { L: "#9ccbff", F: "#e8f4ff" });
 
-// The contributor badge: a stalk of bamboo, what keeps the panda going. Devcord's bamboo green, with a lighter edge
-// where the light catches it and darker rings at its joints, 18 by 18
+// The owner badge: a pixel crown in Devcord's gold, for the person who owns Devcord. Only they have it, and every
+// Devcord client shows it for them no matter where they are
+export const OWNER_ICON = pixelArt([
+    "..OOOOOOOOOO..",
+    ".OYYYYYYYYYYO.",
+    "OY...........YO",
+    "OY.OO.....OO.YO",
+    "OY.OO.....OO.YO",
+    "OY...........YO",
+    "OY.OOOOOOOOO.YO",
+    "OY.O.......O.YO",
+    "OY.O.......O.YO",
+    "OY.OOOOOOOOO.YO",
+    "OY...........YO",
+    "OYYYYYYYYYYYO.",
+    "..OOOOOOOOOO.."
+], { O: "#8a6a1f", Y: "#ffd86b" });
 export const CONTRIBUTOR_ICON = pixelArt([
-    "......OOOOOO....OO",
-    "......OHFFFO...OLO",
-    "......OHFFFO..OLLO",
-    "......OHFFFO.OLLO.",
-    "......OHFFFOOLLO..",
-    ".....ONNNNNNOLO...",
-    "......OHFFFO.O....",
-    "OO....OHFFFO......",
-    "OLO...OHFFFO......",
-    "OLLO..OHFFFO......",
-    ".OLLO.OHFFFO......",
-    "..OLLONNNNNNO.....",
-    "...OO.OHFFFO......",
-    "......OHFFFO......",
-    "......OHFFFO......",
-    "......OHFFFO......",
-    "......OHFFFO......",
-    "......OOOOOO......"
-], { O: "#1f5c3f", H: "#c6f6d8", F: "#74d49a", N: "#3f9e6c", L: "#5cc489" });
+    ".......O.......",
+    ".......O.......",
+    "......OFO......",
+    "......OFO......",
+    ".....OFFFO.....",
+    ".....OFFFO.....",
+    "OOOOOOFFFOOOOOO",
+    "OFFFFFFFFFFFFFO",
+    "OFFFFFFFFFFFFFO",
+    "OOOOOOFFFOOOOOO",
+    ".....OFFFO.....",
+    ".....OFFFO.....",
+    "......OFO......",
+    "......OFO......",
+    ".......O......."
+], { O: "#1f5c3f", F: "#74d49a" });

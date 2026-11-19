@@ -25,7 +25,7 @@ if /i "%MODE%"=="quick" goto :inject
 
 echo  [1/4] Bagimliliklar kontrol ediliyor...
 if not exist "node_modules\.modules.yaml" (
-    call corepack pnpm install --frozen-lockfile
+    call pnpm install --frozen-lockfile
     if errorlevel 1 goto :fail
 ) else (
     echo        zaten kurulu, atlandi
@@ -33,7 +33,7 @@ if not exist "node_modules\.modules.yaml" (
 echo(
 
 echo  [2/4] Derleniyor...
-call corepack pnpm build --standalone
+call pnpm build --standalone
 if errorlevel 1 goto :fail
 echo(
 

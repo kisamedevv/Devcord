@@ -7,8 +7,9 @@
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { useSecondTick } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import { moment, useEffect, useReducer } from "@webpack/common";
+import { moment } from "@webpack/common";
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
@@ -34,42 +35,10 @@ const settings = definePluginSettings({
     },
 });
 
-// ─── Shared global tick — one interval for all timestamps ────────────────────
-
-let tickInterval: ReturnType<typeof setInterval> | null = null;
-let tickVersion = 0;
-const tickListeners = new Set<() => void>();
-
-function notifyTickListeners() {
-    tickVersion++;
-    for (const listener of tickListeners) listener();
-}
-
-function startTick() {
-    if (tickInterval !== null) return;
-    tickVersion = 0;
-    tickInterval = setInterval(notifyTickListeners, 1000);
-}
-
-function stopTick() {
-    if (tickInterval !== null) {
-        clearInterval(tickInterval);
-        tickInterval = null;
-    }
-    tickVersion = 0;
-    tickListeners.clear();
-}
-
-function subscribeTick(callback: () => void): () => void {
-    tickListeners.add(callback);
-    return () => { tickListeners.delete(callback); };
-}
-
-// ─── Hook that re-renders on the global tick ─────────────────────────────────
+// ─── Live clock — shared with every other clock-driven component ─────────────
 
 function useGlobalTick() {
-    const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
-    useEffect(() => { return subscribeTick(forceUpdate); }, []);
+    useSecondTick();
 }
 
 // ─── Renderers called by the patches ─────────────────────────────────────────
@@ -204,12 +173,4 @@ export default definePlugin({
             ],
         },
     ],
-
-    start() {
-        startTick();
-    },
-
-    stop() {
-        stopTick();
-    },
 });

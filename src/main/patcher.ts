@@ -11,6 +11,7 @@ import { dirname, join } from "path";
 
 import { initMemoryTrim } from "./memoryTrim";
 import { preOpenRenderer } from "./preOpenRenderer";
+import { initResourceGuard } from "./resourceGuard";
 import { RendererSettings } from "./settings";
 import { DATA_DIR, IS_VANILLA } from "./utils/constants";
 
@@ -111,6 +112,7 @@ if (!IS_VANILLA) {
             }
 
             if (!settings.disableBackgroundMemoryTrim) initMemoryTrim(this);
+            initResourceGuard(this);
         }
     }
     Object.assign(BrowserWindow, electron.BrowserWindow);
@@ -144,6 +146,8 @@ if (!IS_VANILLA) {
             disabledFeatures.add("WidgetLayering");
             disabledFeatures.add("UseEcoQoSForBackgroundProcess");
             disabledFeatures.add("IntensiveWakeUpThrottling");
+            // Discord only ever shows one site; the spare renderer Chromium keeps for the next one is a whole process
+            disabledFeatures.add("SpareRendererForSitePerProcess");
             args[1] = [...disabledFeatures].join(",");
         } else if (args[0] === "enable-features" && settings.gpuRasterization) {
             const enabledFeatures = new Set((args[1] ?? "").split(",").filter(Boolean));

@@ -6,7 +6,7 @@
     "todos": 37,
     "filesOverLimit": 7,
     "longestFile": 1991,
-    "rendererKilobytes": 406,
+    "rendererKilobytes": 396,
     "pluginChunkKilobytes": 3385,
-    "mainProcessKilobytes": 97
+    "mainProcessKilobytes": 90
 }

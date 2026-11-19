@@ -75,8 +75,38 @@ export function createFrameLimiter(host: FrameHost) {
     };
 }
 
-export let setFrameRate: ReturnType<typeof createFrameLimiter> = () => { };
+let applyFrameRate: ReturnType<typeof createFrameLimiter> = () => { };
+// Several things can ask for a slower page (Game Mode and the resource guard, for example), so they register
+// their own limit and the lowest one wins. Removing a limit never unlocks a page another one still holds back.
+const frameCaps = new Map<string, number>();
+
+function effectiveFrameRate() {
+    let rate = 0;
+
+    for (const framesPerSecond of frameCaps.values()) {
+        if (framesPerSecond > 0 && (rate === 0 || framesPerSecond < rate)) rate = framesPerSecond;
+    }
+
+    return rate;
+}
+
+/** 0 removes this source's limit */
+export function setFrameCap(source: string, framesPerSecond: number) {
+    if (framesPerSecond > 0) frameCaps.set(source, framesPerSecond);
+    else frameCaps.delete(source);
+
+    applyFrameRate(effectiveFrameRate());
+}
+
+export function getFrameRate() {
+    return effectiveFrameRate();
+}
+
+export function setFrameRate(framesPerSecond: number) {
+    setFrameCap("manual", framesPerSecond);
+}
 
 export function installFrameLimiter() {
-    setFrameRate = createFrameLimiter(window);
+    applyFrameRate = createFrameLimiter(window);
+    applyFrameRate(effectiveFrameRate());
 }

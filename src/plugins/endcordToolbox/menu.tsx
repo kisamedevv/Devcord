@@ -28,6 +28,8 @@ let _latestVersion = "";
 let _latestUrl = "";
 
 async function checkForUpdates(showToastIfNew = false) {
+    if (IS_UPDATER_DISABLED) return;
+
     try {
         const res = await fetch(`${ENDCORD_VERSION_URL}?t=${Date.now()}`);
         if (!res.ok) return;
@@ -61,6 +63,8 @@ let _updateInterval: ReturnType<typeof setInterval> | null = null;
 
 export function startUpdateChecker() {
     stopUpdateChecker();
+    if (IS_UPDATER_DISABLED) return;
+
     _updateTimer = setTimeout(() => checkForUpdates(true), 5000);
     _updateInterval = setInterval(() => checkForUpdates(true), 30 * 60 * 1000);
 }
@@ -357,9 +361,11 @@ function buildCustomPluginEntries() {
     return <Menu.MenuGroup>{submenuEntries}</Menu.MenuGroup>;
 }
 
-export const getAvailableUpdate = () => _updateAvailable ? _latestVersion : undefined;
+export const getAvailableUpdate = () => !IS_UPDATER_DISABLED && _updateAvailable ? _latestVersion : undefined;
 
 export function openUpdater() {
+    if (IS_UPDATER_DISABLED) return;
+
     if (UpdaterTab) openSettingsTabModal(UpdaterTab);
     else EndcordNative.native.openExternal(_latestUrl || "https://github.com/Endcord/Endcord/releases");
 }
@@ -372,7 +378,7 @@ export function ToolboxMenu({ onClose }: { onClose(): void; }) {
             navId="vc-toolbox"
             onClose={onClose}
         >
-            {updateAvailable && (
+            {!IS_UPDATER_DISABLED && updateAvailable && (
                 <Menu.MenuGroup label={t("Devcord {version} is available", { version: _latestVersion })}>
                     <Menu.MenuItem
                         id="endcord-open-updater"
@@ -391,7 +397,7 @@ export function ToolboxMenu({ onClose }: { onClose(): void; }) {
                     />
                 </Menu.MenuGroup>
             )}
-            {!updateAvailable && (
+            {!IS_UPDATER_DISABLED && !updateAvailable && (
                 <Menu.MenuItem
                     id="endcord-check-update-idle"
                     label={t("Check for Updates")}

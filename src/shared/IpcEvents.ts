@@ -38,6 +38,8 @@ export const enum IpcEvents {
 
     GET_MEMORY_STATS = "EndcordGetMemoryStats",
     TRIM_MEMORY = "EndcordTrimMemory",
+    GET_RESOURCE_STATS = "EndcordGetResourceStats",
+    RESOURCE_PRESSURE = "EndcordResourcePressure",
 
     OPEN_MONACO_EDITOR = "EndcordOpenMonacoEditor",
     GET_MONACO_THEME = "EndcordGetMonacoTheme",

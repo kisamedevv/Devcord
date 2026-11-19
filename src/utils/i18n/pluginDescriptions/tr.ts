@@ -14,7 +14,7 @@ export default (): LangTable => ({
     SmoothType: "Yazarken imleç ve metin girişine pürüzsüz animasyon ekler.",
     ViewIcons: "Avatarları ve sunucu simgelerini tıklanabilir hale getirir ve tam boyutta görüntülemenizi sağlar.",
     ThemeLibrary: "Devcord için zengin bir çevrimiçi tema ve kod parçacığı kütüphanesi.",
-    oneko: "Fareni takip eden Devcord pandası. Ayarlardan yanına bir kedi ve bir köpek de ekleyebilirsin.",
+    oneko: "Fareni takip eden piksel bir köpek. Ayarlardan yanına bir kedi de ekleyebilirsin.",
     PlatformIndicators: "Kullanıcıların hangi cihazdan (Masaüstü, Mobil, Web, Konsol) çevrimiçi olduğunu gösteren simgeler ekler.",
     RelationshipNotifier: "Birisi sizi arkadaşlıktan çıkardığında, engellediğinde veya sunucudan attığında bildirim gönderir.",
     SilentTyping: "Yazıyor... göstergesini diğer kullanıcılardan gizler.",

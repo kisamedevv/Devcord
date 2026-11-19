@@ -7,7 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { EndcordMark } from "@components/EndcordIcons";
+import { DevcordMark } from "@components/EndcordIcons";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
@@ -40,7 +40,7 @@ let root: Root | null = null;
 function Curtain() {
     return (
         <div className="ec-curtain-card">
-            <EndcordMark width={68} asleep />
+            <DevcordMark width={68} asleep />
             <p className="ec-curtain-title">{t("Discord is hidden while you're away")}</p>
             <p className="ec-curtain-hint">{t("Move the mouse or press a key to show it again.")}</p>
         </div>

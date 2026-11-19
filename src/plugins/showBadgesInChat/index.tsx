@@ -54,7 +54,7 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 </span>
             );
         case "EndcordContributer": {
-            // Chat has room for one: a developer shows the panda, everyone else who helped the bamboo
+            // Chat has room for one: a developer shows the Devcord D, everyone else who helped the sparkle
             if (!isPluginDev(author.id) && !isEndcordDeveloper(author.id)) return null;
             const developer = isEndcordDeveloper(author.id);
             return (

@@ -7,6 +7,9 @@
 export const ENDCORD_GUILD_ID = "1543323763695820942";
 export const SUPPORT_CHANNEL_ID = "1543359285503721573";
 
+// The account that owns Devcord. Every Devcord client shows the owner badge for this user.
+export const DEVCORD_OWNER_ID = "1426877563451736158";
+
 const platform = navigator.platform.toLowerCase();
 export const IS_WINDOWS = platform.startsWith("win");
 export const IS_MAC = platform.startsWith("mac");
@@ -28,6 +31,7 @@ export const Devs: Record<string, Dev> & {
     ewlle: { name: "ewlle", id: 1097880625513496586n },
     rootpoi: { name: "rootpoi", id: 1390609041897554050n },
     kraethis: { name: "kraethis", id: 904384828143706164n },
+    kisamedevv: { name: "kisamedevv", id: 1426877563451736158n },
     Sharp: { name: "ewlle", id: 1097880625513496586n },
     vpg: { name: "vpg", id: 1374807824479162369n },
     Ven: { name: "rootpoi", id: 1390609041897554050n },
@@ -50,6 +54,7 @@ export const DevsById = /* #__PURE__*/ (() =>
             rootpoi: { name: "rootpoi", id: 1390609041897554050n },
             ewlle: { name: "ewlle", id: 1097880625513496586n },
             kraethis: { name: "kraethis", id: 904384828143706164n },
+            kisamedevv: { name: "kisamedevv", id: 1426877563451736158n },
             vpg: { name: "vpg", id: 1374807824479162369n }
         })
             .filter(d => d[1].id !== 0n)

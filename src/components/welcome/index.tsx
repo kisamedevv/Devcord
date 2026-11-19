@@ -11,7 +11,7 @@ import { isPluginEnabled } from "@api/PluginManager";
 import { addStarterPacksGradually, getPackAdditions, StarterPack } from "@api/PluginProfiles";
 import { Settings, useSettings } from "@api/Settings";
 import { enableScreenStyles } from "@api/Styles";
-import { ChevronRightIcon, EndcordMark } from "@components/EndcordIcons";
+import { ChevronRightIcon, DevcordMark } from "@components/EndcordIcons";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { useStarterPacks } from "@components/settings/StarterPacks";
 import { Switch } from "@components/Switch";
@@ -47,8 +47,6 @@ const RESIZE_TIME = 440;
 /** Turning plugins on takes a moment people can see, even when the plugins themselves start at once */
 const MIN_BUSY_TIME = 900;
 const FADE_OUT_TIME = 300;
-/** The panda is asleep on the logo, as in the installer, and wakes up once the card has arrived */
-const WAKE_AFTER = 1150;
 
 const prefersLessMotion = () => document.documentElement.classList.contains("reduce-motion") || matchMedia("(prefers-reduced-motion: reduce)").matches;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -127,29 +125,20 @@ function Steps({ steps, current, onPick }: { steps: typeof STEPS; current: numbe
 
 function Hello({ pluginCount }: { pluginCount: number; }) {
     const { t } = useI18n();
-    const [awake, setAwake] = useState(prefersLessMotion);
-
-    useEffect(() => {
-        if (awake) return;
-        const timer = setTimeout(() => setAwake(true), WAKE_AFTER);
-        return () => clearTimeout(timer);
-    }, []);
 
     return (
         <div className={cl("hello")}>
-            <span className={cl("stage", { "stage-awake": awake })} aria-hidden="true">
+            <span className={cl("stage")} aria-hidden="true">
                 <span className={cl("floor")} />
-                <span className={cl("zz")}><span>z</span><span>z</span></span>
-                <span className={cl("panda")}><EndcordMark width={102} asleep={!awake} /></span>
+                <span className={cl("mark")}><DevcordMark width={102} /></span>
             </span>
-            <h1 className={classes(cl("title"), cl("in"))} style={at(0)}>{t("Welcome to Endcord")}</h1>
+            <h1 className={classes(cl("title"), cl("in"))} style={at(0)}>{t("Welcome to Devcord")}</h1>
             <p className={classes(cl("lead"), cl("in"))} style={at(1)}>
-                {t("Two quick choices: how Discord looks, and what Endcord adds to it. You can change both later in Settings.")}
+                {t("Two quick choices: how Discord looks, and what Devcord adds to it. You can change both later in Settings.")}
             </p>
             <p className={classes(cl("meta"), cl("in"))} style={at(2)}>
                 <span>{t("{count} plugins", { count: pluginCount })}</span>
                 <span>{t("Open source")}</span>
-                <span>{t("Signed updates")}</span>
             </p>
         </div>
     );
@@ -195,7 +184,7 @@ function Look({ studio, onOpenStudio }: { studio: typeof ThemeStudio; onOpenStud
             <label className={classes(cl("row"), cl("in"))} style={at(6)}>
                 <span className={cl("row-text")}>
                     <span className={cl("row-title")}>{t("Pixel style")}</span>
-                    <span className={cl("row-hint")}>{t("Pixel corners, icons and lettering in Endcord's screens, like the installer")}</span>
+                    <span className={cl("row-hint")}>{t("Pixel corners, icons and lettering in Devcord's screens, like the installer")}</span>
                 </span>
                 <Switch checked={settings.pixelStyle} onChange={on => settings.pixelStyle = on} />
             </label>
@@ -261,7 +250,7 @@ function Done({ added, restartNeeded }: { added: number; restartNeeded: boolean;
                         {added ? t("{count} plugins are on", { count }) : t("You're set")}
                     </h2>
                     <p className={classes(cl("text"), cl("in"))} style={at(1)}>
-                        {added ? t("Endcord is ready. Everything you picked can be changed in Settings.") : t("No plugins yet. They're all waiting in Settings.")}
+                        {added ? t("Devcord is ready. Everything you picked can be changed in Settings.") : t("No plugins yet. They're all waiting in Settings.")}
                     </p>
                     {restartNeeded && (
                         <p className={classes(cl("note"), cl("in"))} style={at(2)}>
@@ -269,12 +258,12 @@ function Done({ added, restartNeeded }: { added: number; restartNeeded: boolean;
                         </p>
                     )}
                 </div>
-                <span className={cl("done-panda")} aria-hidden="true"><EndcordMark width={68} /></span>
+                <span className={cl("done-mark")} aria-hidden="true"><DevcordMark width={68} /></span>
             </div>
             <p className={classes(cl("label"), cl("in"))} style={at(3)}>{t("Good to know")}</p>
             <dl className={cl("facts")}>
                 <Fact index={4} label={t("Control Center")}>
-                    {t("The panda at the top of the window opens it: looks, profiles, Game Mode and memory in one place.")}
+                    {t("The Devcord mark at the top of the window opens it: looks, profiles, Game Mode and memory in one place.")}
                 </Fact>
                 {isPluginEnabled("CommandPalette") && (
                     <Fact index={5} label={paletteKeys.map(key => <kbd key={key} className={cl("key")}>{key}</kbd>)}>
@@ -282,7 +271,7 @@ function Done({ added, restartNeeded }: { added: number; restartNeeded: boolean;
                     </Fact>
                 )}
                 <Fact index={6} label={t("Safe mode")}>
-                    {t("If a plugin ever keeps Discord from starting, Endcord starts without plugins and shows you which one it was.")}
+                    {t("If a plugin ever keeps Discord from starting, Devcord starts without plugins and shows you which one it was.")}
                 </Fact>
             </dl>
         </>
@@ -489,7 +478,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
             <div ref={card} className={cl("card")}>
                 <header className={cl("header")}>
                     <span className={cl("brand")}>
-                        <EndcordMark width={17} />
+                        <DevcordMark width={17} />
                         Endcord
                     </span>
                     {step !== Step.Hello && (

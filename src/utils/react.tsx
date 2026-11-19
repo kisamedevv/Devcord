@@ -8,6 +8,7 @@ import { React, useEffect, useMemo, useReducer, useState } from "@webpack/common
 import type { ActionDispatch, ReactNode } from "react";
 
 import { checkIntersecting } from "./misc";
+import { subscribeSecondTick } from "./ticker";
 
 export * from "./lazyReact";
 
@@ -119,6 +120,20 @@ export function useForceUpdater(withDep: true): [any, ActionDispatch<[]>];
 export function useForceUpdater(withDep?: true) {
     const r = useReducer(x => x + 1, 0);
     return withDep ? r : r[1];
+}
+
+/**
+ * Rerenders the component once per second while `enabled` is true. Every subscriber shares one interval, so adding
+ * this to a per-message component costs one callback per second instead of one timer per message.
+ */
+export function useSecondTick(enabled = true) {
+    const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+
+    useEffect(() => {
+        if (!enabled) return;
+
+        return subscribeSecondTick(() => forceUpdate());
+    }, [enabled]);
 }
 
 interface TimerOpts {

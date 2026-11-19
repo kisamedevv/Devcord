@@ -38,15 +38,19 @@ export default ErrorBoundary.wrap(function NotificationComponent({
     useEffect(() => {
         if (isHover || !hasFocus || timeout === 0 || permanent) return void setElapsed(0);
 
-        const intervalId = setInterval(() => {
+        let raf = 0;
+        const tick = () => {
             const elapsed = Date.now() - start;
-            if (elapsed >= timeout)
+            if (elapsed >= timeout) {
                 onClose!();
-            else
-                setElapsed(elapsed);
-        }, 10);
+                return;
+            }
+            setElapsed(elapsed);
+            raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
 
-        return () => clearInterval(intervalId);
+        return () => cancelAnimationFrame(raf);
     }, [timeout, isHover, hasFocus]);
 
     const timeoutProgress = elapsed / timeout;

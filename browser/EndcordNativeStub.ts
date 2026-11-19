@@ -94,6 +94,16 @@ window.EndcordNative = {
         onRendererCssUpdate: NOOP,
         getMemoryStats: async () => ({ usedMb: 0, freedMb: 0, trims: 0 }),
         trimMemory: async () => 0,
+        getResourceStats: async () => ({
+            enabled: false,
+            usedMb: 0,
+            cpuPercent: 0,
+            ramLimitMb: 0,
+            cpuLimitPercent: 0,
+            pressure: "none" as const,
+            frameRate: 0
+        }),
+        onResourcePressure: () => NOOP,
     },
 
     updater: {

@@ -99,12 +99,13 @@ mkdirSafe(USER_PLUGINS);
 cpSync(sourceDir, target, { recursive: true });
 
 log(`${name} → ${target}`);
-log("derlemek için: corepack pnpm build --standalone  (veya inject.bat)");
+log("derlemek için: pnpm build --standalone  (veya inject.bat)");
 
 if (argv.includes("--rebuild")) {
     log("derleniyor...");
-    execFileSync("corepack", ["pnpm", "build", "--standalone"], { stdio: "inherit", cwd: ROOT });
-    log("derleme bitti — corepack pnpm inject ile Discord'a uygula");
+    const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+    execFileSync(pnpm, ["build", "--standalone"], { stdio: "inherit", cwd: ROOT });
+    log("derleme bitti — pnpm inject ile Discord'a uygula");
 }
 
 function mkdirSafe(dir) {

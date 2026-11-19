@@ -47,7 +47,8 @@ export const IS_REPORTER = process.argv.includes("--reporter");
 export const IS_ANTI_CRASH_TEST = process.argv.includes("--anti-crash-test");
 export const IS_STANDALONE = process.argv.includes("--standalone");
 
-export const IS_UPDATER_DISABLED = process.argv.includes("--disable-updater");
+// A fork has no release feed of its own, so updates stay off unless a build opts in.
+export const IS_UPDATER_DISABLED = !process.argv.includes("--enable-updater");
 export const gitHash = process.env.ENDCORD_HASH || (() => {
     try {
         return execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();

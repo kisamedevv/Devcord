@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Devcord — Discord'u yeniden yaz</title>
+<meta name="description" content="Devcord, Discord'u modlar, temalar, eklentiler ve fake profil gibi özelliklerle güçlendiren modern bir Discord istemci modu. Masaüstü ve tarayıcı için indir." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="bg-blobs" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <span class="brand-mark">D</span>
+      <span class="brand-name">Devcord</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Özellikler</a>
+      <a href="#plugins">Eklentiler</a>
+      <a href="#download">İndir</a>
+      <a href="#faq">SSS</a>
+    </div>
+    <div class="nav-actions">
+      <a href="https://github.com/Endcord/Endcord" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://discord.com" class="btn btn-primary" target="_blank" rel="noopener">Discord'a katıl</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-copy reveal">
+      <span class="pill">v4.1.0 — açık kaynak, ücretsiz</span>
+      <h1>Discord'u <span class="grad">yeniden yaz.</span><br/>Senin kurallarınla.</h1>
+      <p class="hero-sub">
+        Devcord, Discord istemcisini modlar, temalar, 499+ eklenti, fake profil,
+        glass blur ve performans optimizasyonlarıyla güçlendiren modern bir mod.
+        Masaüstü ve tarayıcıda çalışır.
+      </p>
+      <div class="hero-cta">
+        <a href="#download" class="btn btn-primary btn-lg">İndir</a>
+        <a href="#features" class="btn btn-ghost btn-lg">Özellikleri gör</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong>499+</strong><span>Eklenti</span></div>
+        <div><strong>4.1.0</strong><span>Sürüm</span></div>
+        <div><strong>0₺</strong><span>Ücretsiz</span></div>
+        <div><strong>∞</strong><span>Açık kaynak</span></div>
+      </div>
+    </div>
+    <div class="hero-mock reveal">
+      <div class="mock-window">
+        <div class="mock-titlebar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="mock-title">Devcord</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-sidebar">
+            <div class="mock-channel"></div><div class="mock-channel active"></div>
+            <div class="mock-channel"></div><div class="mock-channel"></div>
+            <div class="mock-channel short"></div>
+          </div>
+          <div class="mock-chat">
+            <div class="mock-msg"><div class="avatar"></div><div class="lines"><span></span><span class="w60"></span></div></div>
+            <div class="mock-msg"><div class="avatar a2"></div><div class="lines"><span></span><span class="w80"></span><span class="w40"></span></div></div>
+            <div class="mock-msg"><div class="avatar a3"></div><div class="lines"><span></span><span class="w70"></span></div></div>
+            <div class="mock-input"></div>
+          </div>
+          <div class="mock-panel">
+            <div class="mock-badge"></div>
+            <div class="mock-badge"></div>
+            <div class="mock-badge"></div>
+          </div>
+        </div>
+        <div class="mock-glow"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="pill">Özellikler</span>
+      <h2>Her şeyi kontrol et.</h2>
+      <p>Devcord, Discord'u değiştirmez — onu senin kurallarınla genişletir.</p>
+    </div>
+    <div class="grid features">
+      <div class="card reveal"><div class="card-icon">✨</div><h3>Glass blur</h3><p>Sohbeti boğmadan arayüzü cam gibi şeffaflaştır. Performans için optimize edildi.</p></div>
+      <div class="card reveal"><div class="card-icon">🎭</div><h3>Fake profil</h3><p>Sahte isim, rozet ve tarih. Sadece Devcord kullananlar görür; gerçek veriye dokunulmaz.</p></div>
+      <div class="card reveal"><div class="card-icon">🧩</div><h3>499+ eklenti</h3><p>Recon'dan oyun hilelerine, temalardan ses kontrollerine kadar her şey tek tıkla.</p></div>
+      <div class="card reveal"><div class="card-icon">🎨</div><h3>Temalar</h3><p>Hazır temalar veya kendi CSS'in. Quick CSS editörü tek tuşla.</p></div>
+      <div class="card reveal"><div class="card-icon">⚡</div><h3>Hız</h3><p>Lazy chunk yükleme, blur optimizasyonu, arka planda durdurma. Takılma yok.</p></div>
+      <div class="card reveal"><div class="card-icon">🛡️</div><h3>Güvenli</h3><p>Açık kaynak, denetlenebilir. Hiçbir veri dışarı gönderilmez.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="plugins" class="section section-alt">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="pill">Eklentiler</span>
+      <h2>İhtiyacın olan her şey.</h2>
+      <p>4 kategoride 499+ eklenti. Aç/kapat, anında uygula.</p>
+    </div>
+    <div class="marquee reveal">
+      <div class="marquee-track">
+        <span>EndcordToolbox</span><span>EndcordGlass</span><span>EndcordBadges</span><span>EndcordCustomProfile</span>
+        <span>BetterSettings</span><span>ShowBadgesInChat</span><span>SpotifyControls</span><span>Oneko</span>
+        <span>CustomIdle</span><span>CopyUserURLs</span><span>VoiceMessages</span><span>Translate</span>
+        <span>EndcordToolbox</span><span>EndcordGlass</span><span>EndcordBadges</span><span>EndcordCustomProfile</span>
+        <span>BetterSettings</span><span>ShowBadgesInChat</span><span>SpotifyControls</span><span>Oneko</span>
+        <span>CustomIdle</span><span>CopyUserURLs</span><span>VoiceMessages</span><span>Translate</span>
+      </div>
+    </div>
+    <div class="grid plugins">
+      <div class="pcard reveal"><h4>Customisation</h4><p>Temalar, rozetler, profil, idle, yazı tipleri.</p></div>
+      <div class="pcard reveal"><h4>Fun</h4><p>Oneko, wiggly text, pet, animasyonlar.</p></div>
+      <div class="pcard reveal"><h4>Utility</h4><p>Spotify, ses kontrolleri, kopyalama, çeviriler.</p></div>
+      <div class="pcard reveal"><h4>Developer</h4><p>Console shortcuts, debug, webhooks.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="download" class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="pill">İndir</span>
+      <h2>Hemen başla.</h2>
+      <p>Masaüstü uygulaması veya tarayıcı uzantısı. İkisi de aynı eklenti setiyle gelir.</p>
+    </div>
+    <div class="grid downloads">
+      <div class="dcard reveal">
+        <div class="dcard-icon">🖥️</div>
+        <h3>Masaüstü (Windows)</h3>
+        <p>Discord kurulumunu otomatik algılar, enjekte eder. Tek tıkla kurulum.</p>
+        <a href="#" class="btn btn-primary">İndir (.exe)</a>
+        <span class="dcard-note">Windows 10/11 · 64-bit</span>
+      </div>
+      <div class="dcard reveal">
+        <div class="dcard-icon">🌐</div>
+        <h3>Tarayıcı uzantısı</h3>
+        <p>Chrome ve Edge için. Kur, Discord web'i aç, Devcord otomatik devreye girer.</p>
+        <a href="#" class="btn btn-primary">Chrome Web Store</a>
+        <span class="dcard-note">Chrome · Edge · Brave</span>
+      </div>
+      <div class="dcard reveal">
+        <div class="dcard-icon">📦</div>
+        <h3>Standalone build</h3>
+        <p>Kendi Discord'unu patch'lemeden çalışan bağımsız build.</p>
+        <a href="#" class="btn btn-ghost">İndir</a>
+        <span class="dcard-note">Gelişmiş kullanıcılar</span>
+      </div>
+    </div>
+    <p class="dl-hint reveal">Kurulum sonrası <code>pnpm inject</code> komutuyla Discord'a entegre edilir. Detaylar için GitHub README.</p>
+  </div>
+</section>
+
+<section id="faq" class="section section-alt">
+  <div class="container narrow">
+    <div class="section-head reveal">
+      <span class="pill">SSS</span>
+      <h2>Sorular.</h2>
+    </div>
+    <div class="faq reveal">
+      <details><summary>Devcord güvenli mi?</summary><p>Açık kaynak, tüm kod denetlenebilir. Hiçbir veri dışarı gönderilmez; sadece istemcinizde çalışır.</p></details>
+      <details><summary>Discord hesabım banlanır mı?</summary><p>Devcord istemci tarafı bir moddur; Discord sunucularına müdahale etmez. Ancak mod kullanımı her zaman risk taşır; kendi sorumluluğunuzdadır.</p></details>
+      <details><summary>Hangi platformlar destekleniyor?</summary><p>Windows masaüstü (stable/canary/ptb) ve Chrome/Edge/Firefox tarayıcıları.</p></details>
+      <details><summary>Eklentileri nasıl eklerim?</summary><p>Ayarlar → Eklentiler sekmesinden aç/kapat. Kendi eklentini yazmak için <code>src/plugins</code> klasörüne bak.</p></details>
+      <details><summary>Performans nasıl?</summary><p>Lazy chunk yükleme, blur optimizasyonu ve arka planda durdurma ile takılma minimumda.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="brand"><span class="brand-mark">D</span><span class="brand-name">Devcord</span></div>
+        <p class="footer-desc">Discord'u senin kurallarınla yeniden yaz.</p>
+      </div>
+      <div>
+        <h5>Ürün</h5>
+        <a href="#features">Özellikler</a>
+        <a href="#plugins">Eklentiler</a>
+        <a href="#download">İndir</a>
+      </div>
+      <div>
+        <h5>Topluluk</h5>
+        <a href="https://github.com/Endcord/Endcord" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://discord.com" target="_blank" rel="noopener">Discord</a>
+      </div>
+      <div>
+        <h5>Yasal</h5>
+        <a href="#">Gizlilik</a>
+        <a href="#">Lisans (GPL-3.0)</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Devcord. Tüm hakları saklıdır. Discord, Inc.'in markasıdır; Devcord bağımsız bir projedir.</div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

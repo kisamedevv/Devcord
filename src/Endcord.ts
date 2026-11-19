@@ -25,15 +25,12 @@ import { watchPluginHealth } from "@api/PluginHealth";
 import { IS_SAFE_MODE, watchStart } from "@api/SafeMode";
 import { maybeTakeDailySnapshot } from "@api/SettingsSnapshots";
 import { coreStyleRootNode, initStyles } from "@api/Styles";
-import { installDelight } from "@components/delight";
-import { showSafeModeScreen } from "@components/safeMode";
-import { openSettingsTabModal, UpdaterTab } from "@components/settings";
 import { installShortcutsHotkey } from "@components/shortcuts";
-import { maybeShowWhatsNew } from "@components/whatsNew";
 import { debounce } from "@shared/debounce";
 import { IS_WINDOWS } from "@utils/constants";
 import { createAndAppendStyle } from "@utils/css";
 import { installFrameLimiter } from "@utils/frameLimiter";
+import { initResourceSaver } from "@utils/resourceSaver";
 import { StartAt } from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
 
@@ -136,7 +133,11 @@ async function runUpdateCheck() {
         notify({
             title: t("An Endcord update is available!"),
             body: t("Click here to view the update"),
-            onClick: () => openSettingsTabModal(UpdaterTab!)
+            onClick: () => {
+                // The settings screens are a lot of code for a choice the disabled updater never offers
+                const { openSettingsTabModal, UpdaterTab } = require("@components/settings") as typeof import("@components/settings");
+                openSettingsTabModal(UpdaterTab!);
+            }
         });
     } catch (err) {
         UpdateLogger.error("Failed to check for updates", err);
@@ -146,14 +147,13 @@ async function runUpdateCheck() {
 async function init() {
     await onceReady;
 
-    installDelight();
     installShortcutsHotkey();
     startAllPlugins(StartAt.WebpackReady);
 
     // A day's settings are worth keeping once they've proven to start
     watchStart(() => !IS_SAFE_MODE && maybeTakeDailySnapshot());
     // Discord's screen comes up a moment after its code is ready, and the dialog needs it
-    if (IS_SAFE_MODE) setTimeout(showSafeModeScreen, 2_000);
+    if (IS_SAFE_MODE) setTimeout(() => (require("@components/safeMode") as typeof import("@components/safeMode")).showSafeModeScreen(), 2_000);
     else if (!IS_REPORTER) {
         watchPluginHealth();
         // Required late: it reaches into Theme Studio, a plugin, which this file mustn't load while plugins load
@@ -163,7 +163,7 @@ async function init() {
     // Tells the updater this release works, otherwise it goes back to the last one after a few tries
     if (!IS_UPDATER_DISABLED && IS_STANDALONE) {
         EndcordNative.updater.confirmUpdate().then(justUpdated => {
-            if (!IS_SAFE_MODE) return maybeShowWhatsNew(justUpdated);
+            if (!IS_SAFE_MODE) return (require("@components/whatsNew") as typeof import("@components/whatsNew")).maybeShowWhatsNew(justUpdated);
         }).catch(() => { });
 
         // Going back happens before any page is up, so this is where the person finds out
@@ -203,6 +203,7 @@ async function init() {
 }
 
 if (IS_DISCORD_DESKTOP) installFrameLimiter();
+if (IS_DISCORD_DESKTOP) initResourceSaver();
 
 initPluginManager();
 initStyles();

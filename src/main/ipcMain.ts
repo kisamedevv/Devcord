@@ -22,6 +22,7 @@ import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
 import { getMemoryStats, trimAndMeasure } from "./memoryTrim";
+import { getResourceStats } from "./resourceGuard";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
 import { QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
@@ -65,6 +66,7 @@ function getThemeData(fileName: string) {
 handleIpc(IpcEvents.OPEN_QUICKCSS, () => shell.openPath(QUICK_CSS_PATH));
 
 handleIpc(IpcEvents.GET_MEMORY_STATS, () => getMemoryStats());
+handleIpc(IpcEvents.GET_RESOURCE_STATS, () => getResourceStats());
 handleIpc(IpcEvents.TRIM_MEMORY, ({ sender }) => {
     const win = BrowserWindow.fromWebContents(sender);
     return win ? trimAndMeasure(win) : 0;

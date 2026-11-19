@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { BroadcastIcon, DropletIcon, EndcordMark, GamepadIcon, PulseIcon, ShieldCheckIcon } from "@components/EndcordIcons";
+import { BroadcastIcon, DevcordMark, DropletIcon, GamepadIcon, PulseIcon, ShieldCheckIcon } from "@components/EndcordIcons";
 import type { IconProps } from "@utils/types";
 import type { ComponentType } from "react";
 
@@ -25,12 +25,12 @@ export interface Release {
 export const RELEASES: Release[] = [
     {
         version: "4.1.0",
-        summary: "Endcord is easier to reach, easier to make your own, and open about what it's doing.",
+        summary: "Devcord is easier to reach, easier to make your own, and open about what it's doing.",
         highlights: [
             {
-                Icon: EndcordMark,
+                Icon: DevcordMark,
                 title: "Control Center",
-                description: "The panda in the title bar now opens your themes, memory use and settings in one place."
+                description: "The Devcord mark in the title bar now opens your themes, memory use and settings in one place."
             },
             {
                 Icon: DropletIcon,
@@ -45,7 +45,7 @@ export const RELEASES: Release[] = [
             {
                 Icon: ShieldCheckIcon,
                 title: "Security status",
-                description: "Endcord checks its release signature and installed files, and shows you the result."
+                description: "Devcord checks its release signature and installed files, and shows you the result."
             },
             {
                 Icon: GamepadIcon,

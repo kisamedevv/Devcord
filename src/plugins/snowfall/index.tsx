@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, SettingsStore } from "@api/Settings";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
@@ -392,37 +392,26 @@ const SnowfallManager: React.FC = () => {
             snow.play();
         }
 
-        // Custom listener for settings changes (we don't have a built-in one)
-        let lastSettings = {
-            type: settings.store.typeOfSnow as "text" | "solid" | "image",
-            maxSize: settings.store.maxSize,
-            speed: settings.store.speed,
-            flakesPerSecond: settings.store.flakesPerSecond
-        };
-
-        const settingsInterval = setInterval(() => {
-            const newSettings = {
+        // Settings arrive as change events; polling the store every 5s for them was pure waste
+        const applySettings = () => {
+            const updateOptions: Partial<typeof CopleSnow.defaultOptions> = {
                 type: settings.store.typeOfSnow as "text" | "solid" | "image",
                 maxSize: settings.store.maxSize,
-                speed: settings.store.speed,
-                flakesPerSecond: settings.store.flakesPerSecond
+                interval: 1000 / settings.store.flakesPerSecond
             };
 
-            if (Object.keys(newSettings).some(k => newSettings[k as keyof typeof newSettings] !== lastSettings[k as keyof typeof lastSettings])) {
-                lastSettings = newSettings;
+            if (updateOptions.type === "image") updateOptions.content = SNOWFLAKE_SVGS;
+            else if (updateOptions.type === "text") updateOptions.content = "❄";
 
-                const updateOptions: Partial<typeof CopleSnow.defaultOptions> = {
-                    type: newSettings.type,
-                    maxSize: newSettings.maxSize,
-                    interval: 1000 / newSettings.flakesPerSecond
-                };
+            snow.updateOptions(updateOptions);
+        };
 
-                if (newSettings.type === "image") updateOptions.content = SNOWFLAKE_SVGS;
-                else if (newSettings.type === "text") updateOptions.content = "❄";
+        const settingKeys = ["typeOfSnow", "maxSize", "flakesPerSecond"]
+            .map(key => `plugins.Snowfall.${key}`);
 
-                snow.updateOptions(updateOptions);
-            }
-        }, 5000);
+        for (const key of settingKeys) {
+            SettingsStore.addChangeListener(key as never, applySettings);
+        }
 
         return () => {
             snow.destroy();
@@ -431,7 +420,9 @@ const SnowfallManager: React.FC = () => {
             window.removeEventListener("blur", blurHandler);
             window.removeEventListener("focus", focusHandler);
 
-            clearInterval(settingsInterval);
+            for (const key of settingKeys) {
+                SettingsStore.removeChangeListener(key as never, applySettings);
+            }
 
             if (styleEl.parentNode) {
                 styleEl.remove();

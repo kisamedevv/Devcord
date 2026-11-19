@@ -107,47 +107,6 @@
     flex-shrink: 0;
 }
 
-.ec-control-boop .ec-mark-tile svg {
-    transition: transform var(--ec-motion-fast) var(--ec-ease-out);
-}
-
-.ec-control-boop:hover .ec-mark-tile svg {
-    transform: rotate(-8deg) scale(1.06);
-}
-
-/* Two pixel z's drifting up from the sleeping panda, in pixel style */
-[data-ec-pixel] .ec-control-snore {
-    position: absolute;
-    top: -3px;
-    right: -5px;
-    width: 8px;
-    height: 8px;
-    background:
-        linear-gradient(var(--ec-ice), var(--ec-ice)) 0 0 / 6px 2px no-repeat,
-        linear-gradient(var(--ec-ice), var(--ec-ice)) 4px 2px / 2px 2px no-repeat,
-        linear-gradient(var(--ec-ice), var(--ec-ice)) 2px 4px / 2px 2px no-repeat,
-        linear-gradient(var(--ec-ice), var(--ec-ice)) 0 6px / 6px 2px no-repeat;
-    pointer-events: none;
-    animation: ec-control-snore 3.2s steps(8) infinite;
-}
-
-@keyframes ec-control-snore {
-    0% {
-        opacity: 0;
-        transform: translate(-4px, 6px) scale(0.5);
-    }
-
-    30%,
-    70% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(2px, -6px);
-    }
-}
-
 .ec-control-heading {
     display: flex;
     flex: 1;
@@ -162,11 +121,6 @@
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     line-height: 1.3;
-    transition: color var(--ec-motion-fast) ease;
-}
-
-.ec-control-root .ec-control-version:hover {
-    color: var(--ec-ice);
 }
 
 .ec-control-root .ec-control-icon-button {

@@ -72,13 +72,18 @@ check("a skipped release shows the newest one", pick("4.3.0", "4.0.33", true) ==
 check("a release newer than this client stays hidden", pick("4.2.0", "4.1.0", true) === undefined);
 
 // ---- Plugins that became on by default -----------------------------------------------------------------------
-const stored = { pluginDefaultsVersion: 0, plugins: { EndcordToolbox: { enabled: false }, ThemeLibrary: { enabled: false }, Other: { enabled: false } } };
+const stored = { pluginDefaultsVersion: 0, plugins: { DevcordToolbox: { enabled: false }, ThemeLibrary: { enabled: false }, Other: { enabled: false } } };
 m.applyNewPluginDefaults(stored);
-check("a settings file that recorded them as off gets them turned on", stored.plugins.EndcordToolbox.enabled && stored.plugins.ThemeLibrary.enabled);
+check("a settings file that recorded them as off gets them turned on", stored.plugins.DevcordToolbox.enabled && stored.plugins.ThemeLibrary.enabled);
+check("a newer default is on too", stored.plugins.GameMode.enabled);
 check("other plugins are left alone", !stored.plugins.Other.enabled);
-stored.plugins.EndcordToolbox.enabled = false;
+stored.plugins.DevcordToolbox.enabled = false;
 m.applyNewPluginDefaults(stored);
-check("someone who turns one off afterwards keeps it off", !stored.plugins.EndcordToolbox.enabled);
+check("someone who turns one off afterwards keeps it off", !stored.plugins.DevcordToolbox.enabled);
+
+const older = { pluginDefaultsVersion: 1, plugins: { DevcordToolbox: { enabled: false } } };
+m.applyNewPluginDefaults(older);
+check("an upgrade keeps an earlier opt-out off", !older.plugins.DevcordToolbox.enabled && older.plugins.GameMode.enabled);
 
 // ---- Theme Studio -------------------------------------------------------------------------------------------
 const scales = {
@@ -113,7 +118,7 @@ check("corners scale from Discord's own sizes", css({ radius: 0.5 }).includes("-
 check("no blur is written unless asked for", !css({ accent: "#ff3d9a" }).includes("backdrop-filter"));
 check("glass only touches menus", css({ glass: 8 }).includes("blur(8px)"));
 check("every preset produces CSS or is Discord's own", m.PRESETS.every(({ name, design }) => name === "Discord" || m.generateThemeCss(design, scales).length > 0));
-check("an exported theme carries its name", m.toThemeFile("a{}").includes("@name Endcord Studio Theme"));
+check("an exported theme carries its name", m.toThemeFile("a{}").includes("@name Devcord Studio Theme"));
 check("a typeface reaches Discord's font variables", css({ font: "serif" }).includes("--font-primary: Georgia"));
 check("flat takes the shadows off", css({ flat: true }).includes("--elevation-high: none"));
 check("accent scrollbars follow the accent", css({ scrollbars: "accent" }).includes("--scrollbar-thin-thumb: var(--brand-500)"));

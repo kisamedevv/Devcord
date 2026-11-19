@@ -14,3 +14,26 @@ div[data-list-item-id^="members-"] {
 div[data-list-item-id^="channels___"] {
     contain: layout style;
 }
+
+/*
+ * The resource guard sets this when the app stays over the RAM or CPU ceiling the user chose. Paused rather than
+ * removed, so nothing jumps when the pressure clears.
+ */
+html[data-ec-resource-saver] *,
+html[data-ec-resource-saver] *::before,
+html[data-ec-resource-saver] *::after {
+    animation-play-state: paused !important;
+}
+
+html[data-ec-resource-saver="critical"] *,
+html[data-ec-resource-saver="critical"] *::before,
+html[data-ec-resource-saver="critical"] *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+}
+
+/* Blur reads the whole area behind each element, which is the most expensive thing on the page to repaint */
+html[data-ec-resource-saver] [class*="backdrop"],
+html[data-ec-resource-saver] [style*="backdrop-filter"] {
+    backdrop-filter: none !important;
+}

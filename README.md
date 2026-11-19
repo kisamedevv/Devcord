@@ -1,98 +1,137 @@
-# Endcord
+# Devcord
 
-Endcord is a desktop client mod for Discord. It loads with the official app and adds plugins, themes, and a settings panel inside Discord.
+**Türkçe** | [English](#english)
 
-Endcord is a fork of [Vencord](https://github.com/Vendicated/Vencord)
+Devcord, resmi Discord istemcisine yüklenen bir istemci modudur. 400'ten fazla eklenti, tema desteği, kaynak sınırı (RAM/CPU tavanı), oyun modu ve kendi ayar paneli ile Discord'u sizin kurallarınızla genişletir. Vencord fork'udur.
 
-[Website](https://endcord.com) · [Download](https://endcord.com/download) · [Discord](https://discord.gg/endcord)
+> **Uyarı:** İstemci modları Discord'un kullanım şartlarına aykırıdır. Kullanım riski size aittir.
 
-## Install
+## Özellikler
 
-Close Discord completely before installing, then open it again when the installer finishes.
+- 400+ yerleşik eklenti (sohbet, ses, görünüm, gizlilik, geliştirici araçları)
+- Tema stüdyosu ve tema kütüphanesi
+- **Kaynak sınırı**: RAM ve CPU için kullanıcı tarafından ayarlanan tavan; aşıldığında Devcord daha az çizim yapar, animasyonları durdurur ve önbellek belleğini geri verir
+- **Oyun modu**: oyun çalışırken Discord 15 FPS'e düşer, animasyonlar durur, bellek geri verilir
+- Gizli ve güvenli: tüm işlemler yerel makinede, hiçbir veri dışarı gönderilmez
+- Türkçe, İngilizce, Rusça, İspanyolca, Fransızca dil desteği
 
-### Windows
+## Hızlı kurulum (Windows)
 
-Windows 10 and 11. Stable, PTB, and Canary.
+PowerShell'i **Yönetici olarak** açın ve şunu çalıştırın:
 
-1. Download [EndcordInstaller.exe](https://endcord.com/EndcordInstaller.exe).
-2. If the browser blocks the file, use [EndcordInstaller.zip](https://endcord.com/EndcordInstaller.zip) instead. It contains the same installer.
-3. Run the installer and start Discord.
-
-### macOS and Linux
-
-macOS: Discord, PTB, or Canary in Applications. Linux: the official `.deb`, `.tar.gz`, or Flatpak; Snap is not supported.
-
-Run this in Terminal:
-
-```sh
-sh -c "$(curl -fsSL https://endcord.com/install.sh)"
+```powershell
+irm https://raw.githubusercontent.com/kisamedevv/Devcord/main/install.ps1 | iex
 ```
 
-The installer downloads Endcord, checks every file against the release checksums, and patches the Discord installs you pick.
+Kurulum Discord'u kapatır, Devcord'u derler ve seçtiğiniz Discord kurulumuna (Stable/PTB/Canary) enjekte eder.
 
-On macOS, the first run may stop with "macOS blocked the change". Open **System Settings > Privacy & Security > App Management**, turn on Terminal, reopen Terminal, and run the command again. When Discord updates itself on macOS, run the installer again and choose **Repair Endcord**.
+## Elle kurulum
 
-## Uninstall
+1. [Node.js 22+](https://nodejs.org) ve [pnpm](https://pnpm.io) kurun.
+2. Depoyu klonlayın:
+   ```sh
+   git clone https://github.com/kisamedevv/Devcord.git
+   cd Devcord
+   ```
+3. Bağımlılıkları kurun ve derleyin:
+   ```sh
+   pnpm install
+   pnpm build --standalone
+   ```
+4. Enjekte edin:
+   ```sh
+   node scripts/install-desktop.mjs --install --all
+   ```
+5. Discord'u yeniden başlatın.
 
-On Windows, open the installer again and restore the vanilla client.
+`pnpm uninject` yerel kurulumu kaldırır. `pnpm watch` düzenleme sırasında yeniden derler.
 
-On macOS and Linux, run the installer again and choose **Uninstall Endcord**. Your Endcord settings stay on disk in case you come back.
+## Kaldırma
 
-## Build
+Kurulumu geri almak için:
+```sh
+node scripts/install-desktop.mjs --uninstall --all
+```
+Orijinal `app.asar` geri konur. Devcord ayarlarınız diskte kalır.
 
-Node.js 22 or newer, and [pnpm](https://pnpm.io).
+## Geliştirme
 
 ```sh
-git clone https://github.com/Endcord/Endcord.git
-cd Endcord
-pnpm install
-pnpm build
-pnpm inject
+pnpm build --dev      # hızlı geliştirme derlemesi
+pnpm test             # tsc + lint + testler
+pnpm watch            # izleme modu
 ```
+
+## Lisans
+
+GPL-3.0-or-later. © 2026 Devcord contributors. Discord, Inc.'ın markasıdır; Devcord bağımsız bir projedir.
+
+---
+
+<a id="english"></a>
+
+# English
+
+Devcord is a client mod for the official Discord desktop app. It adds 400+ plugins, themes, a user-set RAM/CPU ceiling, game mode and its own settings panel — Discord on your terms. Fork of Vencord.
+
+> **Warning:** Client mods violate Discord's Terms of Service. Use at your own risk.
+
+## Features
+
+- 400+ built-in plugins (chat, voice, appearance, privacy, developer tools)
+- Theme studio and theme library
+- **Resource limit**: a user-set RAM/CPU ceiling; when exceeded Devcord redraws less often, pauses animations and gives cached memory back
+- **Game mode**: while a game runs Discord drops to 15 FPS, pauses animations and frees memory
+- Private and safe: everything runs locally, nothing is sent anywhere
+- Turkish, English, Russian, Spanish, French
+
+## Quick install (Windows)
+
+Open **PowerShell as Administrator** and run:
+
+```powershell
+irm https://raw.githubusercontent.com/kisamedevv/Devcord/main/install.ps1 | iex
+```
+
+The installer closes Discord, builds Devcord and injects it into the Discord installs you pick (Stable/PTB/Canary).
+
+## Manual install
+
+1. Install [Node.js 22+](https://nodejs.org) and [pnpm](https://pnpm.io).
+2. Clone the repo:
+   ```sh
+   git clone https://github.com/kisamedevv/Devcord.git
+   cd Devcord
+   ```
+3. Install dependencies and build:
+   ```sh
+   pnpm install
+   pnpm build --standalone
+   ```
+4. Inject:
+   ```sh
+   node scripts/install-desktop.mjs --install --all
+   ```
+5. Restart Discord.
 
 `pnpm uninject` removes the local install. `pnpm watch` rebuilds while you edit.
 
-## Plugins
+## Uninstall
 
-Endcord ships with 500 built-in plugins, with every plugin and setting available in English, Turkish, Russian, Spanish and French. Turn them on from the Plugins tab in Discord's settings.
+```sh
+node scripts/install-desktop.mjs --uninstall --all
+```
 
-Plugin ideas and fixes go through pull requests. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening one.
+The original `app.asar` is restored. Your Devcord settings stay on disk.
 
-## Performance
+## Development
 
-Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in the same memory: within 2% of Vencord and below Equicord on every memory measure, with the lowest idle CPU of the three. Plugins are only loaded when you turn them on.
-
-| | Endcord | Vencord | Equicord | Vanilla Discord |
-|---|---:|---:|---:|---:|
-| Plugins | **500** | 178 | 381 | – |
-| Total RAM | 698 MB | **687 MB** | 727 MB | 672 MB |
-| Renderer RAM | 401 MB | **397 MB** | 415 MB | 366 MB |
-| JS heap after GC | 107 MB | **106 MB** | 110 MB | 98 MB |
-| Idle CPU (one core) | **1.80%** | 1.87% | 1.88% | 1.51% |
-| Launch to usable | 3.75 s | **3.42 s** | 3.43 s | 3.38 s |
-
-Medians of 6 cold launches each, default settings, same Discord Stable build, Intel Core i5-12400F with 32 GB RAM on Windows 10. Bold marks the best of the three mods. See the [benchmark](benchmark/README.md) for the method, every run and a script to run it yourself.
-
-## Endcord Desktop
-
-Endcord's own app: Discord in an Endcord window of its own, with every Endcord plugin, setting and theme, and no Discord desktop app to patch. It's for when Discord's desktop app is no longer the Electron one mods can load into. It runs Discord's web app, the one in your browser, and Discord sees it as that. Like any client mod it's against Discord's terms, the same as the mod itself.
-
-- A tray icon, closing to the tray, and starting with Windows (all in the tray menu)
-- Unread mentions on the taskbar, notifications, and spell-checked text fields with cut, copy and paste
-- Screen sharing with Endcord's own picker. The computer's sound can go along, without your call's voices
-- Updates from Endcord's signed releases, the same way the mod gets them
-- Your Endcord settings and themes come along on its first start, as a copy
-
-Download `EndcordDesktop-win32-x64.zip` from [endcord.com/download](https://endcord.com/download), unzip it anywhere you like, and run `EndcordDesktop.exe`. It adds itself to the Start menu. To build it yourself: `pnpm buildDesktopApp`, which puts it in `dist/EndcordDesktop-<platform>-<arch>`. Windows is what it's tested on; the same build runs on Linux and macOS but hasn't been tried there yet.
-
-Not there yet: push to talk while Discord is in the background, and showing the game you play.
-
-## Credits
-
-Endcord is built on [Vencord](https://github.com/Vendicated/Vencord) by Vendicated and its contributors. Most of its plugins come from [Equicord](https://github.com/Equicord/Equicord), by the Equicord contributors: Endcord includes every one of them. The code that came from both keeps its authors and its copyright notices. Endcord Desktop is Endcord's own code, written with [Vesktop](https://github.com/Vencord/Vesktop) as the example of what a desktop app around Discord's web app needs, and [arRPC](https://github.com/OpenAsar/arrpc) is what the game activity plugin talks to. Thank you all.
+```sh
+pnpm build --dev      # fast dev build
+pnpm test             # tsc + lint + tests
+pnpm watch            # watch mode
+```
 
 ## License
 
-[GPL-3.0-or-later](LICENSE), as Vencord's code requires of everything built on it. Copyright © Vendicated and the Vencord contributors, the Equicord contributors, and the Endcord team. Each file's header names the year it was first written.
-
-Endcord is not affiliated with Discord Inc.
+GPL-3.0-or-later. © 2026 Devcord contributors. Discord is a trademark of Discord, Inc.; Devcord is an independent project.

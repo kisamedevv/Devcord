@@ -13,6 +13,7 @@ import { pathToFileURL } from "url";
 import { initCsp } from "./csp";
 import { initMemoryTrim } from "./memoryTrim";
 import { preOpenRenderer } from "./preOpenRenderer";
+import { initResourceGuard } from "./resourceGuard";
 import { RendererSettings } from "./settings";
 import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
@@ -80,4 +81,5 @@ if (IS_DISCORD_DESKTOP) {
  */
 export function setupMainWindow(win: BrowserWindow) {
     if (!RendererSettings.store.disableBackgroundMemoryTrim) initMemoryTrim(win);
+    initResourceGuard(win);
 }

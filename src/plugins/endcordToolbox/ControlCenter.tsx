@@ -8,8 +8,7 @@ import { getBrokenPlugins } from "@api/PluginHealth";
 import { isPluginEnabled, plugins, setPluginEnabled } from "@api/PluginManager";
 import { isProfileActive } from "@api/PluginProfiles";
 import { useSettings } from "@api/Settings";
-import { boop, peek, tapVersion } from "@components/delight";
-import { EndcordMark, EndcordWordmark, LogoSparks } from "@components/EndcordIcons";
+import { DevcordMark, DevcordWordmark, LogoSparks } from "@components/EndcordIcons";
 import { ChevronSmallDownIcon, CogWheel, ColorPaletteIcon, GameControllerIcon, LogsIcon, PluginsIcon, ScreenshareIcon, StarOutlined } from "@components/Icons";
 import { openSwitchProfileModal, promptRestart } from "@components/settings/tabs/plugins/Profiles";
 import { Switch } from "@components/Switch";
@@ -21,15 +20,12 @@ import { classNameFactory, ENDCORD_THEME } from "@utils/css";
 import { useI18n } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import type { IconProps } from "@utils/types";
-import { SettingsRouter, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { SettingsRouter, useEffect, useMemo, useState } from "@webpack/common";
 import type { ComponentType, MouseEvent, ReactNode } from "react";
 
 const cl = classNameFactory("ec-control-");
 
 const MEMORY_REFRESH = 3_000;
-const AWAKE_TIME = 2_400;
-// Below this a cleanup is routine. The panda only gets excited about a proper meal
-const GOOD_CLEANUP = 50;
 const NIGHT_ENDS_AT = 5;
 
 /** One line with a switch. The whole line is the switch's label, so it can be clicked anywhere */
@@ -67,30 +63,16 @@ function NavRow({ Icon, label, detail, onClick }: { Icon: ComponentType<IconProp
 
 function Brand({ onSettings }: { onSettings(): void; }) {
     const { t } = useI18n();
-    const [awake, setAwake] = useState(false);
-    const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-    useEffect(() => () => clearTimeout(timer.current), []);
 
     return (
         <header className={cl("header")}>
             <LogoSparks className={cl("sparks")} />
-            <button
-                className={cl("boop")}
-                aria-label={t("Boop the panda")}
-                onClick={() => {
-                    setAwake(true);
-                    boop();
-                    clearTimeout(timer.current);
-                    timer.current = setTimeout(() => setAwake(false), AWAKE_TIME);
-                }}
-            >
-                <span className="ec-mark-tile"><EndcordMark asleep={!awake} /></span>
-                {!awake && <span className={cl("snore")} />}
-            </button>
+            <span className={cl("boop")}>
+                <span className="ec-mark-tile"><DevcordMark /></span>
+            </span>
             <div className={cl("heading")}>
-                <EndcordWordmark />
-                <button className={cl("version")} onClick={tapVersion}>{VERSION}</button>
+                <DevcordWordmark />
+                <span className={cl("version")}>{VERSION}</span>
             </div>
             <button className={cl("icon-button")} aria-label={t("Devcord Settings")} title={t("Devcord Settings")} onClick={onSettings}>
                 <CogWheel width={20} height={20} />
@@ -120,8 +102,6 @@ function Memory() {
         setFreed(size);
         await refresh();
         setFreeing(false);
-
-        if (size >= GOOD_CLEANUP) peek(t("*munches {size} MB of bamboo*", { size }));
     }
 
     return (
@@ -296,7 +276,7 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
 
                 <footer className={cl("footer")}>
                     <button className={cl("text-button")} onClick={onMoreActions}>{t("More actions")}</button>
-                    {isNight && <span className={cl("night")}>{t("Up late? So is the panda. 💤")}</span>}
+                    {isNight && <span className={cl("night")}>{t("Up late? Remember to rest. 💤")}</span>}
                 </footer>
             </div>
         </div>

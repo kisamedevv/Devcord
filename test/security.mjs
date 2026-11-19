@@ -402,7 +402,7 @@ for (const url of ["http://127.0.0.1:9333/json", "http://localhost:9333/json", "
 }
 const avatar = await m.uploader.fetchFile(null, "https://cdn.discordapp.com/embed/avatars/0.png");
 check("fetchFile still reads the Discord CDN", avatar.success === true && avatar.data.byteLength > 100, { ...avatar, data: undefined });
-const external = await m.uploader.fetchFile(null, "https://www.google.com/favicon.ico");
+const external = await m.uploader.fetchFile(null, "https://github.com/favicon.ico");
 check("fetchFile still reads a public site", external.success === true, { ...external, data: undefined });
 globalThis.__redirectTo = "http://127.0.0.1:9333/json";
 const redirected = await m.uploader.fetchFile(null, "http://redirector.test/x");

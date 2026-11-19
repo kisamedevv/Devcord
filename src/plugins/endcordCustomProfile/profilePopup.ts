@@ -33,25 +33,53 @@ export function installDateOverride(userId: string, fakeIso: string): () => void
     const fakeDate = new Date(fakeIso);
     if (Number.isNaN(fakeDate.getTime())) return () => { };
 
-    const realIso = new Date(created).toISOString();
+    const realDay = new Date(created).toISOString().slice(0, 10);
     const fakeText = fakeDate.toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "2-digit"
     });
+    const fakeTitle = fakeDate.toISOString();
+
+    let writing = false;
 
     const apply = (root: ParentNode) => {
         for (const el of root.querySelectorAll<HTMLTimeElement>("time[datetime]")) {
-            const value = el.getAttribute("datetime") ?? "";
-            if (!value.startsWith(realIso.slice(0, 10))) continue;
+            if (!el.getAttribute("datetime")?.startsWith(realDay)) continue;
+            if (el.textContent === fakeText && el.getAttribute("title") === fakeTitle) continue;
 
             el.textContent = fakeText;
-            el.setAttribute("title", fakeDate.toISOString());
+            el.setAttribute("title", fakeTitle);
             el.dataset.endcordFakeDate = "true";
         }
     };
 
-    const observer = new MutationObserver(() => apply(document));
+    // Only walk the nodes Discord just touched. Rescanning the whole document on every mutation was the previous
+    // behaviour and it turned each render tick into a full-tree querySelectorAll.
+    const observer = new MutationObserver(records => {
+        if (writing) return;
+
+        writing = true;
+        try {
+            for (const record of records) {
+                if (record.type === "characterData") {
+                    const parent = record.target.parentElement;
+                    if (parent) apply(parent);
+                    continue;
+                }
+
+                for (const node of record.addedNodes) {
+                    if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
+                    const el = node as Element;
+                    if (el.matches("time[datetime]")) apply(el.parentElement ?? el);
+                    else apply(el);
+                }
+            }
+        } finally {
+            writing = false;
+        }
+    });
 
     observer.observe(document.documentElement, {
         childList: true,
@@ -59,11 +87,13 @@ export function installDateOverride(userId: string, fakeIso: string): () => void
         characterData: true
     });
 
-    const timer = window.setInterval(() => apply(document), 1000);
-    apply(document);
+    // The popout may already be mounted when the override is installed, and Discord rewrites the row on refetch
+    writing = true;
+    try {
+        apply(document.body);
+    } finally {
+        writing = false;
+    }
 
-    return () => {
-        observer.disconnect();
-        window.clearInterval(timer);
-    };
+    return () => observer.disconnect();
 }

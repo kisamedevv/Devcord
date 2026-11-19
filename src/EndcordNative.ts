@@ -13,6 +13,7 @@ import { BOOT_AND_SETTINGS_REQUEST, BOOT_REQUEST, type BootState } from "@shared
 import type { LocaleKind } from "@shared/externalLocales";
 import { IpcEvents } from "@shared/IpcEvents";
 import { RENDERER_FILE } from "@shared/pluginChunks";
+import type { ResourcePressure, ResourceStats } from "@shared/resourceGuard";
 import type { IpcRes } from "@utils/types";
 import { ipcRenderer } from "electron/renderer";
 import { join } from "path";
@@ -155,6 +156,15 @@ export default {
         openExternal: (url: string) => invoke<void>(IpcEvents.OPEN_EXTERNAL, url),
         getMemoryStats: () => invoke<MemoryStats>(IpcEvents.GET_MEMORY_STATS),
         trimMemory: () => invoke<number>(IpcEvents.TRIM_MEMORY),
+        getResourceStats: () => invoke<ResourceStats>(IpcEvents.GET_RESOURCE_STATS),
+        onResourcePressure(cb: (pressure: ResourcePressure) => void) {
+            const listener = (_event: unknown, pressure: ResourcePressure) => cb(pressure);
+            ipcRenderer.on(IpcEvents.RESOURCE_PRESSURE, listener);
+
+            return () => {
+                ipcRenderer.off(IpcEvents.RESOURCE_PRESSURE, listener);
+            };
+        },
         getRendererCss: () => invoke<string>(IpcEvents.GET_RENDERER_CSS),
         onRendererCssUpdate: (cb: (newCss: string) => void) => {
             if (!IS_DEV) return;

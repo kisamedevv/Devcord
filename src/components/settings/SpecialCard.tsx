@@ -70,31 +70,6 @@ export function PixelArt({ rows, palette, pixel = 5, className, style }: { rows:
     );
 }
 
-// The panda from the Endcord logo
-export const PANDA_ROWS = [
-    "..kkk.......kkk..",
-    ".kKKKk.....kKKKk.",
-    ".KKKKKWWWWWKKKKK.",
-    "..KKKWWWWWWWKKK..",
-    "..WWWWWWWWWWWWW..",
-    ".WWWWWWWWWWWWWWw.",
-    ".WWKKKWWWWWKKKWw.",
-    "WWKKEKKWWWKKEKKWw",
-    "WWKKKKKWWWKKKKKWw",
-    "WWWKKKWWWWWKKKWWw",
-    "WWPPWWWKKKWWWPPWw",
-    "WWPPWWWWKWWWWPPWw",
-    ".WWWWWWKWKWWWWWw.",
-    "..WWWWWWWWWWWWw..",
-    "...wWWWWWWWWWw...",
-    ".....wwwwwww.....",
-];
-// The fur is a shade lighter than the card and the ears have a rim light, so the silhouette reads on dark blue
-export const PANDA_PALETTE = { K: "#232C40", k: "#4A5A80", W: "#F3F6FB", w: "#C9D3E4", E: "#FFFFFF", P: "#F4A6B8" };
-
-// On the logo it's asleep: no shine in the eyes, and a thin line for each lid
-export const SLEEPING_PANDA_ROWS = PANDA_ROWS.map((row, y) => y === 7 ? row.replaceAll("E", "K") : y === 8 ? "WWKEEEKWWWKEEEKWw" : row);
-
 export const HEART_ROWS = [
     ".HH...HH.",
     "HLHH.HHHH",

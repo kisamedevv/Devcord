@@ -98,3 +98,25 @@
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
+
+.ec-diagnostics-limit-slider {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 16px;
+}
+
+.ec-diagnostics-limit-slider-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-default);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ec-diagnostics-limit-slider-value {
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+}

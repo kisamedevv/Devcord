@@ -9,7 +9,6 @@ import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 
-import { panda } from "./panda";
 import { Pet, startPet } from "./pet";
 import { puppy } from "./puppy";
 
@@ -19,7 +18,7 @@ const ONEKO_GIF_URL = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab
 
 const logger = new Logger("oneko");
 
-const pets = { puppy, panda } satisfies Record<string, Pet>;
+const pets = { puppy } satisfies Record<string, Pet>;
 const stopPet: Partial<Record<keyof typeof pets, () => void>> = {};
 let running = false;
 let catScript: string | undefined;
@@ -54,7 +53,7 @@ async function syncCat() {
     const wanted = running && settings.store.cat;
     // The cat's own loop ends by itself once its element is gone
     if (!wanted) return ourCat()?.remove();
-    // With CursorBuddy's cat out, the puppy and the panda follow that one instead
+    // With CursorBuddy's cat out, the puppy follows that one instead
     if (document.getElementById("oneko") || catLoading) return;
 
     catLoading = true;
@@ -65,8 +64,8 @@ async function syncCat() {
         (0, eval)(script);
         document.getElementById("oneko")?.setAttribute("data-ec-oneko", "");
     } catch (err) {
-        // Offline, or the file changed: no cat this time, but the panda and the puppy still come. Turning the cat off
-        // and on again tries once more
+        // Offline, or the file changed: no cat this time, but the puppy still comes. Turning the cat off and on
+        // again tries once more
         logger.error("Couldn't load the cat:", err);
     } finally {
         catLoading = false;
@@ -74,7 +73,7 @@ async function syncCat() {
 }
 
 const settings = definePluginSettings({
-    // Only the panda comes at first. The cat and the puppy are for turning on by hand
+    // The puppy comes at first. The cat is for turning on by hand
     cat: {
         type: OptionType.BOOLEAN,
         description: "The cat follows your mouse",
@@ -84,20 +83,14 @@ const settings = definePluginSettings({
     puppy: {
         type: OptionType.BOOLEAN,
         description: "A puppy follows the cat, or your mouse when the cat is off",
-        default: false,
-        onChange: () => syncPet("puppy")
-    },
-    panda: {
-        type: OptionType.BOOLEAN,
-        description: "The Devcord panda follows your mouse, or the others when they're on, and naps whenever it can",
         default: true,
-        onChange: () => syncPet("panda")
+        onChange: () => syncPet("puppy")
     }
 });
 
 export default definePlugin({
     name: "oneko",
-    description: "The Devcord panda follows your mouse. A cat and a puppy can join it from the settings",
+    description: "A pixel puppy follows your mouse. A cat can join it from the settings",
     settings,
     tags: ["Fun", "Appearance"],
     // Listing adryd here because this literally just evals her script
@@ -106,14 +99,12 @@ export default definePlugin({
     async start() {
         running = true;
         syncPet("puppy");
-        syncPet("panda");
         await syncCat();
     },
 
     stop() {
         running = false;
         syncPet("puppy");
-        syncPet("panda");
         syncCat();
     }
 });

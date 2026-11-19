@@ -73,10 +73,10 @@ function Choices<T extends string>({ label, value, options, onChange }: { label:
 }
 
 // A different message each time, like the install command on the site
-const COPIED = ["Theme copied to your clipboard", "Copied 🐼", "In your clipboard, ready to go.", "Copied. The panda approves."];
+const COPIED = ["Theme copied to your clipboard", "In your clipboard, ready to go.", "Copied. Ready when you are."];
 let copies = 0;
-// After enough rolls the panda has an opinion
-const ROLLS_FOR_PANDA = 10;
+// After enough rolls, offer a gentle hint
+const ROLLS_BEFORE_NUDGE = 10;
 
 function StudioTab() {
     const { t } = useI18n();
@@ -118,7 +118,7 @@ function StudioTab() {
     function surprise() {
         change(randomDesign());
         setRolls(rolls + 1);
-        if (rolls + 1 === ROLLS_FOR_PANDA) showToast(t("Ten looks in. The panda thinks the first one was best."), Toasts.Type.MESSAGE);
+        if (rolls + 1 === ROLLS_BEFORE_NUDGE) showToast(t("Ten looks in. The first one is still a good pick."), Toasts.Type.MESSAGE);
     }
 
     function exportFile() {

@@ -6,9 +6,13 @@
 
 // A settings file records every plugin as on or off, so turning a plugin on by default never reaches anyone who already
 // has one. These get turned on once instead, which leaves them off for good if the person turns them off afterwards.
-// Add a plugin here and bump the version whenever an existing plugin becomes on by default.
-const DEFAULTS_VERSION = 1;
-const NOW_ON_BY_DEFAULT = ["DevcordToolbox", "ThemeLibrary"];
+// Add the plugin under a new version whenever an existing plugin becomes on by default. Keeping one list per version
+// means an upgrade never turns a plugin back on that someone deliberately turned off in an earlier one.
+const DEFAULTS_VERSION = 2;
+const NEW_DEFAULTS: Record<number, string[]> = {
+    1: ["DevcordToolbox", "ThemeLibrary"],
+    2: ["GameMode"]
+};
 
 interface StoredSettings {
     pluginDefaultsVersion: number;
@@ -16,9 +20,17 @@ interface StoredSettings {
 }
 
 export function applyNewPluginDefaults(settings: StoredSettings) {
-    if (settings.pluginDefaultsVersion >= DEFAULTS_VERSION) return;
+    const from = settings.pluginDefaultsVersion ?? 0;
+    if (from >= DEFAULTS_VERSION) return;
 
-    for (const name of NOW_ON_BY_DEFAULT) settings.plugins[name].enabled = true;
+    settings.plugins ??= {};
+
+    for (let version = from + 1; version <= DEFAULTS_VERSION; version++) {
+        for (const name of NEW_DEFAULTS[version] ?? []) {
+            settings.plugins[name] ??= { enabled: false };
+            settings.plugins[name].enabled = true;
+        }
+    }
 
     settings.pluginDefaultsVersion = DEFAULTS_VERSION;
 }
