@@ -8,5 +8,5 @@ import { t } from "@utils/i18n";
 import { maybePromptToUpdate } from "@utils/updater";
 
 export function handleComponentFailed() {
-    maybePromptToUpdate(t("This page tripped over itself (｡•́︿•̀｡) A fresh Endcord update might fix it. Want to update and restart now?"));
+    maybePromptToUpdate(t("This page tripped over itself (｡•́︿•̀｡) A fresh Devcord update might fix it. Want to update and restart now?"));
 }

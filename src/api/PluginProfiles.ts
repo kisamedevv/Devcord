@@ -62,7 +62,7 @@ const PACKS: StarterPack[] = [
     {
         id: "popular",
         name: "Popular",
-        description: "What Endcord users turn on most: your own profile look, deleted messages kept, Nitro emoji and silent typing.",
+        description: "What Devcord users turn on most: your own profile look, deleted messages kept, Nitro emoji and silent typing.",
         Icon: HeartIcon,
         // A pack picked for you never turns on something Discord can suspend you for, or something just for fun
         plugins: POPULAR_PLUGIN_ORDER.filter(name => !BAN_RISK[name] && !FUN_PLUGINS.includes(name) && !POPULAR_BY_CHOICE.includes(name)),

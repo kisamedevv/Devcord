@@ -473,7 +473,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
             role="dialog"
             aria-modal="true"
             aria-hidden={away || undefined}
-            aria-label={t("Welcome to Endcord")}
+            aria-label={t("Welcome to Devcord")}
         >
             <div ref={card} className={cl("card")}>
                 <header className={cl("header")}>

@@ -33,7 +33,7 @@ function ReleaseModal({ release, ...props }: RenderModalProps & { release: Relea
         <EndcordModal
             {...props}
             size="md"
-            title={t("What's new in Endcord {version}", { version: release.version })}
+            title={t("What's new in Devcord {version}", { version: release.version })}
             subtitle={t(release.summary)}
             actions={[{ text: t("Got it"), variant: "primary", onClick: props.onClose }]}
         >
@@ -92,7 +92,7 @@ function WhatsNewPill({ release, onClosed }: { release: Release; onClosed(): voi
                 }}
             >
                 <span className="ec-mark-tile"><DevcordMark /></span>
-                <span>{t("Endcord updated to {version}", { version: release.version })}</span>
+                <span>{t("Devcord updated to {version}", { version: release.version })}</span>
                 <span className={cl("pill-link")}>{t("See what's new")}</span>
             </button>
             <button className={cl("pill-close")} aria-label={t("Close")} onClick={() => setLeaving(true)}>×</button>

@@ -37,7 +37,7 @@ export function watchPluginHealth() {
             title: broken.length === 1
                 ? t("{name} needs a fix for this Discord version", { name: broken[0] })
                 : t("{count} plugins need a fix for this Discord version", { count: broken.length }),
-            body: t("Discord changed code they rely on, so part of what they do may not work until Endcord updates them. Click to see which."),
+            body: t("Discord changed code they rely on, so part of what they do may not work until Devcord updates them. Click to see which."),
             noPersist: true,
             onClick: () => SettingsRouter.openUserSettings("endcord_diagnostics_panel")
         });

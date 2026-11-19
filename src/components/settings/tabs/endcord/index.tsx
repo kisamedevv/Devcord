@@ -47,18 +47,18 @@ function Switches() {
         },
         {
             key: "uiSounds",
-            title: t("Play quiet sounds in Endcord's settings"),
+            title: t("Play quiet sounds in Devcord's settings"),
             description: t("A soft click on switches, and a tone when something succeeds or fails"),
         },
         {
             key: "pixelStyle",
             title: t("Pixel style"),
-            description: t("Pixel corners, icons and lettering in Endcord's screens, like the installer"),
+            description: t("Pixel corners, icons and lettering in Devcord's screens, like the installer"),
         },
         {
             key: "hideContributorBadge",
-            title: t("Hide the Endcord badges"),
-            description: t("Leaves the developer and contributor badges off every profile on this PC. Other people who use Endcord still see them"),
+            title: t("Hide the Devcord badges"),
+            description: t("Leaves the developer and contributor badges off every profile on this PC. Other people who use Devcord still see them"),
         },
         !IS_WEB && {
             key: "enableReactDevtools",
@@ -100,7 +100,7 @@ function Switches() {
         !IS_WEB && {
             key: "disableBackgroundMemoryTrim",
             title: t("Keep caches while Discord is minimized or in the tray"),
-            description: t("By default Endcord frees cached memory a minute after the window is hidden"),
+            description: t("By default Devcord frees cached memory a minute after the window is hidden"),
             restartRequired: true
         },
     ] satisfies Array<false | {
@@ -152,7 +152,7 @@ function LanguageSection() {
         <section className={Margins.bottom20}>
             <Forms.FormTitle tag="h5">{t("Language")}</Forms.FormTitle>
             <Forms.FormText className={Margins.bottom8} style={{ color: "var(--text-muted)" }}>
-                {t("Select the language for Endcord and Discord.")}
+                {t("Select the language for Devcord and Discord.")}
             </Forms.FormText>
             <Select
                 options={SUPPORTED_LANGUAGES.map(l => ({
@@ -211,8 +211,8 @@ function EndcordSettings() {
                 <SpecialCard
                     accent="bamboo"
                     title={t("Contributions")}
-                    subtitle={t("Thank you for building Endcord")}
-                    description={t("Your work ships to everyone who uses Endcord, and your profile carries the Endcord Contributor badge.")}
+                    subtitle={t("Thank you for building Devcord")}
+                    description={t("Your work ships to everyone who uses Devcord, and your profile carries the Devcord Contributor badge.")}
                     art={<DevcordMark width={68} />}
                     actions={
                         <button className="ec-card-button ec-card-button-primary" onClick={() => openContributorModal(user)}>
@@ -224,9 +224,9 @@ function EndcordSettings() {
 
             <SpecialCard
                 accent="honey"
-                title={t("Support Endcord")}
+                title={t("Support Devcord")}
                 subtitle={t("Free and open source, always")}
-                description={t("Endcord is built in our spare time. If it makes Discord better for you, a donation helps us keep testing, translating and shipping new features.")}
+                description={t("Devcord is built in our spare time. If it makes Discord better for you, a donation helps us keep testing, translating and shipping new features.")}
                 art={<span className="ec-card-heart"><PixelArt rows={HEART_ROWS} palette={HEART_PALETTE} pixel={7} /></span>}
                 actions={
                     <>
@@ -304,4 +304,4 @@ function EndcordSettings() {
     );
 }
 
-export default wrapTab(EndcordSettings, "Endcord Settings");
+export default wrapTab(EndcordSettings, "Devcord Settings");
