@@ -1,18 +1,18 @@
 {
-    "name": "endcord",
+    "name": "devcord",
     "private": "true",
     "version": "4.1.0",
-    "description": "A Discord client mod with plugins, themes and a settings panel",
-    "homepage": "https://github.com/Endcord/Endcord#readme",
+    "description": "Devcord - A Discord client mod with 400+ plugins, themes, resource limit and game mode",
+    "homepage": "https://github.com/kisamedevv/Devcord#readme",
     "bugs": {
-        "url": "https://github.com/Endcord/Endcord/issues"
+        "url": "https://github.com/kisamedevv/Devcord/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Endcord/Endcord.git"
+        "url": "git+https://github.com/kisamedevv/Devcord.git"
     },
     "license": "GPL-3.0-or-later",
-    "author": "The Endcord team",
+    "author": "The Devcord team",
     "scripts": {
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",

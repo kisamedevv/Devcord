@@ -31,3 +31,9 @@ ExtensionCache/
 
 # Benchmark screenshots show the account that ran it; they stay local
 benchmark/results/screens/
+
+# Generated artifacts (rebuilt by pnpm build/packageResources)
+node-v22/
+dist_compressed/
+badge_temp/
+build/
