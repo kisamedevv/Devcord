@@ -117,12 +117,32 @@ export default definePlugin({
             SettingsStore.addChangeListener(`plugins.DevcordCustomProfile.${key}` as never, apply);
         }
 
+        // Otomatik paylaş açıksa her değişiklikte bio'yu güncelle (tüm Devcord kullanıcıları görür)
+        let shareTimer: number | undefined;
+        const autoShare = () => {
+            if (!settings.store.autoShareProfile) return;
+            if (shareTimer) window.clearTimeout(shareTimer);
+            shareTimer = window.setTimeout(() => {
+                const me = UserStore.getCurrentUser();
+                if (!me) return;
+                shareProfile({
+                    username: settings.store.fakeUsername?.trim() || "",
+                    name: settings.store.fakeDisplayName?.trim() || "",
+                    badges: settings.store.fakeBadges ?? [],
+                    createdAt: settings.store.fakeCreatedAt?.trim() || null
+                }).catch(err => console.error("[Devcord] Failed to auto-share fake profile", err));
+            }, 600);
+        };
+        for (const key of ["targetUserId", "fakeUsername", "fakeDisplayName", "fakeBadges", "fakeCreatedAt", "autoShareProfile"]) {
+            SettingsStore.addChangeListener(`plugins.DevcordCustomProfile.${key}` as never, autoShare);
+        }
+
         // Paylaşılmış (bio) profillerin tarihlerini de yaz
         for (const [userId, profile] of [...getSharedProfiles()]) {
             setCreatedAtOverride(userId, profile.createdAt);
         }
 
-        if (settings.store.shareProfile) {
+        if (settings.store.shareProfile || settings.store.autoShareProfile) {
             const me = UserStore.getCurrentUser();
             if (me) {
                 shareProfile({

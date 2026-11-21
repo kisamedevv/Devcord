@@ -141,6 +141,8 @@ export function mountTopRightButton(): () => void {
         menu.className = "vc-ecp-menu";
         menu.setAttribute("role", "menu");
 
+        const autoOn = Boolean((settings.store as Record<string, any>).autoShareProfile);
+
         menu.append(
             menuItem("Profili düzenle", openFakeProfilePanel),
             menuItem("Profili paylaş", () => {
@@ -156,6 +158,22 @@ export function mountTopRightButton(): () => void {
                 }).catch((err: unknown) => {
                     showToast({ text: `Paylaşma başarısız: ${String(err)}`, variant: "critical" });
                 });
+            }),
+            menuItem(autoOn ? "Otomatik paylaş: AÇIK" : "Otomatik paylaş: KAPALI", () => {
+                const next = !(settings.store as Record<string, any>).autoShareProfile;
+                settings.store.autoShareProfile = next;
+                showToast({ text: next ? "Otomatik paylaş açıldı" : "Otomatik paylaş kapatıldı", variant: "success" });
+                if (next) {
+                    const store = settings.store as Record<string, any>;
+                    shareProfile({
+                        username: String(store.fakeUsername ?? "").trim(),
+                        name: String(store.fakeDisplayName ?? "").trim(),
+                        badges: Array.isArray(store.fakeBadges) ? store.fakeBadges : [],
+                        createdAt: String(store.fakeCreatedAt ?? "").trim() || null
+                    }).catch((err: unknown) => {
+                        showToast({ text: `Paylaşma başarısız: ${String(err)}`, variant: "critical" });
+                    });
+                }
             }),
             menuItem("Hızlı sıfırla", () => {
                 resetProfile();
