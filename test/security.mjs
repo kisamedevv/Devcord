@@ -215,7 +215,7 @@ check("attacker's own key refused", await offers(manifest({}, stranger)) === fal
 const evilHost = { ...good, assets: good.assets.map(a => ({ ...a, url: `https://evil.example/${a.name}` })) };
 check("evil download host refused", await offers(evilHost) === false);
 check("plain http refused", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: a.url.replace("https:", "http:") })) })) === false);
-check("non-https endcord.com refused, https allowed", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: `https://endcord.com/dist/${a.name}` })) })) === true);
+check("legacy endcord.com host now refused", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: `https://endcord.com/dist/${a.name}` })) })) === false);
 await offers(manifest());
 writeFileSync(join(OUT, "renderer.js"), "older");
 bodies = { ...FILES, "renderer.js": "evil" };
