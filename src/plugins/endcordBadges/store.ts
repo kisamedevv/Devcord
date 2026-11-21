@@ -39,16 +39,7 @@ export function createBadge(overrides: Partial<BadgeEntry> = {}): BadgeEntry {
 }
 
 export function createStarterBadges(): BadgeEntry[] {
-    return [
-        {
-            id: "endcord-starter",
-            name: "Devcord",
-            icon: "eye",
-            color: "#a970ff",
-            description: "Made with Devcord",
-            userIds: []
-        }
-    ];
+    return [];
 }
 
 function asString(value: unknown, fallback = "") {
