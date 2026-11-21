@@ -10,6 +10,8 @@ import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
+import { OwnerBadgeManager } from "@plugins/_api/badges/ownerManager";
+import { DEVCORD_OWNER_ID } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { copyWithToast } from "@utils/discord";
 import { Margins } from "@utils/margins";
@@ -18,7 +20,6 @@ import { showToast, TextInput, useMemo, UserStore, useState } from "@webpack/com
 
 import { BADGE_COLORS, BADGE_ICONS, BADGE_IMAGE_ICONS, buildIconSrc, isImageIcon, isImageSource } from "./icons";
 import { BadgeEntry, badgesForUser, cloneBadges, createBadge, createStarterBadges, normalizeBadges, parseUserIds } from "./store";
-import { OwnerBadgeManager } from "@plugins/_api/badges/ownerManager";
 
 const cl = classNameFactory("vc-ecb-");
 
@@ -382,20 +383,15 @@ function BadgeManager() {
 }
 
 // Owner-only badge management panel
-export function OwnerBadgePanel() {
+function OwnerBadgePanel() {
     const me = UserStore.getCurrentUser();
-    const isOwner = me?.id === "1426877563451736158";
+    const isOwner = me?.id === DEVCORD_OWNER_ID;
     const [token, setToken] = useState("");
 
     if (!isOwner) return null;
 
     return (
         <Flex flexDirection="column" gap={12} className={cl("owner-panel")}>
-            <Heading>Owner Badge Yonetimi</Heading>
-            <Paragraph>
-                "Helped Build Devcord" rozetini kullaniciya ver veya kaldir.
-                Degisiklikler GitHub uzerinden yapilir ve 5 dakika icinde tum Devcord kullanicilarina yansir.
-            </Paragraph>
             <div className={cl("field")}>
                 <Span weight="medium" size="md">GitHub Token (repo write yetkisi)</Span>
                 <TextInput

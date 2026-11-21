@@ -13,7 +13,7 @@ import { addMessageDecoration, MessageDecorationFactory, removeMessageDecoration
 import type { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { Menu } from "@webpack/common";
+import { Menu, UserStore } from "@webpack/common";
 
 import { buildIconSrc } from "./icons";
 import { openBadgePicker } from "./picker";
@@ -83,13 +83,15 @@ const ChatBadges: MessageDecorationFactory = ({ message }) => {
 };
 
 /** Sağ tık menüsü: "Rozet ver" → modal açılır. */
-const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: { user: User; }) => {
+const UserContextPatch: NavContextMenuPatchCallback = (children, { user }: { user?: User; }) => {
     if (!user?.id) return;
+
+    const isSelf = user.id === UserStore.getCurrentUser()?.id;
 
     children.push(
         <Menu.MenuItem
             id="vc-endcord-badges-picker"
-            label="Devcord Rozeti Ver"
+            label={isSelf ? "Kendine Devcord Rozeti Ver" : "Devcord Rozeti Ver (sadece sende görünür)"}
             action={() => openBadgePicker(user.id, user.username)}
         />
     );
@@ -102,7 +104,9 @@ export default definePlugin({
     authors: [Devs.Devcord],
     settings,
     contextMenus: {
-        "user-context": UserContextPatch
+        "user-context": UserContextPatch,
+        "user-profile-actions": UserContextPatch,
+        "user-profile-overflow-menu": UserContextPatch
     },
 
     start() {

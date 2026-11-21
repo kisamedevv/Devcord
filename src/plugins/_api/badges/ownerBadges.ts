@@ -15,25 +15,35 @@ export interface OwnerBadgeData {
     helped: string[];
 }
 
+const logger = new Logger("OwnerBadges");
 let cachedData: OwnerBadgeData = { owner: [DEVCORD_OWNER_ID], helped: [] };
+
+function isIdList(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every(id => typeof id === "string" && /^\d{17,20}$/.test(id));
+}
 
 export async function fetchOwnerBadges(): Promise<OwnerBadgeData> {
     try {
         const res = await fetch(BADGES_URL, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (Array.isArray(data.owner) && Array.isArray(data.helped)) {
+        if (isIdList(data?.owner) && isIdList(data?.helped)) {
             cachedData = { owner: data.owner, helped: data.helped };
-            
+        } else {
+            logger.warn("Ignoring badge data with an unexpected shape");
         }
     } catch (e) {
-        new Logger("OwnerBadges").warn("Failed to fetch owner badges, using cached data", e);
+        logger.warn("Failed to fetch owner badges, using cached data", e);
     }
     return cachedData;
 }
 
 export function getOwnerBadgeData(): OwnerBadgeData {
     return cachedData;
+}
+
+export function cacheOwnerBadgeData(data: OwnerBadgeData) {
+    cachedData = data;
 }
 
 export function isOwnerBadgeUser(userId: string): boolean {

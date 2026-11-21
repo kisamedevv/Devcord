@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Endcord and contributors
+ * Copyright (c) 2026 Devcord and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -12,9 +12,9 @@ import type { RenderModalProps } from "@endcord/discord-types";
 import { Margins } from "@utils/margins";
 import { Modal, openModal, showToast, useState } from "@webpack/common";
 
-import { buildIconSrc } from "./icons";
+import { BADGE_COLORS, BADGE_ICONS, buildIconSrc, DEFAULT_BADGE_COLOR, isImageIcon } from "./icons";
 import { settings } from "./settings";
-import { BadgeEntry, normalizeBadges } from "./store";
+import { BadgeEntry, createBadge, normalizeBadges } from "./store";
 
 interface BadgePickerProps extends RenderModalProps {
     userId: string;
@@ -29,6 +29,11 @@ export function openBadgePicker(userId: string, label: string) {
 
 function BadgePickerModal({ userId, label, transitionState, onClose }: BadgePickerProps) {
     const [badges, setBadges] = useState<BadgeEntry[]>(() => normalizeBadges(settings.store.badges));
+    const [name, setName] = useState("Yeni Rozet");
+    const [description, setDescription] = useState("");
+    const [icon, setIcon] = useState("star");
+    const [color, setColor] = useState(DEFAULT_BADGE_COLOR);
+    const [showCreate, setShowCreate] = useState(false);
 
     function commit(next: BadgeEntry[]) {
         setBadges(next);
@@ -50,19 +55,22 @@ function BadgePickerModal({ userId, label, transitionState, onClose }: BadgePick
         });
     }
 
-    function createBadge() {
-        const badge: BadgeEntry = {
-            id: `endcord-badge-${Date.now().toString(36)}`,
-            name: "Yeni Rozet",
-            icon: "nitro",
-            color: "#6c8cff",
-            description: "",
+    function createBadgeEntry() {
+        const badge = createBadge({
+            name: name.trim() || "Yeni Rozet",
+            description: description.trim(),
+            icon,
+            color,
             userIds: [userId]
-        };
+        });
 
         commit([...badges, badge]);
         showToast({ text: "Rozet oluşturuldu ve verildi", variant: "success" });
-        onClose();
+        setName("Yeni Rozet");
+        setDescription("");
+        setIcon("star");
+        setColor(DEFAULT_BADGE_COLOR);
+        setShowCreate(false);
     }
 
     const owned = badges.filter(badge => badge.userIds.includes(userId));
@@ -77,7 +85,8 @@ function BadgePickerModal({ userId, label, transitionState, onClose }: BadgePick
             <Flex flexDirection="column" gap={10}>
                 <Paragraph>
                     <b>{label}</b> için rozet seç. Seçtiğin rozet profilinde, üye listesinde
-                    ve sohbette görünür. Rozetler tamamen yerelde kalır.
+                    ve sohbette görünür. Rozetler tamamen yerelde kalır; başkasına eklediğinde
+                    yalnızca senin istemcinde görünür.
                 </Paragraph>
 
                 {badges.length === 0 && (
@@ -92,7 +101,7 @@ function BadgePickerModal({ userId, label, transitionState, onClose }: BadgePick
                             key={badge.id}
                             alignItems="center"
                             gap={10}
-                            className={assigned ? "vc-ecb-picker-row selected" : "vc-ecb-picker-row"}
+                            className={assigned ? "vc-ecb-picker-row vc-ecb-selected" : "vc-ecb-picker-row"}
                         >
                             <img
                                 src={buildIconSrc(badge.icon, badge.color)}
@@ -118,10 +127,87 @@ function BadgePickerModal({ userId, label, transitionState, onClose }: BadgePick
                     );
                 })}
 
-                <Flex gap={8} className={Margins.top16}>
-                    <Button variant="secondary" onClick={createBadge}>
-                        Yeni rozet oluştur
+                <div className="vc-ecb-field">
+                    <Button variant="secondary" onClick={() => setShowCreate(value => !value)}>
+                        {showCreate ? "Oluşturma alanını gizle" : "Yeni rozet oluştur ve ver"}
                     </Button>
+                </div>
+
+                {showCreate && (
+                    <Flex flexDirection="column" gap={10} className="vc-ecb-create">
+                        <div className="vc-ecb-field">
+                            <Span weight="medium" size="md">Rozet adı</Span>
+                            <input
+                                className="vc-ecb-import-box"
+                                style={{ minHeight: 0, padding: "0.5em 0.6em" }}
+                                value={name}
+                                onChange={event => setName(event.currentTarget.value)}
+                            />
+                        </div>
+
+                        <div className="vc-ecb-field">
+                            <Span weight="medium" size="md">Açıklama</Span>
+                            <input
+                                className="vc-ecb-import-box"
+                                style={{ minHeight: 0, padding: "0.5em 0.6em" }}
+                                value={description}
+                                onChange={event => setDescription(event.currentTarget.value)}
+                            />
+                        </div>
+
+                        <div className="vc-ecb-field">
+                            <Span weight="medium" size="md">İkon</Span>
+                            <div className="vc-ecb-icon-grid">
+                                {BADGE_ICONS.filter(entry => !isImageIcon(entry.id)).map(entry => (
+                                    <button
+                                        key={entry.id}
+                                        type="button"
+                                        title={entry.label}
+                                        aria-label={entry.label}
+                                        className={icon === entry.id ? "vc-ecb-icon-button vc-ecb-selected" : "vc-ecb-icon-button"}
+                                        onClick={() => setIcon(entry.id)}
+                                    >
+                                        <img src={buildIconSrc(entry.id, color)} alt="" width={26} height={26} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="vc-ecb-field">
+                            <Span weight="medium" size="md">Renk</Span>
+                            <Flex gap={6} alignItems="center" className="vc-ecb-color-row">
+                                <input
+                                    type="color"
+                                    className="vc-ecb-color-input"
+                                    value={color}
+                                    onChange={event => setColor(event.currentTarget.value)}
+                                />
+                                {BADGE_COLORS.map(entry => (
+                                    <button
+                                        key={entry}
+                                        type="button"
+                                        title={entry}
+                                        aria-label={entry}
+                                        className={color.toLowerCase() === entry ? "vc-ecb-color-swatch vc-ecb-selected" : "vc-ecb-color-swatch"}
+                                        style={{ background: entry }}
+                                        onClick={() => setColor(entry)}
+                                    />
+                                ))}
+                            </Flex>
+                        </div>
+
+                        <Flex gap={8}>
+                            <Button variant="primary" onClick={createBadgeEntry} disabled={!name.trim()}>
+                                Oluştur ve ver
+                            </Button>
+                            <Button variant="secondary" onClick={() => setShowCreate(false)}>
+                                İptal
+                            </Button>
+                        </Flex>
+                    </Flex>
+                )}
+
+                <Flex gap={8} className={Margins.top16}>
                     <Button variant="secondary" onClick={onClose}>
                         Kapat
                     </Button>

@@ -17,10 +17,10 @@ import { ContextMenuApi, Menu, UserStore } from "@webpack/common";
 import type { ReactElement } from "react";
 
 import { OWNER_ICON } from "./badgeArt";
-import { isHelpedBuildUser, isOwnerBadgeUser, startOwnerBadgeSync, stopOwnerBadgeSync } from "./ownerBadges";
 import { openBadgeDetails } from "./BadgeDetails";
 import { renderBadgeHoverCard } from "./BadgeHoverCard";
 import { describeDiscordBadge, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
+import { getOwnerBadgeData, isHelpedBuildUser, isOwnerBadgeUser, startOwnerBadgeSync, stopOwnerBadgeSync } from "./ownerBadges";
 
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 const withOwner = new WeakMap<object, any>();
@@ -88,7 +88,7 @@ function endcordBadge(id: string, icon: string, title: string, flavor: string, t
 const OwnerBadge = endcordBadge("endcord_owner", OWNER_ICON, "Devcord Owner", "Owns Devcord",
     () => t("Given to the person who owns Devcord. Only one person has it."), id => isOwnerBadgeUser(id));
 const HelpedBuildBadge = endcordBadge("helped_build_devcord", OWNER_ICON, "Helped Build Devcord", "Helped build Devcord",
-    () => t("Given to the people who helped build Devcord. {count} people have it.", { count: 0 }), id => isHelpedBuildUser(id));
+    () => t("Given to the people who helped build Devcord. {count} people have it.", { count: getOwnerBadgeData().helped.length }), id => isHelpedBuildUser(id));
 
 export default definePlugin({
     name: "BadgeAPI",
