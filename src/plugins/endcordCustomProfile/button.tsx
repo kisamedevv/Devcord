@@ -36,10 +36,9 @@ export function endcordLogo(): string {
         + "</defs>"
         + "<circle cx=\"16\" cy=\"16\" r=\"15\" fill=\"url(#ring)\"/>"
         + "<circle cx=\"16\" cy=\"16\" r=\"12.4\" fill=\"url(#face)\"/>"
-        + "<path fill=\"#e8eeff\" d=\"M12.2 22.5V9.5h7.9v2.6h-5.1v2.5h4.4v2.5h-4.4v2.8h5.3v2.6z\"/>"
+        + "<text x=\"16\" y=\"22\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#e8eeff\" font-family=\"sans-serif\">D</text>"
         + "<circle cx=\"23.6\" cy=\"10\" r=\"1.9\" fill=\"#43d17c\"/>"
         + "</svg>";
-
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
