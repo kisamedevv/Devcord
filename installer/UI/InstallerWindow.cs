@@ -360,7 +360,7 @@ namespace EndcordInstaller.UI
             Loc.Initialize(_prefs.Language);
             _logo = LoadLogo();
 
-            Title = "Endcord Installer";
+            Title = "Devcord Installer";
             Width = WinW;
             Height = WinH;
             ResizeMode = ResizeMode.CanMinimize;

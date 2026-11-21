@@ -5,15 +5,15 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-$outExe = Join-Path $repoRoot "EndcordInstaller.exe"
+$outExe = Join-Path $repoRoot "DevcordInstaller.exe"
 # The installer copy and the site folder sit next to this repo
 $workDir = Split-Path -Parent $repoRoot
-$desktopExe = Join-Path $workDir "EndcordInstaller.exe"
+$desktopExe = Join-Path $workDir "DevcordInstaller.exe"
 $siteDir = Join-Path $workDir "Endcord-site"
 $distInstallerDir = Join-Path $repoRoot "dist\Installer"
 
 try {
-    Get-Process -Name "EndcordInstaller" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Get-Process -Name "DevcordInstaller" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 200
 } catch { }
 
@@ -79,7 +79,7 @@ $cscArgs = @(
 )
 $cscArgs += $csFiles
 
-Write-Host "[3/5] Compiling EndcordInstaller.exe..." -ForegroundColor Cyan
+Write-Host "[3/5] Compiling DevcordInstaller.exe..." -ForegroundColor Cyan
 & $cscPath $cscArgs
 
 if ($LASTEXITCODE -ne 0) {
@@ -107,16 +107,16 @@ Write-Host "[5/5] Publishing artifacts..." -ForegroundColor Cyan
 if (!(Test-Path $distInstallerDir)) {
     New-Item -ItemType Directory -Path $distInstallerDir -Force | Out-Null
 }
-Copy-Item -Path $outExe -Destination (Join-Path $distInstallerDir "EndcordInstaller.exe") -Force
+Copy-Item -Path $outExe -Destination (Join-Path $distInstallerDir "DevcordInstaller.exe") -Force
 Copy-Item -Path $outExe -Destination $desktopExe -Force
 
 if ((-not $NoSite) -and (Test-Path $siteDir)) {
-    Copy-Item -Path $outExe -Destination (Join-Path $siteDir "EndcordInstaller.exe") -Force
-    $zipPath = Join-Path $siteDir "EndcordInstaller.zip"
+    Copy-Item -Path $outExe -Destination (Join-Path $siteDir "DevcordInstaller.exe") -Force
+    $zipPath = Join-Path $siteDir "DevcordInstaller.zip"
     if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
     Compress-Archive -Path $outExe -DestinationPath $zipPath -Force
 }
 
 # The installer isn't code-signed, so this hash is what people can check their download against
-Write-Host ("SHA-256 of EndcordInstaller.exe: " + (Get-FileHash -Algorithm SHA256 -LiteralPath $outExe).Hash.ToLowerInvariant()) -ForegroundColor Gray
+Write-Host ("SHA-256 of DevcordInstaller.exe: " + (Get-FileHash -Algorithm SHA256 -LiteralPath $outExe).Hash.ToLowerInvariant()) -ForegroundColor Gray
 Write-Host "Build & Test complete!" -ForegroundColor Green

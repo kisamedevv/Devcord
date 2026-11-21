@@ -32,7 +32,7 @@ try {
     if (process.platform === "win32") {
         run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", "-NoSite"]);
         console.log(`Opening the installer. Choose ${uninstall ? "Uninstall" : "Install"} there.`);
-        run(join(BASE_DIR, "EndcordInstaller.exe"), []);
+        run(join(BASE_DIR, "DevcordInstaller.exe"), []);
     } else {
         run("sh", ["install.sh", ...(uninstall ? ["--uninstall"] : ["--install", "--local", "dist"])]);
     }
