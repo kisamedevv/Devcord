@@ -107,7 +107,7 @@ window.EndcordNative = {
     },
 
     updater: {
-        getRepo: async () => ({ ok: true, value: "https://github.com/Endcord/Endcord" }),
+        getRepo: async () => ({ ok: true, value: "https://github.com/kisamedevv/Devcord" }),
         confirmUpdate: async () => false,
         getTrust: async () => ({ checkedAt: 0, signed: false, installedFiles: "unknown", pending: false, hasPrevious: false, rejected: null }),
         takeRollbackNotice: async () => null,

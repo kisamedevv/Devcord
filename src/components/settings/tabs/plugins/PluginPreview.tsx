@@ -13,7 +13,7 @@ import { cl } from ".";
 
 // Pictures of plugins at work, kept in the repository's previews folder (see previews/README.md). A new one shows up
 // as soon as it's pushed, with no Endcord update in between
-const PREVIEWS_URL = "https://raw.githubusercontent.com/Endcord/Endcord/main/previews/";
+const PREVIEWS_URL = "https://raw.githubusercontent.com/kisamedevv/Devcord/main/previews/";
 const FILE_NAME = /^[\w.+-]+\.(?:webp|png|gif|webm|mp4)$/;
 
 const logger = new Logger("PluginPreview");

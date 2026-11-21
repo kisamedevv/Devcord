@@ -1,7 +1,7 @@
 {
     "name": "devcord",
     "private": "true",
-    "version": "4.1.0",
+    "version": "4.1.1",
     "description": "Devcord - A Discord client mod with 400+ plugins, themes, resource limit and game mode",
     "homepage": "https://github.com/kisamedevv/Devcord#readme",
     "bugs": {
@@ -68,7 +68,7 @@
     },
     "devDependencies": {
         "@electron/asar": "^4.3.1",
-    "@endcord/discord-types": "link:packages/discord-types",
+        "@endcord/discord-types": "link:packages/discord-types",
         "@stylistic/eslint-plugin": "^5.10.0",
         "@types/chrome": "^0.2.0",
         "@types/lodash": "^4.17.24",

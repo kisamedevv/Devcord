@@ -22,8 +22,8 @@ import gitHash from "~git-hash";
 import { ENDCORD_FILES, MANIFEST_URL, serializeErrors, UpdateTrust } from "./common";
 import { confirmUpdate, finishSwap, getRollbackStatus, initUpdateRollback, isRejectedUpdate, keepPreviousVersion, takeRollbackNotice } from "./rollback";
 
-const API_BASE = "https://api.github.com/repos/Endcord/Endcord";
-const ASSET_HOSTS = ["raw.githubusercontent.com", "endcord.com"];
+const API_BASE = "https://api.github.com/repos/kisamedevv/Devcord";
+const ASSET_HOSTS = ["raw.githubusercontent.com"];
 
 interface PendingAsset {
     name: string;
@@ -109,7 +109,7 @@ function needsNewApp(version: string, hash: string) {
         announcedApp = hash;
         const [title, body] = NEW_APP_WORDS[app.getLocale().slice(0, 2)] ?? NEW_APP_WORDS.en;
         const notice = new Notification({ title, body });
-        notice.on("click", () => openExternally("https://endcord.com/download"));
+        notice.on("click", () => openExternally("https://github.com/kisamedevv/Devcord/releases"));
         notice.show();
     }
     return true;
@@ -201,7 +201,7 @@ async function applyUpdates() {
     return true;
 }
 
-handleIpc(IpcEvents.GET_REPO, serializeErrors(() => "https://github.com/Endcord/Endcord"));
+handleIpc(IpcEvents.GET_REPO, serializeErrors(() => "https://github.com/kisamedevv/Devcord"));
 handleIpc(IpcEvents.GET_UPDATES, serializeErrors(calculateGitChanges));
 handleIpc(IpcEvents.UPDATE, serializeErrors(fetchUpdates));
 handleIpc(IpcEvents.BUILD, serializeErrors(applyUpdates));
@@ -268,7 +268,7 @@ async function healStuckStart(win: BrowserWindow) {
         const words = (table: typeof HEALED_WORDS) => table[app.getLocale().slice(0, 2)] ?? table.en;
         if (RendererSettings.store.autoUpdate === false) {
             healed = true;
-            notify(words(UPDATE_OFF_WORDS), () => openExternally("https://endcord.com/download"));
+            notify(words(UPDATE_OFF_WORDS), () => openExternally("https://github.com/kisamedevv/Devcord/releases"));
             return;
         }
 

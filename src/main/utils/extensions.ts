@@ -56,7 +56,7 @@ export async function installExt(id: string) {
 
         const buf = await fetchBuffer(url, {
             headers: {
-                "User-Agent": `Electron ${process.versions.electron} ~ Endcord (https://github.com/Endcord/Endcord)`
+                "User-Agent": `Electron ${process.versions.electron} ~ Devcord (https://github.com/kisamedevv/Devcord)`
             }
         });
 

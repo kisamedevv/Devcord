@@ -72,7 +72,7 @@ async function generateDebugInfoMessage() {
 
     const info = {
         Devcord:
-            `v${VERSION} • [${gitHash}](<https://github.com/Endcord/Endcord/commit/${gitHash}>)` +
+            `v${VERSION} • [${gitHash}](<https://github.com/kisamedevv/Devcord/commit/${gitHash}>)` +
             `${SettingsPlugin.additionalInfo} - ${Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${client}`,
         Platform: navigator.platform
@@ -126,7 +126,7 @@ const settings = definePluginSettings({}).withPrivateSettings<{
 
 // Vanity invite, it doesn't expire
 const ENDCORD_INVITE_CODE = "endcord";
-const REPO_URL = "https://github.com/Endcord/Endcord";
+const REPO_URL = "https://github.com/kisamedevv/Devcord";
 const STAR_PROMPT_DELAY = 7 * 24 * 60 * 60 * 1000;
 const UPDATE_COMMAND_COOLDOWN = 10 * 60 * 1000;
 

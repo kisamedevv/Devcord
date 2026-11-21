@@ -46,7 +46,7 @@ const stubs = {
         export const contextBridge = { exposeInMainWorld: name => globalThis.__exposed.push(name) };
         export const webFrame = { executeJavaScript: () => { globalThis.__rendererRan = true; } };
         export const ipcRenderer = { sendSync: () => ({}), invoke: async () => {}, on() {} };`,
-    "~git-remote": "export default 'Endcord/Endcord';",
+    "~git-remote": "export default 'kisamedevv/Devcord';",
     "@api/Settings": "export const PlainSettings = globalThis.__plain;",
     "@utils/i18n": "export const t = s => s;",
     "@utils/Logger": "export class Logger { error() {} info() {} }",
@@ -185,7 +185,7 @@ const realFetch = globalThis.fetch;
 const FILES = { "patcher.js": "p", "preload.js": "l", "renderer.js": "r", "renderer.css": "c" };
 const { createHash } = await import("crypto");
 const hex = s => createHash("sha256").update(s).digest("hex");
-const RAW = "https://raw.githubusercontent.com/Endcord/Endcord/main/dist/";
+const RAW = "https://raw.githubusercontent.com/kisamedevv/Devcord/main/dist/";
 const payloadOf = ({ version, hash, updatedAt, installerSha256, assets }) => Buffer.from([version, hash, updatedAt, installerSha256, ...assets.map(a => `${a.name} ${a.sha256}`).sort()].join("\n"));
 function manifest(over = {}, signWith = key) {
     const data = { version: "9", hash: "newhash", updatedAt: 5000, installerSha256: hex("installer"), assets: Object.entries(FILES).map(([name, c]) => ({ name, url: RAW + name, sha256: hex(c) })), ...over };
@@ -836,7 +836,7 @@ await esbuild.build({
     define: { IS_DISCORD_DESKTOP: "false", IS_VESKTOP: "true", IS_DEV: "false", IS_STANDALONE: "true", IS_WEB: "false", BUILD_TIMESTAMP: "1000", VERSION: '"0"' }
 });
 const DESKTOP_FILES = { "endcordDesktopMain.js": "m", "endcordDesktopPreload.js": "p", "endcordDesktopRenderer.js": "r", "endcordDesktopRenderer.css": "c", "main.js": "a", "preload.js": "b" };
-const desktopManifest = over => manifest({ assets: Object.entries(DESKTOP_FILES).map(([name, c]) => ({ name, url: `https://raw.githubusercontent.com/Endcord/Endcord/main/desktop/${name}`, sha256: hex(c) })), ...over });
+const desktopManifest = over => manifest({ assets: Object.entries(DESKTOP_FILES).map(([name, c]) => ({ name, url: `https://raw.githubusercontent.com/kisamedevv/Devcord/main/desktop/${name}`, sha256: hex(c) })), ...over });
 const requested = [];
 globalThis.fetch = async url => (requested.push(String(url)), String(url).includes("version.json") ? Response.json(served) : new Response(bodies[String(url).split("/").pop()]));
 require(join(OUT, "desktop", "updater.cjs"));
@@ -845,7 +845,7 @@ const desktopOffers = async mf => { served = mf; return (await globalThis.__hand
 const { electron } = process.versions;
 Object.defineProperty(process.versions, "electron", { value: "45.1.0", configurable: true });
 check("Endcord Desktop takes a signed release of its six files", await desktopOffers(desktopManifest({ version: "1.1.0+electron45.1.0" })) === true);
-check("from its own manifest", requested.some(url => url.startsWith("https://raw.githubusercontent.com/Endcord/Endcord/main/desktop/version.json")), requested);
+check("from its own manifest", requested.some(url => url.startsWith("https://raw.githubusercontent.com/kisamedevv/Devcord/main/desktop/version.json")), requested);
 check("and never the mod's files", await desktopOffers(manifest()) === false);
 globalThis.__notices = [];
 check("a release built on another Electron isn't swapped in", await desktopOffers(desktopManifest({ hash: "new-electron", version: "2.0.0+electron46.0.0" })) === false);

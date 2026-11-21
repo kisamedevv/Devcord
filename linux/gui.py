@@ -33,7 +33,7 @@ DIST_DIR = os.path.join(CONFIG, "Endcord", "dist")
 FILES = ("patcher.js", "preload.js", "renderer.js", "renderer.css")
 # Where the files are, and the manifest with their checksums
 MIRRORS = (
-    ("https://raw.githubusercontent.com/Endcord/Endcord/main/dist", "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json"),
+    ("https://raw.githubusercontent.com/kisamedevv/Devcord/main/dist", "https://raw.githubusercontent.com/kisamedevv/Devcord/main/version.json"),
     ("https://endcord.com/dist", "https://endcord.com/version.json"),
 )
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,8 +42,8 @@ QUIT = threading.Event()
 # Any web page can reach the local API, so requests have to prove they come from the installer's window
 TOKEN = secrets.token_urlsafe(32)
 UPDATE_KEY = """-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
-1pXQGzUzDQwBnxQ1+F7tFtUkOjancC1eScKb9H9eASOz7iUA3CiGgXtHaw==
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3hUPOm3dIkiAXfgyshKGXythmCqx
+C9gTXEgTej+kiBkxcBX1yJ3SDhwpZ9nDfy9DoTac/fvDlIIVofDmqP25pQ==
 -----END PUBLIC KEY-----
 """
 

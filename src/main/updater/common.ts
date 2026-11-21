@@ -14,7 +14,7 @@ export const ENDCORD_FILES = [
 ];
 
 /** The release manifest this build reads: Endcord Desktop has its own, signed the same way */
-export const MANIFEST_URL = `https://raw.githubusercontent.com/Endcord/Endcord/main/${IS_DISCORD_DESKTOP ? "" : "desktop/"}version.json`;
+export const MANIFEST_URL = `https://raw.githubusercontent.com/kisamedevv/Devcord/main/${IS_DISCORD_DESKTOP ? "" : "desktop/"}version.json`;
 
 /** What the updater has actually checked, for the settings page. Nothing here is assumed */
 export interface UpdateTrust {

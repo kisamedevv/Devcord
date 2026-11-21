@@ -21,7 +21,7 @@ import type { ReactNode } from "react";
 
 import { settings } from ".";
 
-const ENDCORD_VERSION_URL = "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json";
+const ENDCORD_VERSION_URL = "https://raw.githubusercontent.com/kisamedevv/Devcord/main/version.json";
 const LS_LAST_SEEN_UPDATE = "endcord_last_seen_updatedAt";
 let _updateAvailable = false;
 let _latestVersion = "";
@@ -367,7 +367,7 @@ export function openUpdater() {
     if (IS_UPDATER_DISABLED) return;
 
     if (UpdaterTab) openSettingsTabModal(UpdaterTab);
-    else EndcordNative.native.openExternal(_latestUrl || "https://github.com/Endcord/Endcord/releases");
+    else EndcordNative.native.openExternal(_latestUrl || "https://github.com/kisamedevv/Devcord/releases");
 }
 
 export function ToolboxMenu({ onClose }: { onClose(): void; }) {

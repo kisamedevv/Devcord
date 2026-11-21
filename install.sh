@@ -14,7 +14,7 @@
 
 set -eu
 
-VERSION_URL="${ENDCORD_VERSION_URL:-https://raw.githubusercontent.com/Endcord/Endcord/main/version.json}"
+VERSION_URL="${ENDCORD_VERSION_URL:-https://raw.githubusercontent.com/kisamedevv/Devcord/main/version.json}"
 SITE_VERSION_URL="${ENDCORD_SITE_VERSION_URL:-https://endcord.com/version.json}"
 FILES="patcher.js preload.js renderer.js renderer.css"
 # Discord's real app.asar is several MB; anything smaller is another mod's loader stub
@@ -216,8 +216,8 @@ verify_manifest() {
     done
     cat > "$TMP/update-key.pem" <<'EOF'
 -----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
-1pXQGzUzDQwBnxQ1+F7tFtUkOjancC1eScKb9H9eASOz7iUA3CiGgXtHaw==
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3hUPOm3dIkiAXfgyshKGXythmCqx
+C9gTXEgTej+kiBkxcBX1yJ3SDhwpZ9nDfy9DoTac/fvDlIIVofDmqP25pQ==
 -----END PUBLIC KEY-----
 EOF
     printf '%s' "$signature" | openssl base64 -d -A > "$TMP/signature" || fail "The release signature is damaged; nothing was installed."

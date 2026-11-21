@@ -33,10 +33,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
 const NODE_DIR = dirname(process.execPath);
 // The site folder and the public clone sit next to this repo
-const SITE_DIR = process.env.ENDCORD_SITE_DIR ?? join(ROOT, "..", "Endcord-site");
-const PUBLIC_REPO = process.env.ENDCORD_PUBLIC_REPO ?? join(ROOT, "..", "endcord");
+const SITE_DIR = process.env.ENDCORD_SITE_DIR ?? join(ROOT, "..", "Devcord-site");
+const PUBLIC_REPO = process.env.ENDCORD_PUBLIC_REPO ?? ROOT;
 // The updater reads version.json from here and rejects files that don't match their checksum
-const RAW_BASE = "https://raw.githubusercontent.com/Endcord/Endcord/main";
+const RAW_BASE = "https://raw.githubusercontent.com/kisamedevv/Devcord/main";
 const UPDATE_FILES = ["patcher.js", "preload.js", "renderer.js", "renderer.css"];
 // The same four files in one archive on the site. install.sh uses it until GitHub has a checksummed
 // release, and Cloudflare blocks the site's .js files for scripts, so they can't be fetched one by one
@@ -75,24 +75,17 @@ function signManifest({ version, hash, updatedAt, installerSha256, assets }, key
 
 // ---- 1. Checks -------------------------------------------------------------------------------------
 
-const installerSource = join(ROOT, "installer", "InstallerGUI.cs");
 const packageJsonPath = join(ROOT, "package.json");
 
 if (setVersion) {
     if (!/^\d+\.\d+\.\d+$/.test(setVersion)) fail(`"${setVersion}" is not a version like 4.0.26`);
     step(`Setting the version to ${setVersion}`);
-    writeFileSync(installerSource, readFileSync(installerSource, "utf8")
-        .replace(/(AssemblyVersion|AssemblyFileVersion)\("[\d.]+"\)/g, `$1("${setVersion}.0")`)
-        .replace(/AssemblyInformationalVersion\("[^"]+"\)/, `AssemblyInformationalVersion("${setVersion}")`));
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     pkg.version = setVersion;
     writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 4)}\n`);
 }
 
-const version = readFileSync(installerSource, "utf8").match(/AssemblyInformationalVersion\("([^"]+)"\)/)?.[1];
-const packageVersion = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
-if (!version) fail("InstallerGUI.cs has no AssemblyInformationalVersion");
-if (version !== packageVersion) fail(`InstallerGUI.cs says ${version} but package.json says ${packageVersion}. Use --set-version to set both.`);
+const version = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
 
 const uncommitted = git(ROOT, "status", "--porcelain", "--untracked-files=no");
 if (uncommitted && !dryRun) fail(`commit your changes first, so the release matches a commit:\n${uncommitted}`);
@@ -118,15 +111,19 @@ const releasedAt = Date.now();
 const buildHash = releasedAt.toString(16).slice(-7);
 
 step("Building the desktop files");
-run(process.execPath, ["scripts/build/build.mjs", "--standalone"], { env: { ENDCORD_HASH: buildHash, ENDCORD_REMOTE: "Endcord/Endcord", SOURCE_DATE_EPOCH: String(releasedAt + 1) } });
+run(process.execPath, ["scripts/build/build.mjs", "--standalone"], { env: { ENDCORD_HASH: buildHash, ENDCORD_REMOTE: "kisamedevv/Devcord", SOURCE_DATE_EPOCH: String(releasedAt + 1) } });
 
 step("Building the browser extension");
 run(process.execPath, ["scripts/build/buildWeb.mjs"]);
 // Mozilla only signs Firefox extensions built from minified code when the source comes along
 git(ROOT, "archive", "--format=zip", "-o", join(DIST, "EndcordSource.zip"), "HEAD");
 
-step("Building the macOS installer app");
-run(process.execPath, ["scripts/buildMacInstaller.mjs"]);
+if (process.platform === "darwin") {
+    step("Building the macOS installer app");
+    run(process.execPath, ["scripts/buildMacInstaller.mjs"]);
+} else {
+    console.log("Skipping macOS installer (not on macOS).");
+}
 
 step("Building and testing EndcordInstaller.exe");
 run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", ...(dryRun ? ["-NoSite"] : [])]);
@@ -150,14 +147,14 @@ const assets = UPDATE_FILES.map(name => ({
     url: `${RAW_BASE}/dist/${name}`,
     sha256: sha256(join(DIST, name))
 }));
-const installerSha256 = sha256(join(ROOT, "EndcordInstaller.exe"));
+const installerSha256 = sha256(join(ROOT, "DevcordInstaller.exe"));
 const versionData = {
     version,
     hash: buildHash,
     updatedAt: releasedAt,
     date: new Date(releasedAt).toISOString(),
-    downloadUrl: "https://endcord.com/download",
-    bundle: `https://endcord.com/${BUNDLE}`,
+    downloadUrl: "https://github.com/kisamedevv/Devcord/releases",
+    bundle: `${RAW_BASE}/dist/${BUNDLE}`,
     // The installer isn't code-signed, so this is what people can check their download against
     installerSha256,
     signature: signManifest({ version, hash: buildHash, updatedAt: releasedAt, installerSha256, assets }, signingKey),
@@ -201,8 +198,9 @@ if (dryRun) {
 
 // ---- 4. Site folder --------------------------------------------------------------------------------
 
-step(`Copying the release into ${SITE_DIR}`);
-if (!existsSync(SITE_DIR)) fail(`${SITE_DIR} doesn't exist; set ENDCORD_SITE_DIR`);
+const haveSite = existsSync(SITE_DIR);
+if (haveSite) step(`Copying the release into ${SITE_DIR}`); else console.log(`No site folder at ${SITE_DIR}; skipping site copy.`);
+if (haveSite) {
 mkdirSync(join(SITE_DIR, "dist"), { recursive: true });
 for (const name of UPDATE_FILES) copyFileSync(join(DIST, name), join(SITE_DIR, "dist", name));
 copyFileSync(join(DIST, BUNDLE), join(SITE_DIR, BUNDLE));
@@ -223,6 +221,7 @@ if (desktopBuild) {
 }
 console.log(`Copied the update files, ${BUNDLE}, install.sh, EndcordWeb.zip, EndcordInstaller-macOS.zip, version.json and EndcordInstaller.exe.sha256 (the Windows installer was copied by its build).`);
 
+}
 if (siteOnly) {
     console.log(`\nSite folder refreshed; the public repo was not touched. Upload ${SITE_DIR} to endcord.com when you're ready.`);
     process.exit(0);
@@ -232,9 +231,9 @@ if (siteOnly) {
 
 step(`Committing the release in ${PUBLIC_REPO}`);
 if (!existsSync(join(PUBLIC_REPO, ".git"))) fail(`${PUBLIC_REPO} is not a git clone; set ENDCORD_PUBLIC_REPO`);
-if (!/\bEndcord\/Endcord\b/i.test(git(PUBLIC_REPO, "remote", "get-url", "origin"))) fail(`${PUBLIC_REPO} doesn't point at Endcord/Endcord`);
-if (git(PUBLIC_REPO, "rev-parse", "--abbrev-ref", "HEAD") !== "main") fail(`${PUBLIC_REPO} is not on the main branch`);
-git(PUBLIC_REPO, "pull", "--ff-only");
+if (PUBLIC_REPO !== ROOT && !/\bkisamedevv\/Devcord\b/i.test(git(PUBLIC_REPO, "remote", "get-url", "origin"))) fail(
+`${PUBLIC_REPO} doesn't point at kisamedevv/Devcord`);
+if (PUBLIC_REPO !== ROOT) git(PUBLIC_REPO, "pull", "--ff-only");
 
 const releasePaths = [...UPDATE_FILES.map(name => `dist/${name}`), "version.json"];
 mkdirSync(join(PUBLIC_REPO, "dist"), { recursive: true });

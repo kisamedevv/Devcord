@@ -30,7 +30,7 @@ import { NotificationSection } from "./NotificationSettings";
 import { SecurityStatus } from "./SecurityStatus";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
-const REPO_URL = "https://github.com/Endcord/Endcord";
+const REPO_URL = "https://github.com/kisamedevv/Devcord";
 
 type KeysOfType<Object, Type> = {
     [K in keyof Object]: Object[K] extends Type ? K : never;
