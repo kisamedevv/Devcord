@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Devcord — Discord'u yeniden yaz</title>
+<meta name="description" content="Devcord, Discord'u modlar, temalar, 499+ eklenti ve performans optimizasyonlarıyla güçlendiren modern bir Discord istemci modu." />
+<meta name="theme-color" content="#000000" />
+<link rel="icon" href="icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --panel: #0a0a0a;
+    --border: #1a1a1a;
+    --border-strong: #2a2a2a;
+    --brand: #7c8cff;
+    --brand-2: #a970ff;
+    --accent: #43d17c;
+    --text: #f5f5f7;
+    --muted: #7a7a85;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    overflow-x: hidden; -webkit-font-smoothing: antialiased;
+  }
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+  .brand img { width: 28px; height: 28px; border-radius: 6px; }
+  .brand-name { font-weight: 800; font-size: 17px; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 26px; margin-left: auto; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-actions { display: flex; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 13px;
+    text-decoration: none; border: 1px solid var(--border-strong);
+    background: var(--panel); color: var(--text); cursor: pointer;
+    transition: transform .2s, border-color .2s, background .2s;
+  }
+  .btn:hover { transform: translateY(-2px); border-color: var(--brand); background: #111; }
+  .btn-primary {
+    background: var(--brand); border: 1px solid var(--brand); color: #fff;
+  }
+  .btn-primary:hover { background: #6b7aff; }
+  .btn-lg { padding: 13px 24px; font-size: 14px; }
+  main { position: relative; z-index: 1; }
+  .hero {
+    max-width: 1200px; margin: 0 auto; padding: 110px 24px 80px;
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center;
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: var(--panel); border: 1px solid var(--border-strong);
+    color: var(--brand); margin-bottom: 24px;
+  }
+  .tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  h1 {
+    font-size: clamp(36px, 5.6vw, 64px); line-height: 1.05; font-weight: 900; letter-spacing: -1.5px;
+  }
+  .grad { color: var(--brand); }
+  .hero-sub { margin-top: 22px; color: var(--muted); font-size: 16px; line-height: 1.65; max-width: 540px; }
+  .hero-cta { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
+  .hero-stats {
+    display: flex; gap: 36px; margin-top: 44px; flex-wrap: wrap;
+    padding-top: 24px; border-top: 1px solid var(--border);
+  }
+  .hero-stats div { display: flex; flex-direction: column; }
+  .hero-stats strong { font-size: 22px; font-weight: 800; color: var(--text); }
+  .hero-stats span { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .hero-visual { position: relative; display: flex; justify-content: center; align-items: center; }
+  .glass-card {
+    width: 100%; max-width: 360px; aspect-ratio: 1;
+    border-radius: 12px; background: var(--panel);
+    border: 1px solid var(--border-strong);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 32px;
+  }
+  .glass-card img { width: 110px; height: 110px; border-radius: 16px; }
+  .glass-card .title { font-size: 20px; font-weight: 800; }
+  .glass-card .sub { color: var(--muted); font-size: 12px; }
+  .section { max-width: 1200px; margin: 0 auto; padding: 90px 24px; }
+  .section h2 { font-size: clamp(24px, 3.2vw, 36px); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 10px; }
+  .section .lead { color: var(--muted); font-size: 15px; max-width: 600px; margin-bottom: 42px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 22px;
+    transition: transform .2s, border-color .2s;
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--brand); }
+  .card .ic { font-size: 22px; margin-bottom: 12px; }
+  .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .card p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+  .download { text-align: center; padding: 100px 24px; }
+  .download .box {
+    max-width: 680px; margin: 0 auto;
+    background: var(--panel); border: 1px solid var(--border-strong);
+    border-radius: 12px; padding: 48px 32px;
+  }
+  .download h2 { font-size: clamp(24px, 3.6vw, 36px); font-weight: 800; margin-bottom: 10px; }
+  .download p { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+  .dl-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 28px 24px 40px; border-top: 1px solid var(--border); }
+  .foot a { color: var(--brand); text-decoration: none; }
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; padding-top: 60px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <img src="icon.png" alt="Devcord" />
+      <span class="brand-name">Devcord</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Özellikler</a>
+      <a href="#download">İndir</a>
+      <a href="https://github.com/kisamedevv/Devcord" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="nav-actions">
+      <a href="https://discord.gg/7gzKucpGBD" class="btn btn-primary" target="_blank" rel="noopener">Discord'a katıl</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div>
+      <span class="tag"><span class="dot"></span>v4.1.1 — açık kaynak</span>
+      <h1>Discord'u <span class="grad">yeniden yaz.</span><br/>Senin kurallarınla.</h1>
+      <p class="hero-sub">
+        Devcord, Discord istemcisini modlar, temalar, 499+ eklenti, fake profil ve performans
+        optimizasyonlarıyla güçlendiren modern bir mod.
+      </p>
+      <div class="hero-cta">
+        <a href="#download" class="btn btn-primary btn-lg">İndir</a>
+        <a href="https://github.com/kisamedevv/Devcord" class="btn btn-lg" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong>499+</strong><span>Eklenti</span></div>
+        <div><strong>4.1.1</strong><span>Sürüm</span></div>
+        <div><strong>0₺</strong><span>Ücretsiz</span></div>
+        <div><strong>∞</strong><span>Açık kaynak</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="glass-card">
+        <img src="icon.png" alt="Devcord" />
+        <div class="title">Devcord</div>
+        <div class="sub">Discord'u yeniden yaz.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <h2>Özellikler</h2>
+    <p class="lead">Discord'u senin kurallarınla yeniden şekillendir.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🧩</div><h3>499+ Eklenti</h3><p>Her ihtiyaca göre eklenti. Aç/kapat, ayarla, anında uygula.</p></div>
+      <div class="card"><div class="ic">🎨</div><h3>Tema Motoru</h3><p>Glass blur, renk paletleri, özel CSS.</p></div>
+      <div class="card"><div class="ic">⚡</div><h3>Performans Modu</h3><p>RAM/CPU tavanı, oyun modu, düşük FPS.</p></div>
+      <div class="card"><div class="ic">🛡️</div><h3>Gizlilik</h3><p>İzleme engelleme, veri temizleme.</p></div>
+      <div class="card"><div class="ic">🪪</div><h3>Fake Profil</h3><p>İsim, rozet, tarih.</p></div>
+      <div class="card"><div class="ic">🔄</div><h3>Otomatik Güncelleme</h3><p>İmzalı güncellemeler, geri alma.</p></div>
+    </div>
+  </section>
+
+  <section id="download" class="download">
+    <div class="box">
+      <h2>İndir ve kur</h2>
+      <p>Windows installer tek tıkla kurar. Discord'u kapat, kur, yeniden başlat.</p>
+      <div class="dl-row">
+        <a href="https://github.com/kisamedevv/Devcord/releases/download/v4.1.0/DevcordInstaller.exe" class="btn btn-primary btn-lg">⬇ Windows Installer</a>
+        <a href="https://github.com/kisamedevv/Devcord" class="btn btn-lg" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://discord.gg/7gzKucpGBD" class="btn btn-lg" target="_blank" rel="noopener">Discord</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  Devcord — açık kaynak, GPL-3.0. <a href="https://github.com/kisamedevv/Devcord" target="_blank" rel="noopener">kisamedevv/Devcord</a> · <a href="https://discord.gg/7gzKucpGBD" target="_blank" rel="noopener">Discord</a>
+</footer>
+</body>
+</html>
