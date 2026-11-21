@@ -14,6 +14,7 @@ Devcord, resmi Discord istemcisine yüklenen bir istemci modudur. 400'ten fazla 
 - **Oyun modu**: oyun çalışırken Discord 15 FPS'e düşer, animasyonlar durur, bellek geri verilir
 - Gizli ve güvenli: tüm işlemler yerel makinede, hiçbir veri dışarı gönderilmez
 - Türkçe, İngilizce, Rusça, İspanyolca, Fransızca dil desteği
+- Discord sunucumuz: https://discord.gg/7gzKucpGBD
 
 ## Hızlı kurulum (Windows)
 
@@ -84,6 +85,7 @@ Devcord is a client mod for the official Discord desktop app. It adds 400+ plugi
 - **Game mode**: while a game runs Discord drops to 15 FPS, pauses animations and frees memory
 - Private and safe: everything runs locally, nothing is sent anywhere
 - Turkish, English, Russian, Spanish, French
+- Discord server: https://discord.gg/7gzKucpGBD
 
 ## Quick install (Windows)
 
