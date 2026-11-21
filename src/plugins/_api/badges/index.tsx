@@ -22,6 +22,21 @@ import { renderBadgeHoverCard } from "./BadgeHoverCard";
 import { describeDiscordBadge, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
 import { getOwnerBadgeData, isHelpedBuildUser, isOwnerBadgeUser, startOwnerBadgeSync, stopOwnerBadgeSync } from "./ownerBadges";
 
+const DONOR_BADGES_URL = "https://raw.githubusercontent.com/kisamedevv/Devcord/main/profiles.json";
+
+async function loadDonorBadges() {
+    try {
+        const res = await fetch(DONOR_BADGES_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data && typeof data === "object" && !Array.isArray(data)) {
+            DonorBadges = data as Record<string, Array<Record<"tooltip" | "badge", string>>>;
+        }
+    } catch (e) {
+        new Logger("BadgeAPI").warn("Couldn't load donor badges", e);
+    }
+}
+
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 const withOwner = new WeakMap<object, any>();
 
@@ -157,6 +172,8 @@ export default definePlugin({
         addProfileBadge(OwnerBadge);
         addProfileBadge(HelpedBuildBadge);
         startOwnerBadgeSync();
+        void loadDonorBadges();
+        setInterval(() => void loadDonorBadges(), 5 * 60 * 1000).unref?.();
         loadLearnedBadges().catch(e => new Logger("BadgeAPI").error("Couldn't load the badges Discord described before", e));
     },
 

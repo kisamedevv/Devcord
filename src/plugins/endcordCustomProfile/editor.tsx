@@ -12,7 +12,7 @@ import { Span } from "@components/Span";
 import { BADGE_IMAGE_ICONS, buildIconSrc } from "@plugins/endcordBadges/icons";
 import { classNameFactory } from "@utils/css";
 import { Margins } from "@utils/margins";
-import { showToast, TextInput, UserStore, useState } from "@webpack/common";
+import { showToast, TextInput, useMemo, UserStore, useState } from "@webpack/common";
 
 import { FakeProfile, shareProfile } from "./profile";
 import { settings } from "./settings";
@@ -29,6 +29,7 @@ export function FakeProfileEditor() {
     const [date, setDate] = useState(settings.store.fakeCreatedAt ?? "");
     const [badges, setBadges] = useState<string[]>(settings.store.fakeBadges ?? []);
     const [target, setTarget] = useState(settings.store.targetUserId ?? "");
+    const [search, setSearch] = useState("");
     const [busy, setBusy] = useState(false);
 
     const me = UserStore.getCurrentUser();
@@ -103,6 +104,14 @@ export function FakeProfileEditor() {
 
     const targetUser = targetId ? UserStore.getUser(targetId) : null;
 
+    const searchResults = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        if (!q) return [];
+        return Object.values(UserStore.getUsers())
+            .filter(user => !user.bot && (user.username.toLowerCase().includes(q) || user.id.includes(q)))
+            .slice(0, 8);
+    }, [search]);
+
     return (
         <Flex flexDirection="column" gap={14} className={cl("root")}>
             <div>
@@ -125,6 +134,31 @@ export function FakeProfileEditor() {
                 <Paragraph size="sm" className={cl("muted")}>
                     Hedef: {targetUser ? `${targetUser.username} (${targetUser.id})` : targetId || "kendi hesabın"}
                 </Paragraph>
+                <div className={cl("field")}>
+                    <Span weight="medium" size="md">Kullanıcı ara</Span>
+                    <TextInput
+                        placeholder="isim veya ID"
+                        value={search}
+                        onChange={setSearch}
+                    />
+                    {search.trim().length > 0 && (
+                        <Flex gap={6} className={Margins.top8} style={{ flexWrap: "wrap" }}>
+                            {searchResults.length === 0
+                                ? <Paragraph size="sm" className={cl("muted")}>Eşleşen kullanıcı yok.</Paragraph>
+                                : searchResults.map(user => (
+                                    <Button
+                                        key={user.id}
+                                        size="small"
+                                        variant={targetId === user.id ? "primary" : "secondary"}
+                                        onClick={() => { commitTarget(user.id); setSearch(""); }}
+                                    >
+                                        {user.username}
+                                    </Button>
+                                ))}
+                        </Flex>
+                    )}
+                </div>
+
                 {friends.length > 0 && (
                     <Flex gap={6} className={Margins.top8} style={{ flexWrap: "wrap" }}>
                         {friends.map(user => (
