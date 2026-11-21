@@ -119,12 +119,19 @@ async def ensure_voice_channel(guild, name, category):
     return await guild.create_voice_channel(name, category=category, reason="Devcord setup")
 
 
-async def apply_channel_permissions(channel, mode, member_role, helper_role, moderator_role):
-    if mode == "read-only" and member_role is not None:
-        await channel.set_permissions(member_role, send_messages=False, add_reactions=True,
-                                     reason="Devcord setup")
+async def apply_channel_permissions(channel, mode, everyone_role, member_role, helper_role, moderator_role):
+    if mode == "read-only":
+        # @everyone ve Member rolü mesaj yazamasin; sadece okuyabilsin
+        if everyone_role is not None:
+            await channel.set_permissions(everyone_role, send_messages=False, add_reactions=True,
+                                         reason="Devcord setup")
+        if member_role is not None:
+            await channel.set_permissions(member_role, send_messages=False, add_reactions=True,
+                                         reason="Devcord setup")
     if mode == "default":
-        # Helper ve Moderator mesaj yonetebilsin
+        if everyone_role is not None:
+            await channel.set_permissions(everyone_role, send_messages=True, view_channel=True,
+                                         reason="Devcord setup")
         if helper_role is not None:
             await channel.set_permissions(helper_role, manage_messages=True, reason="Devcord setup")
         if moderator_role is not None:
@@ -200,6 +207,7 @@ async def on_ready():
         roles[name] = role
         print(f"  Role ready: {role.name}")
 
+    everyone_role = guild.default_role
     member_role = roles.get("Member")
     helper_role = roles.get("Helper")
     moderator_role = roles.get("Moderator")
@@ -213,7 +221,7 @@ async def on_ready():
                 channel = await ensure_text_channel(guild, channel_name, category, topic, mode)
             else:
                 channel = await ensure_voice_channel(guild, channel_name, category)
-            await apply_channel_permissions(channel, mode, member_role, helper_role, moderator_role)
+            await apply_channel_permissions(channel, mode, everyone_role, member_role, helper_role, moderator_role)
             print(f"    Channel ready: {channel.name}")
 
     print("Devcord server setup completed.")
