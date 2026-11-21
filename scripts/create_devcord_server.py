@@ -153,4 +153,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-'@; [System.IO.File]::WriteAllText("scripts/create_devcord_server.py", $code)
