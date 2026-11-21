@@ -85,7 +85,7 @@ if (setVersion) {
     writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 4)}\n`);
 }
 
-const version = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
+const { version } = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
 const uncommitted = git(ROOT, "status", "--porcelain", "--untracked-files=no");
 if (uncommitted && !dryRun) fail(`commit your changes first, so the release matches a commit:\n${uncommitted}`);
