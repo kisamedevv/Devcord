@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 
@@ -244,6 +245,13 @@ namespace EndcordInstaller.Core
                     step++;
                 }
 
+                // Try to fetch the latest payload from GitHub first, so an install is never stuck on an old build
+                string downloadedPayloadDir = null;
+                if (string.IsNullOrEmpty(CustomPayloadDirectory) && !IsSelfTest())
+                {
+                    downloadedPayloadDir = TryDownloadLatestPayload(ct);
+                }
+
                 // Step 2: Stage payload files and verify integrity before touching Dist
                 if (Directory.Exists(paths.StagingDir))
                     FileOps.DeleteDirectory(paths.StagingDir, ct);
@@ -283,6 +291,11 @@ namespace EndcordInstaller.Core
                     FileOps.Retry(() => File.Copy(src, dst, true), dst, ct);
                 }
                 FileOps.DeleteDirectory(paths.StagingDir, ct);
+                if (!string.IsNullOrEmpty(downloadedPayloadDir))
+                {
+                    try { Directory.Delete(downloadedPayloadDir, true); } catch { }
+                    CustomPayloadDirectory = null;
+                }
                 SyncClientLanguageSetting(paths, EndcordInstaller.Localization.Loc.CurrentLanguage);
                 step++;
 
@@ -851,6 +864,47 @@ namespace EndcordInstaller.Core
             try { File.Delete(path); } catch { }
             throw new InstallerException(FailureKind.PayloadMissing,
                 name + " does not match the hash this installer was built with. Download the installer again from https://endcord.com/download", name);
+        }
+
+        static bool IsSelfTest()
+        {
+            foreach (var arg in Environment.GetCommandLineArgs())
+                if (string.Equals(arg, "--self-test", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            return false;
+        }
+
+        static string TryDownloadLatestPayload(CancellationToken ct)
+        {
+            if (!string.IsNullOrEmpty(CustomPayloadDirectory))
+                return CustomPayloadDirectory;
+
+            string tempDir = Path.Combine(Path.GetTempPath(), "DevcordPayload-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(tempDir);
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add("User-Agent", "DevcordInstaller");
+                    foreach (var file in PayloadFiles)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        string url = "https://raw.githubusercontent.com/kisamedevv/Devcord/main/dist/" + file;
+                        string dest = Path.Combine(tempDir, file);
+                        wc.DownloadFile(url, dest);
+                        if (!File.Exists(dest) || new FileInfo(dest).Length <= 0)
+                            throw new IOException("Downloaded payload is empty: " + file);
+                    }
+                }
+                CustomPayloadDirectory = tempDir;
+                return tempDir;
+            }
+            catch
+            {
+                try { Directory.Delete(tempDir, true); } catch { }
+                CustomPayloadDirectory = null;
+                return null;
+            }
         }
 
         public static void ExtractPayloadAsset(string name, string dest, CancellationToken ct)
