@@ -1,4 +1,4 @@
-// Endcord f8f2353
+// Endcord 7769b5e
 // Standalone: false
 // Platform: win32
 // Updater Disabled: true

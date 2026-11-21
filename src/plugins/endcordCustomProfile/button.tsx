@@ -25,22 +25,9 @@ export function openFakeProfilePanel() {
 
 /** Devcord logosu (SVG, data URI) — halka gradyanı + monogram. */
 export function endcordLogo(): string {
-    const svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" width=\"28\" height=\"28\">"
-        + "<defs>"
-        + "<linearGradient id=\"ring\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">"
-        + "<stop offset=\"0\" stop-color=\"#8fb2ff\"/><stop offset=\".5\" stop-color=\"#5865f2\"/><stop offset=\"1\" stop-color=\"#a970ff\"/>"
-        + "</linearGradient>"
-        + "<linearGradient id=\"face\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">"
-        + "<stop offset=\"0\" stop-color=\"#1b2140\"/><stop offset=\"1\" stop-color=\"#0b0f1f\"/>"
-        + "</linearGradient>"
-        + "</defs>"
-        + "<circle cx=\"16\" cy=\"16\" r=\"15\" fill=\"url(#ring)\"/>"
-        + "<circle cx=\"16\" cy=\"16\" r=\"12.4\" fill=\"url(#face)\"/>"
-        + "<text x=\"16\" y=\"22\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#e8eeff\" font-family=\"sans-serif\">D</text>"
-        + "<circle cx=\"23.6\" cy=\"10\" r=\"1.9\" fill=\"#43d17c\"/>"
-        + "</svg>";
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAQOSURBVFhH7dRbaBxVGAfwYpImO/cz95md2ZnZnd3NbrZJms2lbZpoQ9LmormRpNsmIV5KW9NWm/ShYpTFitRS82QwDSKIUCkq1QephmArSY23EuiDIIK+BBEVU1jQp539ZCqBdkAYQ8GX/cF5mHO+7z8zZw6zbVtRUVGRT49M/tnUerLQVZ/5qbeqe2Uw3nZlOLLr1RE9NTmiJSb69epn9tqdPwjevgcm1fnRhXT/dUjum4PorhkI7zwGocQQqJEOUMxWkM02kGOZDb3h/PuJ3u+aNvuGhlYDHQOL4v1pW4NEY9+GuWMU9HiXo1rNjqSnHUFJObwUdzipssDJ1SAabaAmnyoY6fNTbtPjZ1YGj76wdimdXigbOL4ojs18ZXmDfSvfjn1OIQM4OZXn5SqHE6MOK4QLLG8VEG86iLfyiLfzrBgDLrgHEo0z50ZPr94+deFHmL60cWIie6PiUPbOkcEX/2r2ZvuC49zHGIagIkDnMZwHnFQBI9whAkkpwLA60EjL0yiUZ9gQ0Ci2fiBz9fjB02tvTc0WAm7G7pGVl5rHvxn0ZvtCkNKnJCUDScmFCpz/GadiBwkm9XBpBd9aUhIYCODcJwzSgWaCjjsYzgJBaji1eXMtOWZHao/dMmqeZbzZvlCMvoS4MGC4ACWl+IJ33UVS6so/b6/nWSEKrJB4152n6RBipdT3klqf8fb4Jqj1n9GsDeUVNGC4+IZ33UXQ2hHEmYD4iCOotcBw9jWaDoUpZK7RtD7trfct+x5s54ItNwO4AAQpAkkq894aF0JGhpcqgZOqHJq1CkiqXheCjVcZ3urx1vqSzWYfGj+7FDpz8Rccw+VlnODdMwAkpb7prXUxXHiWV6pBDLU4aqwPJGv/Ldsepbx1vkzO/Uocnl4dPjp9g3evMZxbJkgJKDoIOKm87K3X4n07zGTvHbtuvBCM9zqsXAdIqD/nrfMlm4XSnicWL/Y//WVicw7D+a/dByAo9R2Gsw8zjDVGs/awGm3L2OmxV8I1g39o8XagOdsJYFxBNvsg2jBXe3+yTw37Z882dr2+dO9cWVn5tUCAeo0TKz/gpBS4W80Hd4KgpYGTq4CggoDhkkMhy9HiE1DZcuXyvf3/SaLxxM1k00mwEkMzWuyxTi2Z6RTN7qwSOfCtqO8BJCaBQoZDUIpDkLJD0iGH4WIOK6XBqHkOah5dWRteANqb65uVGGk3k/3LeqxrXYv2fBFKHpoXtN2/Iz529xC6n4KkVaAY3d1y4JUmUCufhGjr21A/un554kPY2s/m3+ABdoogpRxBqTmKMXMUsnIUiuQYsSYnGN2/adXP3452XJ9vmoS93t4HAsdFCcNCCiYYMiYk7w6er1MEY1gOty9tfauLior+b38D9ZY5EmfzpeUAAAAASUVORK5CYII=";
 }
+
 
 function hasFakeProfile(): boolean {
     const store = settings.store as Record<string, unknown>;
