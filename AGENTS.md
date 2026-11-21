@@ -1,6 +1,6 @@
 # Agent Development Guide
 
-Endcord is a modification for the Discord web app. It is available for the Electron app and as browser extension.
+Devcord is a modification for the Discord web app. It is available for the Electron app and as browser extension.
 
 Follow these deeper instructions when applicable:
 - [Live Discord Sessions](.skills/discord-session.md) - Run chrome for live testing & reverse engineering

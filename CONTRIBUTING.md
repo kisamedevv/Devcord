@@ -1,8 +1,8 @@
-# Contributing to Endcord
+# Contributing to Devcord
 
-First off, thank you for considering contributing to **Endcord**! 🚀
+First off, thank you for considering contributing to **Devcord**! 🚀
 
-Endcord is an open-source, high-performance, and feature-rich Discord client modification built for speed, clean UX, and deep customization. Whether you are fixing bugs, optimizing existing modules, translating to new languages, writing innovative plugins, or enhancing documentation, your contributions make Endcord better for everyone.
+Devcord is an open-source, high-performance, and feature-rich Discord client modification built for speed, clean UX, and deep customization. Whether you are fixing bugs, optimizing existing modules, translating to new languages, writing innovative plugins, or enhancing documentation, your contributions make Devcord better for everyone.
 
 ---
 
@@ -39,8 +39,8 @@ All contributors and community members are expected to follow our [Code of Condu
 
 1. **Fork and Clone the Repository:**
    ```bash
-   git clone https://github.com/<your-username>/Endcord.git
-   cd Endcord
+   git clone https://github.com/<your-username>/Devcord.git
+   cd Devcord
    ```
 
 2. **Install Dependencies:**
@@ -59,7 +59,7 @@ All contributors and community members are expected to follow our [Code of Condu
      pnpm package:resources
      ```
 
-4. **Injecting Endcord into Discord for Testing:**
+4. **Injecting Devcord into Discord for Testing:**
    - Run the installer in development mode or use the build script:
      ```bash
      pnpm inject
@@ -75,19 +75,19 @@ All contributors and community members are expected to follow our [Code of Condu
 - Avoid brittle patches that depend on unstable Discord minified identifiers. Always patch using meaningful constants, AST patterns, or regex with flexible spacing.
 
 ### Developing Plugins
-Plugins are the heart of Endcord's modular experience. If you are creating a new plugin:
+Plugins are the heart of Devcord's modular experience. If you are creating a new plugin:
 - Create your plugin folder under `src/plugins/<pluginName>/`.
 - Define it using `definePlugin({...})`.
 - Ensure settings are properly typed and defaults are sound.
 
 ### Translations & Localization (5-Language System)
-Endcord supports native multilingual localization across English (`en`), Turkish (`tr`), Russian (`ru`), Spanish (`es`), and French (`fr`).
+Devcord supports native multilingual localization across English (`en`), Turkish (`tr`), Russian (`ru`), Spanish (`es`), and French (`fr`).
 - When introducing user-facing text, add the translations to each file in `src/utils/i18n/locales`.
 - Use `t("Your String")` or `useI18n()` inside components.
 - Do not call React hooks inside non-component layout callbacks (such as `useTitle` or static builders).
 
 ### UI & Theme Enhancements
-- Adhere to Endcord's sleek dark/blue aesthetic with high performance (subtle transitions, minimal layout reflows, 0 unnecessary re-renders).
+- Adhere to Devcord's sleek dark/blue aesthetic with high performance (subtle transitions, minimal layout reflows, 0 unnecessary re-renders).
 - Always use CSS variables (`var(--...)`) to blend seamlessly with user themes and Discord styles.
 
 ### Documentation & Community Support
@@ -98,7 +98,7 @@ Endcord supports native multilingual localization across English (`en`), Turkish
 
 ## Plugin Development Guidelines
 
-To keep Endcord safe, lightweight, and compliant with Discord's user environment, please abide by the following rules:
+To keep Devcord safe, lightweight, and compliant with Discord's user environment, please abide by the following rules:
 
 ### Allowed & Encouraged:
 - Enhancing accessibility, readability, and media controls.
@@ -152,7 +152,7 @@ Have questions, ideas, or need guidance on writing a complex patch?
 - Join our [Official Discord Server](https://discord.gg/7gzKucpGBD).
 - Connect with other developers in the `#development` channel.
 
-Thank you for contributing and helping make Endcord the most fluid Discord experience! 💙
+Thank you for contributing and helping make Devcord the most fluid Discord experience! 💙
 
 ## Architecture
 

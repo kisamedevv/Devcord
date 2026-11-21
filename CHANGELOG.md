@@ -1,6 +1,6 @@
 # Changelog
 
-What changed in each Endcord release. Every release is signed, and the updater checks the signature before it installs anything; [SECURITY.md](SECURITY.md) explains how to check a release yourself.
+What changed in each Devcord release. Every release is signed, and the updater checks the signature before it installs anything; [SECURITY.md](SECURITY.md) explains how to check a release yourself.
 
 ## 4.1.0 (2026-11-07)
 
@@ -22,15 +22,15 @@ What changed in each Endcord release. Every release is signed, and the updater c
   - DraftList lists every chat where you left a message unsent.
   - ColorText's /color writes your message in color.
   - PrivacyCurtain blurs Discord while you're away.
-- An Endcord Developer badge, the panda, for the people who make Endcord. The Endcord Contributor badge is now a stalk of bamboo.
+- An Devcord Developer badge, the panda, for the people who make Devcord. The Devcord Contributor badge is now a stalk of bamboo.
 - A welcome screen on the first start: pick a look and a few packs of plugins, or start with none.
-- CustomProfile is shared: other Endcord users see your profile, through the #profiles channel on Endcord's Discord server, a few seconds after you save it. Nothing goes through a server of Endcord's own.
+- CustomProfile is shared: other Devcord users see your profile, through the #profiles channel on Devcord's Discord server, a few seconds after you save it. Nothing goes through a server of Devcord's own.
 - CustomProfile has a Nitro date: the day your Nitro badge says you subscribed, shown when someone hovers it.
-- When Discord can't finish starting, Endcord looks for a newer release by itself after a few minutes, installs it and loads Discord again. Before, a release that broke on a new Discord could only be fixed by downloading the installer again.
+- When Discord can't finish starting, Devcord looks for a newer release by itself after a few minutes, installs it and loads Discord again. Before, a release that broke on a new Discord could only be fixed by downloading the installer again.
 
 ### Changed
 
-- Every Endcord screen uses one look, the Endcord theme, and one way of moving.
+- Every Devcord screen uses one look, the Devcord theme, and one way of moving.
 - The repository root is tidier: the installer's sources are in `installer/` and the app icons in `assets/`.
 - File headers carry their original copyright notices again, as written in Vencord and Equicord.
 - 18 plugins that did the same job as another plugin are gone. If you had one on, the plugin that does its job is turned on for you:
@@ -57,7 +57,7 @@ What changed in each Endcord release. Every release is signed, and the updater c
 
 ### Fixed
 
-- Discord Canary no longer stays on its "Starting" screen with Endcord installed. Newer Discord builds pass some exports as plain values and no longer mark modules as loaded, and Endcord now handles both.
+- Discord Canary no longer stays on its "Starting" screen with Devcord installed. Newer Discord builds pass some exports as plain values and no longer mark modules as loaded, and Devcord now handles both.
 - Discord's old color names point at the new ones, so themes written for them keep working.
 - FileViewer works again. It read the file type from the link, which ends in Discord's signature, so it never showed its button, and Discord's security policy blocked the viewers it opens.
 - With PdfViewer on, FileViewer leaves PDFs to it, so they aren't sent to Google's viewer.
@@ -75,7 +75,7 @@ What changed in each Endcord release. Every release is signed, and the updater c
 - Plugins fixed for the same new Discord: BadgeAPI, SurfaceClassesAPI, FakeNitro, AlwaysAnimate, VolumeBooster, CustomIdle, MoreJumboEmoji, NoDraftLengthLimit, OpenInApp, FavoriteAnything, FullVCPFP, USRBG, ImageLink, NoReplyMention, BetterImageEditor and PermissionFreeWill.
 - RoleColorEverywhere colors reaction lists and poll results again, and the member list's role headers alongside BetterRoleContext.
 - CustomTimestamps and RealtimeTimestamps show their tooltips on Discord's timestamps again.
-- Notices from Endcord show again, and so does the version line in Settings.
+- Notices from Devcord show again, and so does the version line in Settings.
 - Questify keeps quest videos playing again.
 - DmReadReceipt no longer breaks message previews, such as the one in CustomTimestamps' settings.
 - BetterSessions no longer announces every session you already have as new the first time it runs.
@@ -101,7 +101,7 @@ What changed in each Endcord release. Every release is signed, and the updater c
 ### Changed
 
 - Translations are split into one file per language.
-- Every repository link points at Endcord/Endcord.
+- Every repository link points at Devcord/Devcord.
 
 ### Fixed
 
@@ -109,7 +109,7 @@ What changed in each Endcord release. Every release is signed, and the updater c
 
 ## 4.0.31 (2026-10-29)
 
-- SupportHelper asks only once to join the Endcord server and to star the repository.
+- SupportHelper asks only once to join the Devcord server and to star the repository.
 
 ## 4.0.30 (2026-10-28)
 
@@ -123,14 +123,14 @@ What changed in each Endcord release. Every release is signed, and the updater c
 ## 4.0.27 (2026-10-24)
 
 - Linux and macOS installs work even when the site's scripts are blocked.
-- A macOS installer app that carries its own copy of Endcord.
+- A macOS installer app that carries its own copy of Devcord.
 - The unused profile-fetch code and the stale `api.endcord.com` entry in the content security policy are removed.
 
 ## 4.0.26 (2026-10-24)
 
 The first release from this repository.
 
-- Plugins that are off aren't loaded at all, and translations are built on first use, so Endcord starts faster and uses less memory.
+- Plugins that are off aren't loaded at all, and translations are built on first use, so Devcord starts faster and uses less memory.
 - A new installer around the logo's pixel panda, which never removes a mod another Discord install still uses.
 - Every plugin description, setting and message is available in English, Turkish, Russian, Spanish and French.
 - Dozens of plugins fixed for current Discord, plugins that patch the same spot run together, and plugin conflicts are explained instead of crashing.

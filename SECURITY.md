@@ -2,13 +2,13 @@
 
 ## Reporting a problem
 
-Please don't open a public issue for a vulnerability. Use [private vulnerability reporting](https://github.com/Endcord/Endcord/security/advisories/new), or message a maintainer on the [Endcord server](https://discord.gg/7gzKucpGBD).
+Please don't open a public issue for a vulnerability. Use [private vulnerability reporting](https://github.com/kisamedevv/Devcord/security/advisories/new), or message a maintainer on the [Devcord server](https://discord.gg/7gzKucpGBD).
 
 Include what an attacker can do, the steps to reproduce it, and the version you tested.
 
 ## Threat model
 
-Endcord runs inside a logged-in Discord client on the user's PC. That makes it a useful target: whoever controls it gets the Discord account and a process with full access to the machine.
+Devcord runs inside a logged-in Discord client on the user's PC. That makes it a useful target: whoever controls it gets the Discord account and a process with full access to the machine.
 
 ### Who we defend against
 
@@ -22,8 +22,8 @@ Endcord runs inside a logged-in Discord client on the user's PC. That makes it a
 
 ### What we don't defend against
 
-- **Code already running as the user.** Malware on the PC can read anything Endcord can.
-- **Plugins the user chose to enable.** They run with Endcord's own access, so a plugin is trusted once it ships.
+- **Code already running as the user.** Malware on the PC can read anything Devcord can.
+- **Plugins the user chose to enable.** They run with Devcord's own access, so a plugin is trusted once it ships.
 - **A compromised release key.** It would let an attacker sign updates. Keep it offline and backed up.
 
 ### Where the boundaries are

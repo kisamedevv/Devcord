@@ -1,8 +1,8 @@
-# Endcord Community Code of Conduct
+# Devcord Community Code of Conduct
 
 ## Our Pledge
 
-We, as contributors, maintainers, and community members of **Endcord**, are dedicated to providing a welcoming, inclusive, and harassment-free environment for everyone, regardless of age, body size, visible or invisible disability, ethnicity, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+We, as contributors, maintainers, and community members of **Devcord**, are dedicated to providing a welcoming, inclusive, and harassment-free environment for everyone, regardless of age, body size, visible or invisible disability, ethnicity, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 We pledge to act and interact in ways that contribute to an open, friendly, diverse, and healthy community where developers, designers, translators, and users can collaborate with enthusiasm and mutual respect.
 
@@ -37,13 +37,13 @@ Maintainers have the right and responsibility to remove, edit, or reject comment
 
 ## Scope
 
-This Code of Conduct applies within all project spaces (including official GitHub repositories, issues, discussions, and pull requests), the official Endcord Discord server, and in any official public space where an individual is representing the Endcord project or its community.
+This Code of Conduct applies within all project spaces (including official GitHub repositories, issues, discussions, and pull requests), the official Devcord Discord server, and in any official public space where an individual is representing the Devcord project or its community.
 
 ---
 
 ## Reporting & Resolution
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the Endcord moderation and leadership team:
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the Devcord moderation and leadership team:
 - By joining our [Official Discord Server](https://discord.gg/7gzKucpGBD) and opening a private Modmail ticket.
 - Or by directly reaching out to the repository owners / administrators on GitHub or Discord.
 
@@ -58,4 +58,4 @@ All complaints will be reviewed and investigated promptly and fairly. All mainta
 
 ---
 
-Thank you for helping us keep Endcord a positive, innovative, and thriving community! 🌟
+Thank you for helping us keep Devcord a positive, innovative, and thriving community! 🌟
