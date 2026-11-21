@@ -40,6 +40,11 @@ export const settings = definePluginSettings({
         description: "Sahte profili paylaş — profil açıklamana görünmez kod yazılır, sadece Devcord kullananlar çözer",
         default: false
     },
+    autoShareProfile: {
+        type: OptionType.BOOLEAN,
+        description: "Değişiklikleri otomatik paylaş — her değişiklikte profil açıklaması güncellenir, tüm Devcord kullanıcıları görür",
+        default: false
+    },
     panel: {
         type: OptionType.COMPONENT,
         component: FakeProfileEditor

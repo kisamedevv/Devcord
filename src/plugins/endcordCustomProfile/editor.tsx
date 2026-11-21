@@ -12,7 +12,7 @@ import { Span } from "@components/Span";
 import { BADGE_IMAGE_ICONS, buildIconSrc } from "@plugins/endcordBadges/icons";
 import { classNameFactory } from "@utils/css";
 import { Margins } from "@utils/margins";
-import { showToast, TextInput, useMemo, UserStore, useState } from "@webpack/common";
+import { Checkbox, showToast, TextInput, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 import { FakeProfile, shareProfile } from "./profile";
 import { settings } from "./settings";
@@ -31,6 +31,7 @@ export function FakeProfileEditor() {
     const [target, setTarget] = useState(settings.store.targetUserId ?? "");
     const [search, setSearch] = useState("");
     const [busy, setBusy] = useState(false);
+    const [autoShare, setAutoShare] = useState(settings.store.autoShareProfile ?? false);
 
     const me = UserStore.getCurrentUser();
     const targetId = target.trim() || me?.id || "";
@@ -70,15 +71,15 @@ export function FakeProfileEditor() {
         setBusy(true);
         try {
             const profile: FakeProfile = {
-                username: username.trim(),
-                name: displayName.trim(),
-                badges,
-                createdAt: date.trim() || null
+                username: (settings.store.fakeUsername ?? "").trim(),
+                name: (settings.store.fakeDisplayName ?? "").trim(),
+                badges: settings.store.fakeBadges ?? [],
+                createdAt: (settings.store.fakeCreatedAt ?? "").trim() || null
             };
 
             await shareProfile(profile);
             settings.store.shareProfile = true;
-            showToast({ text: "Fake profil paylaşıldı — sadece Devcord kullananlar görecek", variant: "success" });
+            showToast({ text: "Fake profil paylaşıldı — tüm Devcord kullanıcıları görecek", variant: "success" });
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             showToast({ text: `Paylaşma başarısız: ${message}`, variant: "critical" });
@@ -86,6 +87,19 @@ export function FakeProfileEditor() {
             setBusy(false);
         }
     }
+
+    function commitAutoShare(_event: unknown, value: boolean) {
+        setAutoShare(value);
+        settings.store.autoShareProfile = value;
+        if (value) void share();
+    }
+
+    // Otomatik paylaş açıksa her değişiklikte bio'yu güncelle
+    useEffect(() => {
+        if (!autoShare) return;
+        const timer = window.setTimeout(() => void share(), 600);
+        return () => window.clearTimeout(timer);
+    }, [username, displayName, date, badges, target, autoShare]);
 
     function reset() {
         setUsername("");
@@ -261,6 +275,23 @@ export function FakeProfileEditor() {
                         </Flex>
                     </Flex>
                 </Flex>
+            </div>
+
+            <div className={cl("field")}>
+                <Flex alignItems="center" gap={8}>
+                    <Checkbox
+                        value={autoShare}
+                        onChange={commitAutoShare}
+                        size={20}
+                    />
+                    <Span size="sm">
+                        Tüm Devcord kullanıcılarına otomatik paylaş (her değişiklikte güncellenir)
+                    </Span>
+                </Flex>
+                <Paragraph size="sm" className={cl("muted")}>
+                    Açıkken yaptığın her değişiklik profil açıklamana yazılır; tüm Devcord
+                    kullananlar gerçek zamanlı görür.
+                </Paragraph>
             </div>
 
             <Flex gap={8}>
