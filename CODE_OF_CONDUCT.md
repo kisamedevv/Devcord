@@ -44,7 +44,7 @@ This Code of Conduct applies within all project spaces (including official GitHu
 ## Reporting & Resolution
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the Endcord moderation and leadership team:
-- By joining our [Official Discord Server](https://discord.gg/endcord) and opening a private Modmail ticket.
+- By joining our [Official Discord Server](https://discord.gg/7gzKucpGBD) and opening a private Modmail ticket.
 - Or by directly reaching out to the repository owners / administrators on GitHub or Discord.
 
 All complaints will be reviewed and investigated promptly and fairly. All maintainers and moderators are obligated to respect the privacy and security of the reporter of any incident.

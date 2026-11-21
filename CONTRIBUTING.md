@@ -149,7 +149,7 @@ To keep Endcord safe, lightweight, and compliant with Discord's user environment
 ## Need Help?
 
 Have questions, ideas, or need guidance on writing a complex patch?
-- Join our [Official Discord Server](https://discord.gg/endcord).
+- Join our [Official Discord Server](https://discord.gg/7gzKucpGBD).
 - Connect with other developers in the `#development` channel.
 
 Thank you for contributing and helping make Endcord the most fluid Discord experience! 💙

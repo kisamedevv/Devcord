@@ -2,7 +2,7 @@
 
 ## Reporting a problem
 
-Please don't open a public issue for a vulnerability. Use [private vulnerability reporting](https://github.com/Endcord/Endcord/security/advisories/new), or message a maintainer on the [Endcord server](https://discord.gg/endcord).
+Please don't open a public issue for a vulnerability. Use [private vulnerability reporting](https://github.com/Endcord/Endcord/security/advisories/new), or message a maintainer on the [Endcord server](https://discord.gg/7gzKucpGBD).
 
 Include what an attacker can do, the steps to reproduce it, and the version you tested.
 
