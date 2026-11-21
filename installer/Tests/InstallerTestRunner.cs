@@ -126,7 +126,7 @@ namespace EndcordInstaller.Tests
                 {
                     string msg = Loc.F("mig.banner.prompt", cl);
                     Assert(msg.Contains(cl), "Prompt in " + lang.Code + " missing client name " + cl);
-                    Assert(msg.Contains("Endcord"), "Prompt in " + lang.Code + " missing Endcord");
+                    Assert(msg.Contains("Devcord"), "Prompt in " + lang.Code + " missing Devcord");
                 }
             }
             Loc.SetLanguage("en");

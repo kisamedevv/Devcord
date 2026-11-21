@@ -145,11 +145,11 @@ namespace EndcordInstaller.Localization
 
             // ── Intro & Language Selection Screen ────────────────────────────
             Add("app.title",
-                "Endcord Installer",
-                "Endcord Kurulumu",
-                "Установщик Endcord",
-                "Instalador de Endcord",
-                "Installateur Endcord");
+                "Devcord Installer",
+                "Devcord Kurulumu",
+                "Установщик Devcord",
+                "Instalador de Devcord",
+                "Installateur Devcord");
 
             Add("app.subtitle",
                 "A lightweight, friendly Discord mod",
@@ -195,11 +195,11 @@ namespace EndcordInstaller.Localization
                 "Il semble que vous veniez de {0}.");
 
             Add("mig.banner.prompt",
-                "You came over from {0}. Want Endcord to bring your settings along?",
-                "{0} kullanıyormuşsun. Endcord ayarlarını da beraberinde getirsin mi?",
-                "Вы пришли с {0}. Перенести ваши настройки в Endcord?",
-                "Vienes de {0}. ¿Quieres que Endcord traiga tus ajustes contigo?",
-                "Vous venez de {0}. Endcord peut emporter vos paramètres, ça vous dit ?");
+                "You came over from {0}. Want Devcord to bring your settings along?",
+                "{0} kullanıyormuşsun. Devcord ayarlarını da beraberinde getirsin mi?",
+                "Вы пришли с {0}. Перенести ваши настройки в Devcord?",
+                "Vienes de {0}. ¿Quieres que Devcord traiga tus ajustes contigo?",
+                "Vous venez de {0}. Devcord peut emporter vos paramètres, ça vous dit ?");
 
             Add("mig.card.title",
                 "Pack your settings?",
@@ -209,11 +209,11 @@ namespace EndcordInstaller.Localization
                 "On fait vos valises ?");
 
             Add("mig.card.body",
-                "Your previous settings were found. You can import compatible preferences and plugin configurations into Endcord.",
-                "Önceki ayarların bulundu. Uyumlu tercihlerini, temalarını ve eklenti yapılandırmalarını Endcord'a aktarabilirsin.",
-                "Найдены ваши предыдущие настройки. Вы можете импортировать совместимые параметры и конфигурации плагинов в Endcord.",
-                "Se encontraron tus ajustes anteriores. Puedes importar las preferencias compatibles y configuraciones de plugins en Endcord.",
-                "Vos anciens paramètres ont été trouvés. Vous pouvez importer vos préférences et configurations de plugins compatibles dans Endcord.");
+                "Your previous settings were found. You can import compatible preferences and plugin configurations into Devcord.",
+                "Önceki ayarların bulundu. Uyumlu tercihlerini, temalarını ve eklenti yapılandırmalarını Devcord'a aktarabilirsin.",
+                "Найдены ваши предыдущие настройки. Вы можете импортировать совместимые параметры и конфигурации плагинов в Devcord.",
+                "Se encontraron tus ajustes anteriores. Puedes importar las preferencias compatibles y configuraciones de plugins en Devcord.",
+                "Vos anciens paramètres ont été trouvés. Vous pouvez importer vos préférences et configurations de plugins compatibles dans Devcord.");
 
             Add("mig.card.stats",
                 "{0} plugins and {1} themes can come along. A backup is made first, just in case.",
@@ -252,18 +252,18 @@ namespace EndcordInstaller.Localization
 
             // ── Main Client Selection & Mode Screen ──────────────────────────
             Add("main.title",
-                "Where should Endcord live?",
-                "Endcord nereye yerleşsin?",
-                "Где поселится Endcord?",
-                "¿Dónde vivirá Endcord?",
-                "Où installer Endcord ?");
+                "Where should Devcord live?",
+                "Devcord nereye yerleşsin?",
+                "Где поселится Devcord?",
+                "¿Dónde vivirá Devcord?",
+                "Où installer Devcord ?");
 
             Add("main.subtitle",
-                "Pick the Discords you want Endcord on.",
-                "Endcord'un geleceği Discord'ları seç.",
-                "Выберите, в какие Discord установить Endcord.",
-                "Elige en qué Discord quieres Endcord.",
-                "Choisissez les Discord qui auront Endcord.");
+                "Pick the Discords you want Devcord on.",
+                "Devcord'un geleceği Discord'ları seç.",
+                "Выберите, в какие Discord установить Devcord.",
+                "Elige en qué Discord quieres Devcord.",
+                "Choisissez les Discord qui auront Devcord.");
 
             Add("tab.install",
                 "Install",
@@ -315,32 +315,32 @@ namespace EndcordInstaller.Localization
                 "Rouvrir Discord à la fin");
 
             Add("action.install",
-                "Install Endcord",
-                "Endcord'u Kur",
-                "Установить Endcord",
-                "Instalar Endcord",
-                "Installer Endcord");
+                "Install Devcord",
+                "Devcord'u Kur",
+                "Установить Devcord",
+                "Instalar Devcord",
+                "Installer Devcord");
 
             Add("action.update",
-                "Update Endcord",
-                "Endcord'u Güncelle",
-                "Обновить Endcord",
-                "Actualizar Endcord",
-                "Mettre à jour Endcord");
+                "Update Devcord",
+                "Devcord'u Güncelle",
+                "Обновить Devcord",
+                "Actualizar Devcord",
+                "Mettre à jour Devcord");
 
             Add("action.repair",
-                "Repair Endcord",
+                "Repair Devcord",
                 "Kurulumu Onar",
-                "Восстановить Endcord",
-                "Reparar Endcord",
-                "Réparer Endcord");
+                "Восстановить Devcord",
+                "Reparar Devcord",
+                "Réparer Devcord");
 
             Add("action.uninstall",
-                "Uninstall Endcord",
-                "Endcord'u Kaldır",
-                "Удалить Endcord",
-                "Desinstalar Endcord",
-                "Désinstaller Endcord");
+                "Uninstall Devcord",
+                "Devcord'u Kaldır",
+                "Удалить Devcord",
+                "Desinstalar Devcord",
+                "Désinstaller Devcord");
 
             Add("action.cancel",
                 "Cancel",
@@ -353,11 +353,11 @@ namespace EndcordInstaller.Localization
             Add("card.running", "Running", "Çalışıyor", "Запущен", "Abierto", "En cours");
             Add("card.closed", "Closed", "Kapalı", "Закрыт", "Cerrado", "Fermé");
             Add("card.status.endcord",
-                "Has Endcord",
-                "Endcord'lu",
-                "С Endcord",
-                "Con Endcord",
-                "Avec Endcord");
+                "Has Devcord",
+                "Devcord'lu",
+                "С Devcord",
+                "Con Devcord",
+                "Avec Devcord");
             Add("card.status.vanilla",
                 "Ready",
                 "Hazır",
@@ -388,32 +388,32 @@ namespace EndcordInstaller.Localization
 
             // ── Progress & Completion Screens ────────────────────────────────
             Add("prog.installingTitle",
-                "Installing Endcord",
-                "Endcord Kuruluyor",
-                "Установка Endcord",
-                "Instalando Endcord",
-                "Installation d'Endcord");
+                "Installing Devcord",
+                "Devcord Kuruluyor",
+                "Установка Devcord",
+                "Instalando Devcord",
+                "Installation d'Devcord");
 
             Add("prog.updatingTitle",
-                "Updating Endcord",
-                "Endcord Güncelleniyor",
-                "Обновление Endcord",
-                "Actualizando Endcord",
-                "Mise à jour d'Endcord");
+                "Updating Devcord",
+                "Devcord Güncelleniyor",
+                "Обновление Devcord",
+                "Actualizando Devcord",
+                "Mise à jour d'Devcord");
 
             Add("prog.repairingTitle",
-                "Repairing Endcord",
-                "Endcord Onarılıyor",
-                "Восстановление Endcord",
-                "Reparando Endcord",
-                "Réparation d'Endcord");
+                "Repairing Devcord",
+                "Devcord Onarılıyor",
+                "Восстановление Devcord",
+                "Reparando Devcord",
+                "Réparation d'Devcord");
 
             Add("prog.uninstallingTitle",
                 "Restoring Vanilla Discord",
                 "Orijinal Discord'a Dönülüyor",
-                "Удаление Endcord",
+                "Удаление Devcord",
                 "Restaurando Discord",
-                "Désinstallation d'Endcord");
+                "Désinstallation d'Devcord");
 
             Add("status.preparingInstall",
                 "Fluffing the pillows...",
@@ -449,11 +449,11 @@ namespace EndcordInstaller.Localization
             Add("status.waitingLockedFile", "Waiting for locked file: {0}", "Kilitli dosya bekleniyor: {0}", "Ожидание файла: {0}", "Esperando archivo: {0}", "Attente du fichier : {0}");
 
             Add("status.installComplete",
-                "All set! Endcord is here",
-                "Hepsi tamam! Endcord burada",
-                "Готово! Endcord на месте",
-                "¡Listo! Endcord ya está aquí",
-                "Et voilà ! Endcord est là");
+                "All set! Devcord is here",
+                "Hepsi tamam! Devcord burada",
+                "Готово! Devcord на месте",
+                "¡Listo! Devcord ya está aquí",
+                "Et voilà ! Devcord est là");
             Add("status.updateComplete",
                 "Fresh and updated!",
                 "Tertemiz güncellendi!",
@@ -474,11 +474,11 @@ namespace EndcordInstaller.Localization
                 "Retour au Discord d'origine");
 
             Add("done.banner.installed",
-                "Endcord is on {0} Discord install(s). Open Discord and say hi!",
-                "Endcord {0} Discord kurulumunda hazır. Discord'u aç ve merhaba de!",
-                "Endcord установлен ({0}). Откройте Discord и поздоровайтесь!",
-                "Endcord está en {0} Discord. ¡Abre Discord y saluda!",
-                "Endcord est sur {0} Discord. Ouvrez Discord et dites bonjour !");
+                "Devcord is on {0} Discord install(s). Open Discord and say hi!",
+                "Devcord {0} Discord kurulumunda hazır. Discord'u aç ve merhaba de!",
+                "Devcord установлен ({0}). Откройте Discord и поздоровайтесь!",
+                "Devcord está en {0} Discord. ¡Abre Discord y saluda!",
+                "Devcord est sur {0} Discord. Ouvrez Discord et dites bonjour !");
 
             Add("done.banner.migrated",
                 "Brought over {0} plugins, {1} preferences and {2} themes from {3}.",
@@ -517,11 +517,11 @@ namespace EndcordInstaller.Localization
                 "On remplace {0} ?");
 
             Add("conflict.message",
-                "{0} is living in {1} right now. Endcord will gently move it aside and take its spot. Your {0} settings stay untouched.",
-                "{0} şu an {1} içinde yaşıyor. Endcord onu nazikçe kenara alıp yerine geçecek. {0} ayarlarına hiç dokunulmaz.",
-                "{0} сейчас живёт в {1}. Endcord аккуратно подвинет его и займёт место. Настройки {0} останутся как есть.",
-                "{0} vive ahora en {1}. Endcord lo apartará con cuidado y ocupará su lugar. Tus ajustes de {0} no se tocan.",
-                "{0} habite dans {1} en ce moment. Endcord va le pousser doucement et prendre sa place. Vos paramètres {0} restent intacts.");
+                "{0} is living in {1} right now. Devcord will gently move it aside and take its spot. Your {0} settings stay untouched.",
+                "{0} şu an {1} içinde yaşıyor. Devcord onu nazikçe kenara alıp yerine geçecek. {0} ayarlarına hiç dokunulmaz.",
+                "{0} сейчас живёт в {1}. Devcord аккуратно подвинет его и займёт место. Настройки {0} останутся как есть.",
+                "{0} vive ahora en {1}. Devcord lo apartará con cuidado y ocupará su lugar. Tus ajustes de {0} no se tocan.",
+                "{0} habite dans {1} en ce moment. Devcord va le pousser doucement et prendre sa place. Vos paramètres {0} restent intacts.");
 
             Add("conflict.btn.confirm",
                 "Swap and install",
@@ -557,11 +557,11 @@ namespace EndcordInstaller.Localization
                 "Faltan permisos",
                 "Il faut un peu plus de droits");
             Add("err.permission.body",
-                "Endcord can't write to '{0}'. Right-click the installer and choose Run as administrator.",
-                "Endcord '{0}' konumuna yazamıyor. Kurulum dosyasına sağ tıklayıp Yönetici olarak çalıştır'ı seç.",
-                "Endcord не может записать в «{0}». Нажмите правой кнопкой на установщик и выберите «Запуск от имени администратора».",
-                "Endcord no puede escribir en '{0}'. Haz clic derecho en el instalador y elige Ejecutar como administrador.",
-                "Endcord ne peut pas écrire dans « {0} ». Faites un clic droit sur l'installateur et choisissez Exécuter en tant qu'administrateur.");
+                "Devcord can't write to '{0}'. Right-click the installer and choose Run as administrator.",
+                "Devcord '{0}' konumuna yazamıyor. Kurulum dosyasına sağ tıklayıp Yönetici olarak çalıştır'ı seç.",
+                "Devcord не может записать в «{0}». Нажмите правой кнопкой на установщик и выберите «Запуск от имени администратора».",
+                "Devcord no puede escribir en '{0}'. Haz clic derecho en el instalador y elige Ejecutar como administrador.",
+                "Devcord ne peut pas écrire dans « {0} ». Faites un clic droit sur l'installateur et choisissez Exécuter en tant qu'administrateur.");
 
             Add("err.locked.title",
                 "Discord is still busy",
@@ -601,7 +601,7 @@ namespace EndcordInstaller.Localization
             Add("mig.reason.compatiblePlugin", "Supported plugin", "Desteklenen eklenti", "Поддерживаемый плагин", "Plugin compatible", "Plugin pris en charge");
             Add("mig.reason.compatibleCss", "QuickCSS stylesheet", "QuickCSS stil dosyası", "Стили QuickCSS", "Hoja QuickCSS", "Feuille QuickCSS");
             Add("mig.reason.compatibleTheme", "CSS Theme", "CSS Teması", "Тема CSS", "Tema CSS", "Thème CSS");
-            Add("mig.reason.unsupportedPlugin", "Not in Endcord", "Endcord'da yok", "Нет в Endcord", "No está en Endcord", "Absent d'Endcord");
+            Add("mig.reason.unsupportedPlugin", "Not in Devcord", "Devcord'da yok", "Нет в Devcord", "No está en Devcord", "Absent d'Devcord");
             Add("mig.reason.clientSpecificSetting", "Client-specific flag", "İstemciye özgü ayar", "Опция другого клиента", "Opción de otro cliente", "Option spécifique");
             Add("mig.reason.cloudAuth", "External cloud token (skipped)", "Harici bulut anahtarı (atlandı)", "Токен облака (пропущен)", "Token en la nube (omitido)", "Jeton cloud (ignoré)");
             Add("mig.reason.bdPluginFormat", "BetterDiscord JS incompatible", "BetterDiscord JS uyumsuz", "BD JS несовместим", "BD JS incompatible", "BD JS incompatible");

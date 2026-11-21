@@ -413,7 +413,7 @@ namespace EndcordInstaller.UI
             }
             _headerLeft.Children.Add(new TextBlock
             {
-                Text = "Endcord",
+                Text = "Devcord",
                 FontFamily = Ink.Display,
                 FontSize = 17,
                 FontWeight = FontWeights.SemiBold,
@@ -1111,7 +1111,7 @@ namespace EndcordInstaller.UI
             {
                 create.Enabled = false;
                 restore.Enabled = false;
-                RunInBackground(() => MigrationEngine.CreateBackup(_paths, "Endcord", "manual", CancellationToken.None), _ =>
+                RunInBackground(() => MigrationEngine.CreateBackup(_paths, "Devcord", "manual", CancellationToken.None), _ =>
                 {
                     _backups = MigrationEngine.ListBackups(_paths);
                     _selectedBackupIdx = 0;
